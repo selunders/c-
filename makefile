@@ -10,14 +10,14 @@ OBJS = lex.yy.o $(BIN).tab.o
 $(BIN) : $(OBJS)
 	$(CC) $(OBJS) -o $(BIN) $(CFLAGS)
 
-lex.yy.c : $(BIN).l $(BIN).tab.h $(HDR)
-	flex $(BIN).l
+lex.yy.cc : $(BIN).l $(BIN).tab.h $(HDR)
+	flex -o lex.yy.cc $(BIN).l
 
-$(BIN).tab.h $(BIN).tab.c : $(BIN).y
-	bison -v -t -d $(BIN).y 
+$(BIN).tab.h $(BIN).tab.cc : $(BIN).y
+	bison -v -t -d $(BIN).y -o $(BIN).tab.cc
 
 clean :
-	rm -f *~ $(OBJS) $(BIN) lex.yy.c $(BIN).tab.h $(BIN).tab.c $(BIN).output
+	rm -f *~ $(OBJS) $(BIN) lex.yy.cc $(BIN).tab.h $(BIN).tab.cc $(BIN).output
 
 tar : $(HDR) $(SRCS) makefile
 	tar -cvf $(BIN).tar $(HDRS) $(SRCS) $(DOCS) makefile
