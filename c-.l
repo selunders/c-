@@ -8,6 +8,7 @@ int numErrors;    // ERR err count
 
 static int setValue(int linenum, int tokenClass, char *svalue)
 {
+    printf("Linenum: %d tokenClass %d svalue %s\n", linenum, tokenClass, svalue);
     // create the pass-back data space
     yylval.tokenData = new TokenData;
 
@@ -21,6 +22,7 @@ static int setValue(int linenum, int tokenClass, char *svalue)
             yylval.tokenData->idIndex = svalue[0]-'a';
             break;
         case NUMCONST:
+            // printf("Found a number\n");
             yylval.tokenData->numValue = atoi(svalue);
             break;
         case CHARCONST:
@@ -28,10 +30,11 @@ static int setValue(int linenum, int tokenClass, char *svalue)
         case STRINGCONST:
             break;
         default:
-            printf("Uhhh.... you shouldn't be here??");
+            // printf("Uhhh.... you shouldn't be here??\n");
             break;
     }
-
+    // printf("Should be printing line something")
+    printf("Line %d Token: %s\n", yylval.tokenData->linenum, yylval.tokenData->tokenstr);
     // return the tokenclass
     return tokenClass;
 }
@@ -41,11 +44,13 @@ static int setValue(int linenum, int tokenClass, char *svalue)
 %option noyywrap
 
 %%
-[0-9]+          { return setValue(line, NUMCONST, yytext);}
-.               { printf("ERROR(%d): char \'%c\' is not in the language\n", line, yytext[0]); numErrors++; }
-
-
+[0-9]+              { return setValue(line, NUMCONST, yytext);}
+"[a-zA-z]*"         { return setValue(line, STRINGCONST, yytext); }
+[ \t]               ;
+\n                  { line++; }
+.                   { printf("ERROR(%d): char \'%c\' is not in the language\n", line, yytext[0]); numErrors++; }
 %%
+//[\=\+\-\*\/\(\)]    { return setValue(line, yytext[0], yytext); }
 
 /* "stop"|"quit"|"exit"   { return setValue(line, QUIT, yytext); }
 "pi"                   { return setValue(line, NUMBER, (char *)"3.141592653589793238"); }

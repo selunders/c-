@@ -36,13 +36,15 @@ void yyerror(const char *msg)
 /* %type  <value> expression sumexp mulexp unary factor */
 
 %%
-all     : ID
-        | NUMCONST
-        | CHARCONST
-        | STRINGCONST
-        ;
+statementlist : statementlist statement
+              | statement
+              ;
 
-
+statement   : ID
+            | NUMCONST
+            | CHARCONST
+            | STRINGCONST
+            ;
 %%
 
 /* statementlist : statementlist statement
