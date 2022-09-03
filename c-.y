@@ -6,6 +6,8 @@
 // Robert Heckendorn
 // Jan 21, 2021    
 
+// https://www.theurbanpenguin.com/4184-2/
+
 #include "scanType.h"  // TokenData Type
 #include <stdio.h>
 
@@ -40,10 +42,10 @@ statementlist : statementlist statement
               | statement
               ;
 
-statement   : ID
-            | NUMCONST
-            | CHARCONST
-            | STRINGCONST
+statement   : ID            { printf("Line %d Token: ID Value: %s\n", $1->linenum, $1->tokenstr); }
+            | NUMCONST      { printf("Line %d Token: NUMCONST Value: %d  Input: %s\n", $1->linenum, $1->numValue, $1->tokenstr); }
+            | CHARCONST     { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | STRINGCONST   { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
             ;
 %%
 

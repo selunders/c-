@@ -4,9 +4,11 @@ CC = g++
 SRCS = $(BIN).y  $(BIN).l
 HDRS = scanType.h
 OBJS = lex.yy.o $(BIN).tab.o
+CFLAGS = -std=c++11
+
 
 $(BIN) : $(OBJS)
-	$(CC) $(OBJS) -o $(BIN)
+	$(CC) $(CFLAGS) $(OBJS) -o $(BIN)
 
 lex.yy.c : $(BIN).l $(BIN).tab.h $(HDR)
 	flex $(BIN).l

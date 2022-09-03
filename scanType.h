@@ -5,7 +5,7 @@ struct TokenData {
     int linenum;     // what line did this token occur on?
     char *tokenstr;
     int idIndex;     // index for id
-    double numValue; // the value of the number as a DOUBLE!
+    int numValue; // the value of the number as a DOUBLE!
 };
 
 #endif
