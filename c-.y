@@ -10,6 +10,7 @@
 
 #include "scanType.h"  // TokenData Type
 #include <stdio.h>
+#include <string.h>
 
 // double vars[26];    
 
@@ -25,6 +26,16 @@ void yyerror(const char *msg)
     numErrors++;
 }
 
+void printCharByChar(char* stringToPrint)
+{
+    int i = 0;
+    while(i < strlen(stringToPrint))
+    {
+        printf("%c", stringToPrint[i]);
+        i++;
+    }
+}
+
 %}
 
 // this is included in the tab.h file
@@ -35,6 +46,9 @@ void yyerror(const char *msg)
 }
 
 %token <tokenData> ID NUMCONST CHARCONST STRINGCONST
+%token <tokenData> IF ELSE THEN RETURN EQ INT
+%token <tokenData> OPERATOR
+%token <tokenData> MISC
 /* %type  <value> expression sumexp mulexp unary factor */
 
 %%
@@ -45,9 +59,27 @@ statementlist : statementlist statement
 statement   : ID            { printf("Line %d Token: ID Value: %s\n", $1->linenum, $1->tokenstr); }
             | NUMCONST      { printf("Line %d Token: NUMCONST Value: %d  Input: %s\n", $1->linenum, $1->numValue, $1->tokenstr); }
             | CHARCONST     { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | STRINGCONST   { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | STRINGCONST   { printf("Line %d Token: STRINGCONST Value: %s Len: %d Input: ", $1->linenum, $1->stringValue, strlen($1->tokenstr) - 2); printf(R"(%s)", $1->tokenstr); printf("\n"); }
+            | IF            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | ELSE          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | THEN          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | RETURN        { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | EQ            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | INT           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | OPERATOR      { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | MISC          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
             ;
+
 %%
+/* keyword     : IF
+            | ELSE
+            | THEN
+            | RETURN           
+            | EQ
+            | INT
+            |
+            |
+            | */
 
 /* statementlist : statementlist statement
               | statement
@@ -101,7 +133,7 @@ int main(int argc, char *argv[])
     numErrors = 0;
     yyparse();
 
-    printf("Number of errors: %d\n", numErrors);   // ERR
+    /* printf("Number of errors: %d\n", numErrors);   // ERR */
 
     return 0;
 }

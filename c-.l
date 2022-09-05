@@ -2,12 +2,80 @@
 // this *order* of these includes is mandatory
 #include "scanType.h"  // TokenData Type
 #include "c-.tab.h"  // token definitions from the bison
-// #include "colorPrint.hh"
+#include <stdio.h>
+#include <stdlib.h>
+#include "colorPrint.hh"
     // setPrintColor(PRINTCOLOR::GREEN);
+    // setPrintColor(PRINTCOLOR::GREEN);
+    // resetPrintColor();
     // resetPrintColor();
 
 int line;
 int numErrors;    // ERR err count
+
+void myFree(void * freeThis)
+{
+    if(freeThis != NULL)
+    {
+        free(freeThis);
+    }
+}
+
+void handleEscapeChars(char* tokString, char** outString)
+{
+    int i = 0;
+    // printf("beep1\n");
+    char c;
+    size_t totalLen = strlen(tokString);
+    size_t currentLen;
+    char* tempStr = NULL;
+    // char* oldStr;
+    while(i < totalLen)
+    {
+        if(*outString != NULL)
+        {
+            currentLen = strlen(*outString);
+        }
+        else
+        {
+            currentLen = 0;
+            // outString = (char*) '\0';
+        }
+        // printf("beep3\n");
+	    tempStr = (char *) malloc((currentLen + 1 + 1)*sizeof(char));
+        // printf("beep4\n");
+        c = tokString[i];
+        switch(c)
+        {
+            case '\\':
+                // setPrintColor(PRINTCOLOR::GREEN);
+                    // printf("Found a slash\n");
+                // resetPrintColor();
+                i++;
+                c = tokString[i];
+            break;
+            default:
+            break;
+        }
+        // printf("beep5\n");
+        if(*outString != NULL)
+        {
+            strcpy(tempStr, *outString);
+        }
+        // printf("beep6\n");
+        tempStr[currentLen] = c;
+        tempStr[currentLen+1] = '\0';
+        free(*outString);
+        *outString = tempStr;
+        // if(outString!=NULL)
+        // {
+            // printf("Current outString: %s %i\n", outString, i);
+        // }
+        tempStr = NULL;
+        i++;
+    }
+    // free(tempStr);
+}
 
 static int setValue(int linenum, int tokenClass, char *svalue)
 {
@@ -29,8 +97,17 @@ static int setValue(int linenum, int tokenClass, char *svalue)
             yylval.tokenData->numValue = atoi(svalue);
             break;
         case CHARCONST:
+            // strncpy(yylval.tokenData->charValue, yylval.tokenData->tokenstr+1, strlen(yylval.tokenData->tokenstr) - 2);
+            if(strlen(yylval.tokenData->tokenstr) > 3)
+            {
+                printf("%s %d\n", yylval.tokenData->tokenstr, strlen(yylval.tokenData->tokenstr));
+                // setPrintColor(PRINTCOLOR::GREEN);
+                // printf("\n\n\nSomething's wrong heere. strlen of char is %d\n\n\n", strlen(yylval.tokenData->charValue));
+                // resetPrintColor();
+            }
             break;
         case STRINGCONST:
+            handleEscapeChars(yylval.tokenData->tokenstr, &yylval.tokenData->stringValue);
             break;
         default:
             break;
@@ -47,13 +124,23 @@ static int setValue(int linenum, int tokenClass, char *svalue)
 
 %%
 \n                      { line++; }
+"//".*                  { line++; }
 [0-9]+                  { return setValue(line, NUMCONST, yytext);}
+"if"                    { return setValue(line, IF, (char*) "IF"); }
+"else"                  { return setValue(line, ELSE, (char*) "ELSE"); }
+"then"                  { return setValue(line, THEN, (char*) "THEN"); }
+"return"                { return setValue(line, RETURN, (char*) "RETURN"); }
+"=="                    { return setValue(line, EQ, (char*) "EQ"); }
+"int"                   { return setValue(line, INT, (char*) "INT"); }
+\'[^\'^\n]*\'           { return setValue(line, CHARCONST, yytext); }
+\"[^\"^\n]*\"           { return setValue(line, STRINGCONST, yytext); }
 [a-zA-Z][a-zA-Z0-9]*    { return setValue(line, ID, yytext);}
-"[a-zA-z]*"             { return setValue(line, STRINGCONST, yytext); }
 [ \t]                   ;
-[\=\+\-\*\/\(\)]        { return setValue(line, yytext[0], yytext); }
+[\=\+\-\*\/\(\)]        { return setValue(line, OPERATOR, yytext); }
+[\,\;\{\}\'\\]              { return setValue(line, MISC, yytext); }
 .                       { printf("ERROR(%d): char \'%c\' is not in the language\n", line, yytext[0]); numErrors++; }
 %%
+/* "[a-zA-z]*"             { return setValue(line, STRINGCONST, yytext); } */
 
 /* "stop"|"quit"|"exit"   { return setValue(line, QUIT, yytext); }
 "pi"                   { return setValue(line, NUMBER, (char *)"3.141592653589793238"); }
