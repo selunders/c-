@@ -10,7 +10,7 @@
     // resetPrintColor();
     // resetPrintColor();
 
-int line;
+int line = 1;
 int numErrors;    // ERR err count
 
 void myFree(void * freeThis)
@@ -21,6 +21,7 @@ void myFree(void * freeThis)
     }
 }
 
+// This removes backslashes from STRINGCONSTS for the C- language.
 void handleEscapeChars(char* tokString, char** outString)
 {
     int i = 0;
@@ -33,48 +34,34 @@ void handleEscapeChars(char* tokString, char** outString)
     while(i < totalLen)
     {
         if(*outString != NULL)
-        {
             currentLen = strlen(*outString);
-        }
         else
-        {
             currentLen = 0;
-            // outString = (char*) '\0';
-        }
-        // printf("beep3\n");
+
 	    tempStr = (char *) malloc((currentLen + 1 + 1)*sizeof(char));
-        // printf("beep4\n");
+        
         c = tokString[i];
-        switch(c)
+        
+        if(c == '\\')
         {
-            case '\\':
-                // setPrintColor(PRINTCOLOR::GREEN);
-                    // printf("Found a slash\n");
-                // resetPrintColor();
-                i++;
-                c = tokString[i];
-            break;
-            default:
-            break;
+            i++;
+            c = tokString[i];
         }
-        // printf("beep5\n");
+
         if(*outString != NULL)
         {
             strcpy(tempStr, *outString);
         }
-        // printf("beep6\n");
+        
         tempStr[currentLen] = c;
         tempStr[currentLen+1] = '\0';
+        
         free(*outString);
+        
         *outString = tempStr;
-        // if(outString!=NULL)
-        // {
-            // printf("Current outString: %s %i\n", outString, i);
-        // }
         tempStr = NULL;
         i++;
     }
-    // free(tempStr);
 }
 
 static int setValue(int linenum, int tokenClass, char *svalue)
@@ -133,13 +120,14 @@ static int setValue(int linenum, int tokenClass, char *svalue)
 "=="                    { return setValue(line, EQ, (char*) "EQ"); }
 "int"                   { return setValue(line, INT, (char*) "INT"); }
 \'[^\'^\n]*\'           { return setValue(line, CHARCONST, yytext); }
-\"[^\"^\n]*\"           { return setValue(line, STRINGCONST, yytext); }
+\"(\\.|[^\"])*\"        { return setValue(line, STRINGCONST, yytext); }
 [a-zA-Z][a-zA-Z0-9]*    { return setValue(line, ID, yytext);}
 [ \t]                   ;
 [\=\+\-\*\/\(\)]        { return setValue(line, OPERATOR, yytext); }
 [\,\;\{\}\'\\]              { return setValue(line, MISC, yytext); }
 .                       { printf("ERROR(%d): char \'%c\' is not in the language\n", line, yytext[0]); numErrors++; }
 %%
+/* \"[^\"^\n]*\"           { return setValue(line, STRINGCONST, yytext); } */
 /* "[a-zA-z]*"             { return setValue(line, STRINGCONST, yytext); } */
 
 /* "stop"|"quit"|"exit"   { return setValue(line, QUIT, yytext); }
