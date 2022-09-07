@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include "colorPrint.hh"
     // setPrintColor(PRINTCOLOR::GREEN);
-    // setPrintColor(PRINTCOLOR::GREEN);
-    // resetPrintColor();
     // resetPrintColor();
 
 int line = 1;
@@ -22,7 +20,7 @@ void myFree(void * freeThis)
 }
 
 // This removes backslashes from STRINGCONSTS for the C- language.
-void handleEscapeChars(char* tokString, char** outString)
+void handleStrEscapeChars(char* tokString, char** outString)
 {
     int i = 0;
     // printf("beep1\n");
@@ -41,11 +39,20 @@ void handleEscapeChars(char* tokString, char** outString)
 	    tempStr = (char *) malloc((currentLen + 1 + 1)*sizeof(char));
         
         c = tokString[i];
-        
+    
         if(c == '\\')
         {
             i++;
             c = tokString[i];
+            if(c == 'n')
+            {
+                // setPrintColor(PRINTCOLOR::GREEN);
+                // printf("setting %c", c);
+                c == 10;
+                // printf(" to %c\n", c);
+                // printf("Setting current char to: %c\n", c);
+                // resetPrintColor();
+            }
         }
 
         if(*outString != NULL)
@@ -62,6 +69,42 @@ void handleEscapeChars(char* tokString, char** outString)
         tempStr = NULL;
         i++;
     }
+}
+
+void handleCharEscapeChars(char* tokString, char* outChar)
+{
+    int i = 1;
+    char c = tokString[i];
+    // bool isTooLong = false;
+    if(c == '\\')
+    {
+        i++;
+        c = tokString[i];
+        // This switch statement handles all the valid escape characters for the C- language
+        switch(c)
+        {
+            case 'n':
+                c = '\n';
+            break;
+            case '0':
+                c = '\0';
+            break;
+            default:
+            break;
+        } 
+        if(strlen(yylval.tokenData->tokenstr) > 4)
+        {
+            printf("WARNING(%d): character is %d characters long and not a single character: \'%s\'.  The first char will be used.\n", yylval.tokenData->linenum, strlen(yylval.tokenData->tokenstr)-2, yylval.tokenData->tokenstr);
+        }
+    }
+    else if(strlen(yylval.tokenData->tokenstr) > 3)
+    {
+        printf("WARNING(%d): character is %d characters long and not a single character: \'%s\'.  The first char will be used.\n", yylval.tokenData->linenum, strlen(yylval.tokenData->tokenstr)-2, yylval.tokenData->tokenstr);
+    }
+    // setPrintColor(PRINTCOLOR::GREEN);
+    // printf("The token is: %c\n", c);
+    // resetPrintColor();
+    *outChar = c;
 }
 
 static int setValue(int linenum, int tokenClass, char *svalue)
@@ -84,18 +127,20 @@ static int setValue(int linenum, int tokenClass, char *svalue)
             yylval.tokenData->numValue = atoi(svalue);
             break;
         case CHARCONST:
-            // strncpy(yylval.tokenData->charValue, yylval.tokenData->tokenstr+1, strlen(yylval.tokenData->tokenstr) - 2);
-            if(strlen(yylval.tokenData->tokenstr) > 3)
-            {
-                printf("%s %d\n", yylval.tokenData->tokenstr, strlen(yylval.tokenData->tokenstr));
-                // setPrintColor(PRINTCOLOR::GREEN);
-                // printf("\n\n\nSomething's wrong heere. strlen of char is %d\n\n\n", strlen(yylval.tokenData->charValue));
-                // resetPrintColor();
-            }
+            handleCharEscapeChars(yylval.tokenData->tokenstr, &yylval.tokenData->charValue);
             break;
         case STRINGCONST:
-            handleEscapeChars(yylval.tokenData->tokenstr, &yylval.tokenData->stringValue);
+            handleStrEscapeChars(yylval.tokenData->tokenstr, &yylval.tokenData->stringValue);
             break;
+        case BOOLCONST:
+            if(!strcmp(svalue, "true"))
+            {
+                yylval.tokenData->boolValue = 1;
+            }
+            else if(!strcmp(svalue, "false"))
+            {
+                yylval.tokenData->boolValue = 0;
+            }
         default:
             break;
     }
@@ -111,20 +156,42 @@ static int setValue(int linenum, int tokenClass, char *svalue)
 
 %%
 \n                      { line++; }
-"//".*                  { line++; }
+"//".*\n                { line++; }
 [0-9]+                  { return setValue(line, NUMCONST, yytext);}
 "if"                    { return setValue(line, IF, (char*) "IF"); }
+"or"                    { return setValue(line, OR, (char*) "OR"); }
 "else"                  { return setValue(line, ELSE, (char*) "ELSE"); }
 "then"                  { return setValue(line, THEN, (char*) "THEN"); }
 "return"                { return setValue(line, RETURN, (char*) "RETURN"); }
+"char"                  { return setValue(line, CHAR, (char*) "CHAR"); }
+"bool"                  { return setValue(line, BOOL, (char*) "BOOL"); }
+"static"                { return setValue(line, STATIC, (char*) "STATIC"); }
+"and"                   { return setValue(line, AND, (char*) "AND"); }
+"not"                   { return setValue(line, NOT, (char*) "NOT"); }
+"for"                   { return setValue(line, FOR, (char*) "FOR"); }
+"while"                 { return setValue(line, WHILE, (char*) "WHILE"); }
+"break"                 { return setValue(line, BREAK, (char*) "BREAK"); }
+"to"                    { return setValue(line, TO, (char*) "TO"); }
+"by"                    { return setValue(line, BY, (char*) "BY"); }
+"do"                    { return setValue(line, DO, (char*) "DO"); }
+"++"                    { return setValue(line, INC, (char*) "INC"); }
+"--"                    { return setValue(line, DEC, (char*) "DEC"); }
+"+="                    { return setValue(line, ADDASS, (char*) "ADDASS"); }
 "=="                    { return setValue(line, EQ, (char*) "EQ"); }
+"!="                    { return setValue(line, NEQ, (char*) "NEQ"); }
+">="                    { return setValue(line, GEQ, (char*) "GEQ"); }
+"<="                    { return setValue(line, LEQ, (char*) "LEQ"); }
 "int"                   { return setValue(line, INT, (char*) "INT"); }
-\'[^\'^\n]*\'           { return setValue(line, CHARCONST, yytext); }
-\"(\\.|[^\"])*\"        { return setValue(line, STRINGCONST, yytext); }
+"true"                  { return setValue(line, BOOLCONST, yytext); }
+"false"                 { return setValue(line, BOOLCONST, yytext); }
+"\'\\'\'"               { return setValue(line, CHARCONST, yytext); }
+\'[^\'\n]*\'            { return setValue(line, CHARCONST, yytext); }
+\"(\\.|[^\"\n])*\"      { return setValue(line, STRINGCONST, yytext); }
 [a-zA-Z][a-zA-Z0-9]*    { return setValue(line, ID, yytext);}
 [ \t]                   ;
-[\=\+\-\*\/\(\)]        { return setValue(line, OPERATOR, yytext); }
-[\,\;\{\}\'\\]              { return setValue(line, MISC, yytext); }
+[\=\+\-\*\/\(\)\%]        { return setValue(line, OPERATOR, yytext); }
+[\'\"\.\@\#\$\^\&\_\|\\\~]                { printf("ERROR(%d): Invalid or misplaced input character: \'%s\'. Character Ignored.\n", line, yytext); }
+[\%\*\(\)\-\{\}\[\]\;\:\<\>\?\,\/]          { return setValue(line, MISC, yytext); }
 .                       { printf("ERROR(%d): char \'%c\' is not in the language\n", line, yytext[0]); numErrors++; }
 %%
 /* \"[^\"^\n]*\"           { return setValue(line, STRINGCONST, yytext); } */

@@ -45,10 +45,12 @@ void printCharByChar(char* stringToPrint)
     double value;
 }
 
-%token <tokenData> ID NUMCONST CHARCONST STRINGCONST
-%token <tokenData> IF ELSE THEN RETURN EQ INT
-%token <tokenData> OPERATOR
+%token <tokenData> ID NUMCONST CHARCONST STRINGCONST BOOLCONST
+%token <tokenData> IF ELSE THEN RETURN EQ NEQ GEQ LEQ INT OR
+%token <tokenData> OPERATOR ADDASS
+%token <tokenData> STATIC BOOL CHAR
 %token <tokenData> MISC
+%token <tokenData> AND NOT FOR WHILE BREAK TO BY DO INC DEC
 /* %type  <value> expression sumexp mulexp unary factor */
 
 %%
@@ -58,19 +60,38 @@ statementlist : statementlist statement
 
 statement   : ID            { printf("Line %d Token: ID Value: %s\n", $1->linenum, $1->tokenstr); }
             | NUMCONST      { printf("Line %d Token: NUMCONST Value: %d  Input: %s\n", $1->linenum, $1->numValue, $1->tokenstr); }
-            | CHARCONST     { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | STRINGCONST   { printf("Line %d Token: STRINGCONST Value: %s Len: %d Input: ", $1->linenum, $1->stringValue, strlen($1->stringValue) - 2); printf(R"(%s)", $1->tokenstr); printf("\n"); }
+            | CHARCONST     { printf("Line %d Token: CHARCONST Value: \'%c\'  Input: %s\n", $1->linenum, $1->charValue, $1->tokenstr); }
+            | STRINGCONST   { printf("Line %d Token: STRINGCONST Value: %s  Len: %d  Input: ", $1->linenum, $1->stringValue, strlen($1->stringValue) - 2); printf(R"(%s)", $1->tokenstr); printf("\n"); }
+            | BOOLCONST     { printf("Line %d Token: BOOLCONST Value: %d  Input: %s\nk", $1->linenum, $1->boolValue, $1->tokenstr); }
             | IF            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
             | ELSE          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
             | THEN          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
             | RETURN        { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
             | EQ            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | NEQ           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | GEQ           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | LEQ           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
             | INT           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
             | OPERATOR      { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | OR            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | ADDASS        { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | BOOL          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | CHAR          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | STATIC        { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | AND           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | NOT           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | FOR           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | WHILE         { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | BREAK         { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | TO            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | BY            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | DO            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | INC           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+            | DEC           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
             | MISC          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
             ;
-
 %%
+/* WARNING(30): character is 2 characters long and not a single character: ''^I''.  The first char will be used. */
 /* keyword     : IF
             | ELSE
             | THEN

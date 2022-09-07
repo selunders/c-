@@ -6,6 +6,7 @@ struct TokenData {
     char *tokenstr;
     int idIndex;     // index for id
     int numValue; // the value of the number as a DOUBLE!
+    int boolValue;
     char charValue;
     char *stringValue;
 };
