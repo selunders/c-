@@ -48,7 +48,7 @@ void handleStrEscapeChars(char* tokString, char** outString)
             {
                 // setPrintColor(PRINTCOLOR::GREEN);
                 // printf("setting %c", c);
-                c == 10;
+                c = '\n';
                 // printf(" to %c\n", c);
                 // printf("Setting current char to: %c\n", c);
                 // resetPrintColor();
