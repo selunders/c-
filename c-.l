@@ -28,6 +28,7 @@ void handleStrEscapeChars(char* tokString, char** outString)
     size_t totalLen = strlen(tokString);
     size_t currentLen;
     char* tempStr = NULL;
+    *outString = (char*) malloc(1);
     // char* oldStr;
     while(i < totalLen)
     {
@@ -45,14 +46,7 @@ void handleStrEscapeChars(char* tokString, char** outString)
             i++;
             c = tokString[i];
             if(c == 'n')
-            {
-                // setPrintColor(PRINTCOLOR::GREEN);
-                // printf("setting %c", c);
                 c = '\n';
-                // printf(" to %c\n", c);
-                // printf("Setting current char to: %c\n", c);
-                // resetPrintColor();
-            }
         }
 
         if(*outString != NULL)
@@ -63,7 +57,8 @@ void handleStrEscapeChars(char* tokString, char** outString)
         tempStr[currentLen] = c;
         tempStr[currentLen+1] = '\0';
         
-        free(*outString);
+        if(outString != NULL)
+            free(*outString);
         
         *outString = tempStr;
         tempStr = NULL;
@@ -190,7 +185,7 @@ static int setValue(int linenum, int tokenClass, char *svalue)
 [a-zA-Z][a-zA-Z0-9]*    { return setValue(line, ID, yytext);}
 [ \t]                   ;
 [\=\+\-\*\/\(\)\%]        { return setValue(line, OPERATOR, yytext); }
-[\'\"\.\@\#\$\^\&\_\|\\\~]                { printf("ERROR(%d): Invalid or misplaced input character: \'%s\'. Character Ignored.\n", line, yytext); }
+[\'\"\.\@\#\$\^\&\_\|\\\~\!]                { printf("ERROR(%d): Invalid or misplaced input character: \'%s\'. Character Ignored.\n", line, yytext); }
 [\%\*\(\)\-\{\}\[\]\;\:\<\>\?\,\/]          { return setValue(line, MISC, yytext); }
 .                       { printf("ERROR(%d): char \'%c\' is not in the language\n", line, yytext[0]); numErrors++; }
 %%
