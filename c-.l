@@ -28,10 +28,10 @@ void handleStrEscapeChars(char* tokString, char** outString)
     size_t totalLen = strlen(tokString);
     size_t currentLen;
     char* tempStr = NULL;
-    *outString = (char*) malloc(1);
-    // char* oldStr;
+    *outString = NULL;
     while(i < totalLen)
     {
+        c = tokString[i];
         if(*outString != NULL)
             currentLen = strlen(*outString);
         else
@@ -39,7 +39,6 @@ void handleStrEscapeChars(char* tokString, char** outString)
 
 	    tempStr = (char *) malloc((currentLen + 1 + 1)*sizeof(char));
         
-        c = tokString[i];
     
         if(c == '\\')
         {
@@ -57,7 +56,7 @@ void handleStrEscapeChars(char* tokString, char** outString)
         tempStr[currentLen] = c;
         tempStr[currentLen+1] = '\0';
         
-        if(outString != NULL)
+        if(*outString != NULL)
             free(*outString);
         
         *outString = tempStr;
@@ -106,7 +105,9 @@ static int setValue(int linenum, int tokenClass, char *svalue)
 {
     // printf("Linenum: %d tokenClass %d svalue %s\n", linenum, tokenClass, svalue);
     // create the pass-back data space
-    yylval.tokenData = new TokenData;
+    // yylval.tokenData = new TokenData;
+    yylval.tokenData = (TokenData*) malloc(sizeof(TokenData));
+    // yylval.tokenData = new TokenData;
 
     // fill it up
     yylval.tokenData->linenum = linenum;
@@ -139,9 +140,7 @@ static int setValue(int linenum, int tokenClass, char *svalue)
         default:
             break;
     }
-    // printf("Should be printing line something")
     // printf("Line %d Token: %s\n", yylval.tokenData->linenum, yylval.tokenData->tokenstr);
-    // return the tokenclass
     return tokenClass;
 }
 
