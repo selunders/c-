@@ -4,7 +4,7 @@ CC = g++
 SRCS = $(BIN).y  $(BIN).l
 HDRS = scanType.h
 OBJS = lex.yy.o $(BIN).tab.o
-CFLAGS = -std=c++11
+CFLAGS = -std=c++11 -g
 
 
 $(BIN) : $(OBJS)

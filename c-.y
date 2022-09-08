@@ -62,7 +62,7 @@ statement   : ID            { printf("Line %d Token: ID Value: %s\n", $1->linenu
             | NUMCONST      { printf("Line %d Token: NUMCONST Value: %d  Input: %s\n", $1->linenum, $1->numValue, $1->tokenstr); }
             | CHARCONST     { printf("Line %d Token: CHARCONST Value: \'%c\'  Input: %s\n", $1->linenum, $1->charValue, $1->tokenstr); }
             | STRINGCONST   { printf("Line %d Token: STRINGCONST Value: %s  Len: %d  Input: ", $1->linenum, $1->stringValue, strlen($1->stringValue) - 2); printf(R"(%s)", $1->tokenstr); printf("\n"); }
-            | BOOLCONST     { printf("Line %d Token: BOOLCONST Value: %d  Input: %s\nk", $1->linenum, $1->boolValue, $1->tokenstr); }
+            | BOOLCONST     { printf("Line %d Token: BOOLCONST Value: %d  Input: %s\n", $1->linenum, $1->boolValue, $1->tokenstr); }
             | IF            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
             | ELSE          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
             | THEN          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
