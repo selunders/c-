@@ -47,9 +47,8 @@ void printCharByChar(char* stringToPrint)
 
 %token <tokenData> ID NUMCONST CHARCONST STRINGCONST BOOLCONST
 %token <tokenData> IF ELSE THEN RETURN EQ NEQ GEQ LEQ INT OR
-%token <tokenData> OPERATOR ADDASS SUBASS MULTASS DIVASS
+%token <tokenData> ADDASS SUBASS MULASS DIVASS
 %token <tokenData> STATIC BOOL CHAR
-%token <tokenData> MISC
 %token <tokenData> AND NOT FOR WHILE BREAK TO BY DO INC DEC
 /* %type  <value> expression sumexp mulexp unary factor */
 
@@ -112,10 +111,12 @@ parmId
     : ID
     | ID '['']'
 stmt
+    : selectSuperStmt
+    ;
+otherStmt
     : expStmt
     | compoundStmt
-    | selectStmt
-    | iterStmt
+    | closed_iterStmt
     | returnStmt
     | breakStmt
     ;
@@ -134,13 +135,26 @@ stmtList
     : %empty
     | stmtList stmt
     ;
-selectStmt
-    : IF simpleExp THEN stmt
-    | IF simpleExp THEN stmt ELSE stmt
+selectSuperStmt
+    : open_stmt
+    | closed_stmt
     ;
-iterStmt
-    : WHILE simpleExp DO stmt
-    | FOR ID '=' iterRange DO stmt
+open_stmt
+    : IF simpleExp THEN selectSuperStmt
+    | IF simpleExp THEN closed_stmt ELSE open_stmt
+    | open_iterStmt
+    ;
+closed_stmt
+    : otherStmt
+    | IF simpleExp THEN closed_stmt ELSE closed_stmt 
+    ;
+open_iterStmt
+    : WHILE simpleExp DO open_stmt
+    | FOR ID '=' iterRange DO open_stmt
+    ;
+closed_iterStmt
+    : WHILE simpleExp DO closed_stmt
+    | FOR ID '=' iterRange DO closed_stmt
     ;
 iterRange
     : simpleExp TO simpleExp
@@ -162,7 +176,7 @@ assignop
     : '='
     | ADDASS
     | SUBASS
-    | MULTASS
+    | MULASS
     | DIVASS
     ;
 simpleExp

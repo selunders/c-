@@ -173,6 +173,8 @@ static int setValue(int linenum, int tokenClass, char *svalue)
 "--"                    { return setValue(line, DEC, (char*) "DEC"); }
 "+="                    { return setValue(line, ADDASS, (char*) "ADDASS"); }
 "-="                    { return setValue(line, SUBASS, (char*) "SUBASS"); }
+"*="                    { return setValue(line, MULASS, (char*) "MULASS"); }
+"/="                    { return setValue(line, DIVASS, (char*) "DIVASS"); }
 "=="                    { return setValue(line, EQ, (char*) "EQ"); }
 "!="                    { return setValue(line, NEQ, (char*) "NEQ"); }
 ">="                    { return setValue(line, GEQ, (char*) "GEQ"); }
