@@ -1,0 +1,2144 @@
+=================================================
+Output of Building User Code
+Exploding tar files
+20220904140932-lund4272-CS445-F22-A1.tar
+scanType.h
+c-.y
+c-.l
+makefile
+Undossing tarred files assumes all files are ascii and not binary
+undosing scanType.h
+undosing c-.y
+undosing c-.l
+undosing makefile
+Extracting test files
+badchar.c-
+cprogram.c-
+f22.c-
+gcd.c-
+htmlTest.c-
+quote.c-
+quoteTest.c-
+stringTest.c-
+textTest2.c-
+textTest.c-
+remove Tmp dir contents
+Now start the build process
+
+find makefile (lowercase)
+makefile
+A makefile is here and you compiler will be built with it
+make the program
+Alter compiler with special development tool set including g++ 4.9
+Output from build is 5 lines long
+Output from build will be trimmed to 1000 lines if it is too long.
+bison -v -t -d c-.y
+flex c-.l
+g++ -std=c++11   -c -o lex.yy.o lex.yy.c
+g++ -std=c++11   -c -o c-.tab.o c-.tab.c
+g++ -std=c++11 lex.yy.o c-.tab.o -o c-
+was a program called c- built?
+c- is here and you compiler will now be tested
+-rwx--x--x. 1 rs-cs-heckendo domain_users 33832 Sep  4 14:12 c-
+
+END OF BUILD
+=================================================
+Complete Output of Testing
+Run Tests
+Limited to 5 seconds total run time and 3000 lines of output
+/home/rs-cs-heckendo/TestWorld
+./c- < gcd.c-
+Line 2 Token: INT
+Line 2 Token: ID Value: gcd
+Line 2 Token: (
+Line 2 Token: INT
+Line 2 Token: ID Value: u
+Line 2 Token: ,
+Line 2 Token: ID Value: v
+Line 2 Token: )
+Line 3 Token: {
+Line 4 Token: IF
+Line 4 Token: ID Value: v
+Line 4 Token: EQ
+Line 4 Token: NUMCONST Value: 0  Input: 0
+Line 4 Token: THEN
+Line 4 Token: RETURN
+Line 4 Token: ID Value: u
+Line 4 Token: ;
+Line 5 Token: ELSE
+Line 5 Token: RETURN
+Line 5 Token: ID Value: gcd
+Line 5 Token: (
+Line 5 Token: ID Value: v
+Line 5 Token: ,
+Line 5 Token: ID Value: u
+Line 5 Token: -
+Line 5 Token: ID Value: u
+Line 5 Token: /
+Line 5 Token: ID Value: v
+Line 5 Token: *
+Line 5 Token: ID Value: v
+Line 5 Token: )
+Line 5 Token: ;
+Line 6 Token: }
+Line 8 Token: ID Value: main
+Line 8 Token: (
+Line 8 Token: )
+Line 9 Token: {
+Line 10 Token: ID Value: output
+Line 10 Token: (
+Line 10 Token: ID Value: gcd
+Line 10 Token: (
+Line 10 Token: ID Value: input
+Line 10 Token: (
+Line 10 Token: )
+Line 10 Token: ,
+Line 10 Token: ID Value: input
+Line 10 Token: (
+Line 10 Token: )
+Line 10 Token: )
+Line 10 Token: )
+Line 10 Token: ;
+Line 11 Token: ID Value: outnl
+Line 11 Token: (
+Line 11 Token: )
+Line 11 Token: ;
+Line 12 Token: }
+
+==============
+==============
+./c- badchar.c-
+ERROR(0): char '!' is not in the language
+ERROR(0): char '@' is not in the language
+ERROR(0): char '#' is not in the language
+ERROR(0): char '$' is not in the language
+ERROR(0): char '%' is not in the language
+ERROR(0): char '^' is not in the language
+ERROR(0): char '&' is not in the language
+Line 0 Token: *
+Line 0 Token: (
+Line 0 Token: )
+ERROR(0): char '_' is not in the language
+Line 0 Token: +
+Line 0 Token: =
+Line 0 Token: -
+Line 1 Token: {
+Line 1 Token: }
+ERROR(1): char '|' is not in the language
+ERROR(1): char '[' is not in the language
+ERROR(1): char ']' is not in the language
+ERROR(1): char '\' is not in the language20220904140932-lund4272-CS445-F22-A1.txt
+Line 0 Token: ID Value: stdio
+ERROR(0): char '.' is not in the language
+Line 0 Token: ID Value: h
+ERROR(0): char '>' is not in the language
+ERROR(1): char '#' is not in the language
+Line 1 Token: ID Value: include
+ERROR(1): char '<' is not in the language
+Line 1 Token: ID Value: stdlib
+ERROR(1): char '.' is not in the language
+Line 1 Token: ID Value: h
+ERROR(1): char '>' is not in the language
+Line 3 Token: INT
+Line 3 Token: ID Value: main
+Line 3 Token: (
+Line 3 Token: )
+Line 4 Token: {
+Line 5 Token: INT
+Line 5 Token: ID Value: x
+Line 5 Token: =
+Line 5 Token: NUMCONST Value: 666  Input: 666
+Line 5 Token: ;
+Line 7 Token: IF
+Line 7 Token: (
+Line 7 Token: ID Value: x
+Line 7 Token: EQ
+Line 7 Token: NUMCONST Value: 666  Input: 666
+Line 7 Token: )
+Line 7 Token: ID Value: printf
+Line 7 Token: (
+ERROR(7): char '"' is not in the language
+Line 7 Token: ID Value: hog
+ERROR(7): char '\' is not in the language
+ERROR(7): char '\' is not in the language
+ERROR(7): char '"' is not in the language
+Line 7 Token: )
+Line 7 Token: ;
+Line 8 Token: ID Value: printf
+Line 8 Token: (
+ERROR(8): char '"' is not in the language
+ERROR(8): char '\' is not in the language
+Line 8 Token: ID Value: n
+ERROR(8): char '"' is not in the language
+Line 8 Token: )
+Line 8 Token: ;
+Line 9 Token: RETURN
+Line 9 Token: NUMCONST Value: 0  Input: 0
+Line 9 Token: ;
+Line 10 Token: }
+
+==============
+==============
+./c- f22.c-
+Line 2 Token: ID Value: bool
+Line 2 Token: ID Value: gb
+Line 2 Token: ;
+Line 3 Token: ID Value: char
+Line 3 Token: ID Value: gc
+Line 3 Token: ;
+Line 4 Token: INT
+Line 4 Token: ID Value: gi
+Line 4 Token: ;
+Line 7 Token: INT
+Line 7 Token: ID Value: main
+Line 7 Token: (
+Line 7 Token: )
+Line 8 Token: {
+Line 9 Token: ID Value: bool
+Line 9 Token: ID Value: b
+Line 9 Token: ;
+Line 10 Token: ID Value: char
+Line 10 Token: ID Value: c
+Line 10 Token: ;
+Line 11 Token: INT
+Line 11 Token: ID Value: i
+Line 11 Token: ,
+Line 11 Token: ID Value: shuri
+Line 11 Token: ,
+Line 11 Token: ID Value: tchalla
+Line 11 Token: ,
+Line 11 Token: ID Value: X23
+Line 11 Token: ;
+Line 12 Token: ID Value: static
+Line 12 Token: ID Value: bool
+Line 12 Token: ID Value: sb
+ERROR(12): char ':' is not in the language
+Line 12 Token: NUMCONST Value: 44  Input: 44
+ERROR(12): char '>' is not in the language
+Line 12 Token: NUMCONST Value: 22  Input: 22
+Line 12 Token: ;
+Line 13 Token: ID Value: static
+Line 13 Token: ID Value: char
+Line 13 Token: ID Value: sc
+ERROR(13): char ':' is not in the language
+ERROR(13): char ''' is not in the language
+Line 13 Token: ID Value: x
+ERROR(13): char ''' is not in the language
+Line 13 Token: ;
+Line 14 Token: ID Value: static
+Line 14 Token: INT
+Line 14 Token: ID Value: si
+ERROR(14): char ':' is not in the language
+Line 14 Token: NUMCONST Value: 676  Input: 676
+Line 14 Token: ;
+Line 15 Token: ID Value: bool
+Line 15 Token: ID Value: ba
+ERROR(15): char '[' is not in the language
+Line 15 Token: NUMCONST Value: 6  Input: 6
+ERROR(15): char ']' is not in the language
+ERROR(15): char ':' is not in the language
+Line 15 Token: NUMCONST Value: 89  Input: 89
+ERROR(15): char '<' is not in the language
+Line 15 Token: NUMCONST Value: 34  Input: 34
+Line 15 Token: ;
+Line 16 Token: ID Value: char
+Line 16 Token: ID Value: ca
+ERROR(16): char '[' is not in the language
+Line 16 Token: NUMCONST Value: 6  Input: 6
+ERROR(16): char ']' is not in the language
+ERROR(16): char ':' is not in the language
+ERROR(16): char '"' is not in the language
+Line 16 Token: ID Value: vibranium
+ERROR(16): char '"' is not in the language
+Line 16 Token: ;
+Line 17 Token: INT
+Line 17 Token: ID Value: ia
+ERROR(17): char '[' is not in the language
+Line 17 Token: NUMCONST Value: 6  Input: 6
+ERROR(17): char ']' is not in the language
+Line 17 Token: ;
+Line 21 Token: ID Value: b
+Line 21 Token: =
+Line 21 Token: ID Value: b
+Line 21 Token: ID Value: and
+Line 21 Token: ID Value: b
+Line 21 Token: ID Value: or
+Line 21 Token: ID Value: true
+Line 21 Token: ID Value: and
+Line 21 Token: ID Value: not
+Line 21 Token: ID Value: false
+Line 21 Token: ;
+Line 22 Token: ID Value: for
+Line 22 Token: ID Value: wakanda
+Line 22 Token: =
+Line 22 Token: ID Value: ia
+Line 22 Token: ID Value: to
+Line 22 Token: NUMCONST Value: 666  Input: 666
+Line 22 Token: ID Value: by
+Line 22 Token: NUMCONST Value: 42  Input: 42
+Line 22 Token: ID Value: do
+Line 22 Token: {
+Line 22 Token: IF
+Line 22 Token: ID Value: wakanda
+Line 22 Token: EQ
+Line 22 Token: NUMCONST Value: 42  Input: 42
+Line 22 Token: THEN
+Line 22 Token: ID Value: break
+Line 22 Token: ;
+Line 22 Token: ELSE
+Line 22 Token: ID Value: i
+Line 22 Token: +
+Line 22 Token: +
+Line 22 Token: ;
+Line 22 Token: }
+Line 23 Token: ID Value: i
+Line 23 Token: =
+Line 23 Token: NUMCONST Value: 3  Input: 3
+Line 23 Token: *
+Line 23 Token: *
+Line 23 Token: ID Value: ca
+Line 23 Token: +
+Line 23 Token: NUMCONST Value: 56  Input: 56
+ERROR(23): char '%' is not in the language
+Line 23 Token: ID Value: i
+Line 23 Token: /
+Line 23 Token: NUMCONST Value: 3  Input: 3
+Line 23 Token: -
+ERROR(23): char '?' is not in the language
+Line 23 Token: NUMCONST Value: 6  Input: 6
+Line 23 Token: +
+ERROR(23): char '?' is not in the language
+Line 23 Token: ID Value: ia
+Line 23 Token: -
+Line 23 Token: -
+Line 23 Token: ID Value: si
+Line 23 Token: ;
+Line 24 Token: ID Value: while
+Line 24 Token: ID Value: shuri
+ERROR(24): char '>' is not in the language
+Line 24 Token: =
+Line 24 Token: NUMCONST Value: 10  Input: 10
+Line 24 Token: ID Value: and
+Line 24 Token: ID Value: i
+ERROR(24): char '<' is not in the language
+Line 24 Token: =
+Line 24 Token: NUMCONST Value: 2  Input: 2
+Line 24 Token: ID Value: and
+Line 24 Token: ID Value: c
+Line 24 Token: EQ
+ERROR(24): char ''' is not in the language
+Line 24 Token: ID Value: z
+ERROR(24): char ''' is not in the language
+Line 24 Token: ID Value: or
+Line 24 Token: ID Value: ba
+ERROR(24): char '[' is not in the language
+Line 24 Token: NUMCONST Value: 3  Input: 3
+ERROR(24): char ']' is not in the language
+ERROR(24): char '!' is not in the language
+Line 24 Token: =
+Line 24 Token: ID Value: true
+Line 24 Token: ID Value: do
+Line 24 Token: ID Value: shuri
+Line 24 Token: -
+Line 24 Token: -
+Line 24 Token: ;
+Line 26 Token: RETURN
+Line 26 Token: NUMCONST Value: 1284  Input: 1284
+Line 26 Token: ;
+Line 27 Token: }
+Line 29 Token: INT
+Line 29 Token: ID Value: forever
+Line 29 Token: ,
+Line 29 Token: ID Value: in
+Line 29 Token: ,
+Line 29 Token: ID Value: foreach
+Line 29 Token: ,
+Line 29 Token: ID Value: loop
+Line 29 Token: ,
+Line 29 Token: ID Value: elsif
+Line 29 Token: ,
+Line 29 Token: ID Value: range
+Line 29 Token: ,
+Line 29 Token: ID Value: with
+Line 29 Token: ,
+Line 29 Token: ID Value: xor
+Line 29 Token: ;
+
+==============
+==============
+./c- gcd.c-
+Line 2 Token: INT
+Line 2 Token: ID Value: gcd
+Line 2 Token: (
+Line 2 Token: INT
+Line 2 Token: ID Value: u
+Line 2 Token: ,
+Line 2 Token: ID Value: v
+Line 2 Token: )
+Line 3 Token: {
+Line 4 Token: IF
+Line 4 Token: ID Value: v
+Line 4 Token: EQ
+Line 4 Token: NUMCONST Value: 0  Input: 0
+Line 4 Token: THEN
+Line 4 Token: RETURN
+Line 4 Token: ID Value: u
+Line 4 Token: ;
+Line 5 Token: ELSE
+Line 5 Token: RETURN
+Line 5 Token: ID Value: gcd
+Line 5 Token: (
+Line 5 Token: ID Value: v
+Line 5 Token: ,
+Line 5 Token: ID Value: u
+Line 5 Token: -
+Line 5 Token: ID Value: u
+Line 5 Token: /
+Line 5 Token: ID Value: v
+Line 5 Token: *
+Line 5 Token: ID Value: v
+Line 5 Token: )
+Line 5 Token: ;
+Line 6 Token: }
+Line 8 Token: ID Value: main
+Line 8 Token: (
+Line 8 Token: )
+Line 9 Token: {
+Line 10 Token: ID Value: output
+Line 10 Token: (
+Line 10 Token: ID Value: gcd
+Line 10 Token: (
+Line 10 Token: ID Value: input
+Line 10 Token: (
+Line 10 Token: )
+Line 10 Token: ,
+Line 10 Token: ID Value: input
+Line 10 Token: (
+Line 10 Token: )
+Line 10 Token: )
+Line 10 Token: )
+Line 10 Token: ;
+Line 11 Token: ID Value: outnl
+Line 11 Token: (
+Line 11 Token: )
+Line 11 Token: ;
+Line 12 Token: }
+
+==============
+==============
+./c- htmlTest.c-
+ERROR(0): char '<' is not in the language
+ERROR(0): char '?' is not in the language
+Line 0 Token: ID Value: xml
+Line 0 Token: ID Value: version
+Line 0 Token: =
+ERROR(0): char '"' is not in the language
+Line 0 Token: NUMCONST Value: 1  Input: 1
+ERROR(0): char '.' is not in the language
+Line 0 Token: NUMCONST Value: 0  Input: 0
+ERROR(0): char '"' is not in the language
+ERROR(0): char '?' is not in the language
+ERROR(0): char '>' is not in the language
+ERROR(1): char '<' is not in the language
+ERROR(1): char '!' is not in the language
+Line 1 Token: ID Value: DOCTYPE
+Line 1 Token: ID Value: html
+Line 1 Token: ID Value: PUBLIC
+ERROR(1): char '"' is not in the language
+Line 1 Token: -
+ERROR(3): char '<' is not in the language
+Line 3 Token: ID Value: html
+Line 3 Token: ID Value: xmlns
+Line 3 Token: =
+ERROR(3): char '"' is not in the language
+Line 3 Token: ID Value: http
+ERROR(3): char ':' is not in the language
+ERROR(5): char '<' is not in the language
+Line 5 Token: ID Value: head
+ERROR(5): char '>' is not in the language
+ERROR(6): char '<' is not in the language
+Line 6 Token: ID Value: title
+ERROR(6): char '>' is not in the language
+Line 6 Token: ID Value: Quotes
+Line 6 Token: ID Value: I
+Line 6 Token: ID Value: Have
+Line 6 Token: ID Value: Enjoyed
+ERROR(6): char '<' is not in the language
+Line 6 Token: /
+Line 6 Token: ID Value: title
+ERROR(6): char '>' is not in the language
+ERROR(7): char '<' is not in the language
+Line 7 Token: ID Value: meta
+Line 7 Token: ID Value: name
+Line 7 Token: =
+ERROR(7): char '"' is not in the language
+Line 7 Token: ID Value: keywords
+ERROR(7): char '"' is not in the language
+Line 7 Token: ID Value: content
+Line 7 Token: =
+ERROR(7): char '"' is not in the language
+ERROR(7): char '"' is not in the language
+Line 7 Token: /
+ERROR(7): char '>' is not in the language
+ERROR(8): char '<' is not in the language
+Line 8 Token: ID Value: meta
+Line 8 Token: ID Value: name
+Line 8 Token: =
+ERROR(8): char '"' is not in the language
+Line 8 Token: ID Value: description
+ERROR(8): char '"' is not in the language
+Line 8 Token: ID Value: content
+Line 8 Token: =
+ERROR(8): char '"' is not in the language
+ERROR(8): char '"' is not in the language
+Line 8 Token: /
+ERROR(8): char '>' is not in the language
+ERROR(9): char '<' is not in the language
+Line 9 Token: ID Value: meta
+Line 9 Token: ID Value: http
+Line 9 Token: -
+Line 9 Token: ID Value: equiv
+Line 9 Token: =
+ERROR(9): char '"' is not in the language
+Line 9 Token: ID Value: content
+Line 9 Token: -
+Line 9 Token: ID Value: type
+ERROR(9): char '"' is not in the language
+Line 9 Token: ID Value: content
+Line 9 Token: =
+ERROR(9): char '"' is not in the language
+Line 9 Token: ID Value: text
+Line 9 Token: /
+Line 9 Token: ID Value: html
+Line 9 Token: ;
+Line 9 Token: ID Value: charset
+Line 9 Token: =
+Line 9 Token: ID Value: utf
+Line 9 Token: -
+Line 9 Token: NUMCONST Value: 8  Input: 8
+ERROR(9): char '"' is not in the language
+Line 9 Token: /
+ERROR(9): char '>' is not in the language
+ERROR(10): char '<' is not in the language
+Line 10 Token: ID Value: meta
+Line 10 Token: ID Value: http
+Line 10 Token: -
+Line 10 Token: ID Value: equiv
+Line 10 Token: =
+ERROR(10): char '"' is not in the language
+Line 10 Token: ID Value: content
+Line 10 Token: -
+Line 10 Token: ID Value: language
+ERROR(10): char '"' is not in the language
+Line 10 Token: ID Value: content
+Line 10 Token: =
+ERROR(10): char '"' is not in the language
+ERROR(10): char '"' is not in the language
+Line 10 Token: /
+ERROR(10): char '>' is not in the language
+ERROR(11): char '<' is not in the language
+Line 11 Token: ID Value: link
+Line 11 Token: ID Value: href
+Line 11 Token: =
+ERROR(11): char '"' is not in the language
+ERROR(11): char '[' is not in the language
+ERROR(11): char '[' is not in the language
+Line 11 Token: ID Value: home
+ERROR(11): char ']' is not in the language
+ERROR(11): char ']' is not in the language
+Line 11 Token: ID Value: style
+ERROR(11): char '.' is not in the language
+Line 11 Token: ID Value: css
+ERROR(11): char '"' is not in the language
+Line 11 Token: ID Value: rel
+Line 11 Token: =
+ERROR(11): char '"' is not in the language
+Line 11 Token: ID Value: stylesheet
+ERROR(11): char '"' is not in the language
+Line 11 Token: ID Value: type
+Line 11 Token: =
+ERROR(11): char '"' is not in the language
+Line 11 Token: ID Value: text
+Line 11 Token: /
+Line 11 Token: ID Value: css
+ERROR(11): char '"' is not in the language
+Line 11 Token: /
+ERROR(11): char '>' is not in the language
+ERROR(12): char '<' is not in the language
+Line 12 Token: ID Value: link
+Line 12 Token: ID Value: rel
+Line 12 Token: =
+Line 12 Token: ID Value: icon
+Line 12 Token: ID Value: type
+Line 12 Token: =
+Line 12 Token: ID Value: image
+Line 12 Token: /
+Line 12 Token: ID Value: gif
+Line 12 Token: ID Value: href
+Line 12 Token: =
+ERROR(12): char '[' is not in the language
+ERROR(12): char '[' is not in the language
+Line 12 Token: ID Value: home
+ERROR(12): char ']' is not in the language
+ERROR(12): char ']' is not in the language
+Line 12 Token: ID Value: Media
+Line 12 Token: /
+Line 12 Token: ID Value: Pics
+Line 12 Token: /
+Line 12 Token: ID Value: favicon
+ERROR(12): char '.' is not in the language
+Line 12 Token: ID Value: gif
+ERROR(12): char '>' is not in the language
+ERROR(13): char '<' is not in the language
+Line 13 Token: /
+Line 13 Token: ID Value: head
+ERROR(13): char '>' is not in the language
+ERROR(15): char '<' is not in the language
+Line 15 Token: ID Value: body
+ERROR(15): char '>' is not in the language
+ERROR(16): char '<' is not in the language
+Line 16 Token: ID Value: div
+Line 16 Token: ID Value: id
+Line 16 Token: =
+ERROR(16): char '"' is not in the language
+Line 16 Token: ID Value: page
+ERROR(16): char '"' is not in the language
+ERROR(16): char '>' is not in the language
+ERROR(17): char '<' is not in the language
+Line 17 Token: ID Value: div
+Line 17 Token: ID Value: id
+Line 17 Token: =
+ERROR(17): char '"' is not in the language
+Line 17 Token: ID Value: header
+ERROR(17): char '"' is not in the language
+ERROR(17): char '>' is not in the language
+ERROR(18): char '<' is not in the language
+Line 18 Token: ID Value: h1
+ERROR(18): char '>' is not in the language
+ERROR(18): char '<' is not in the language
+Line 18 Token: ID Value: a
+Line 18 Token: ID Value: href
+Line 18 Token: =
+ERROR(18): char '"' is not in the language
+ERROR(18): char '#' is not in the language
+ERROR(18): char '"' is not in the language
+ERROR(18): char '>' is not in the language
+Line 18 Token: ID Value: Quotes
+Line 18 Token: ID Value: I
+Line 18 Token: ID Value: Have
+Line 18 Token: ID Value: Enjoyed
+ERROR(18): char '<' is not in the language
+Line 18 Token: /
+Line 18 Token: ID Value: a
+ERROR(18): char '>' is not in the language
+ERROR(18): char '<' is not in the language
+Line 18 Token: /
+Line 18 Token: ID Value: h1
+ERROR(18): char '>' is not in the language
+
+==============
+==============
+./c- quote.c-
+Line 1 Token: ID Value: The
+Line 1 Token: ID Value: art
+Line 1 Token: ID Value: of
+Line 1 Token: ID Value: programming
+Line 1 Token: ID Value: is
+Line 1 Token: ID Value: the
+Line 1 Token: ID Value: art
+Line 1 Token: ID Value: of
+Line 1 Token: ID Value: organizing
+Line 1 Token: ID Value: complexity
+ERROR(1): char '.' is not in the language
+Line 2 Token: -
+Line 2 Token: -
+Line 2 Token: ID Value: E
+ERROR(2): char '.' is not in the language
+Line 2 Token: ID Value: W
+ERROR(2): char '.' is not in the language
+Line 2 Token: ID Value: Dijkstra
+
+==============
+==============
+./c- quoteTest.c-
+ERROR(0): char '"' is not in the language
+Line 0 Token: ID Value: dog
+ERROR(0): char '"' is not in the language
+ERROR(1): char '"' is not in the language
+ERROR(1): char '"' is not in the language
+ERROR(2): char '"' is not in the language
+ERROR(2): char '\' is not in the language
+Line 2 Token: ID Value: dog
+ERROR(2): char '"' is not in the language
+ERROR(3): char '"' is not in the language
+Line 3 Token: ID Value: dog
+ERROR(3): char '\' is not in the language
+ERROR(3): char '"' is not in the language
+Line 3 Token: ID Value: cat
+ERROR(3): char '"' is not in the language
+ERROR(4): char '"' is not in the language
+ERROR(4): char '\' is not in the language
+ERROR(4): char '"' is not in the language
+Line 4 Token: ID Value: dog
+ERROR(4): char '\' is not in the language
+ERROR(4): char '"' is not in the language
+ERROR(4): char '"' is not in the language
+ERROR(5): char '"' is not in the language
+ERROR(5): char '\' is not in the language
+ERROR(5): char '"' is not in the language
+Line 5 Token: ID Value: dog
+ERROR(5): char '\' is not in the language
+ERROR(5): char '"' is not in the language
+Line 5 Token: ID Value: cat
+ERROR(5): char '\' is not in the language
+ERROR(5): char '"' is not in the language
+ERROR(5): char '"' is not in the language
+ERROR(6): char '"' is not in the language
+ERROR(6): char '\' is not in the language
+ERROR(6): char '"' is not in the language
+Line 6 Token: ID Value: dog
+ERROR(6): char '\' is not in the language
+ERROR(6): char '"' is not in the language
+ERROR(6): char '\' is not in the language
+ERROR(6): char '"' is not in the language
+Line 6 Token: ID Value: cat
+ERROR(6): char '\' is not in the language
+ERROR(6): char '"' is not in the language
+ERROR(6): char '"' is not in the language
+ERROR(7): char '"' is not in the language
+Line 7 Token: ID Value: dog
+ERROR(7): char '\' is not in the language
+ERROR(7): char '\' is not in the language
+Line 7 Token: ID Value: cat
+ERROR(7): char '"' is not in the language
+ERROR(8): char '"' is not in the language
+ERROR(8): char '\' is not in the language
+ERROR(8): char '\' is not in the language
+Line 8 Token: ID Value: dog
+ERROR(8): char '\' is not in the language
+ERROR(8): char '\' is not in the language
+Line 8 Token: ID Value: cat
+ERROR(8): char '"' is not in the language
+ERROR(9): char '"' is not in the language
+ERROR(9): char '\' is not in the language
+ERROR(9): char '\' is not in the language
+Line 9 Token: ID Value: dog
+ERROR(9): char '\' is not in the language
+ERROR(9): char '\' is not in the language
+Line 9 Token: ID Value: cat
+ERROR(9): char '\' is not in the language
+ERROR(9): char '\' is not in the language
+ERROR(9): char '"' is not in the language
+ERROR(10): char '"' is not in the language
+Line 10 Token: ID Value: dog
+ERROR(10): char '\' is not in the language
+ERROR(10): char '\' is not in the language
+ERROR(10): char '"' is not in the language
+ERROR(11): char '"' is not in the language
+Line 11 Token: ID Value: dog
+ERROR(11): char '"' is not in the language
+ERROR(11): char '"' is not in the language
+Line 11 Token: ID Value: cat
+ERROR(11): char '"' is not in the language
+ERROR(12): char '"' is not in the language
+ERROR(12): char '\' is not in the language
+ERROR(12): char '"' is not in the language
+Line 12 Token: ID Value: dog
+ERROR(12): char '\' is not in the language
+ERROR(12): char '"' is not in the language
+ERROR(12): char '"' is not in the language
+ERROR(13): char '"' is not in the language
+ERROR(13): char '\' is not in the language
+Line 13 Token: ID Value: a
+ERROR(13): char '\' is not in the language
+Line 13 Token: ID Value: b
+ERROR(13): char '\' is not in the language
+Line 13 Token: ID Value: c
+ERROR(13): char '\' is not in the language
+ERROR(13): char '"' is not in the language
+ERROR(13): char '"' is not in the language
+ERROR(14): char ''' is not in the language
+Line 14 Token: ID Value: a
+ERROR(14): char ''' is not in the language
+ERROR(15): char ''' is not in the language
+ERROR(15): char '"' is not in the language
+ERROR(15): char ''' is not in the language
+ERROR(16): char ''' is not in the language
+ERROR(16): char '\' is not in the language
+Line 16 Token: ID Value: n
+ERROR(16): char ''' is not in the language
+ERROR(17): char ''' is not in the language
+ERROR(17): char '\' is not in the language
+ERROR(17): char '\' is not in the language
+ERROR(17): char ''' is not in the language
+ERROR(18): char ''' is not in the language
+ERROR(18): char '\' is not in the language
+ERROR(18): char ''' is not in the language
+ERROR(18): char ''' is not in the language
+ERROR(19): char ''' is not in the language
+Line 19 Token: ID Value: abc
+ERROR(19): char ''' is not in the language
+
+==============
+==============
+./c- stringTest.c-
+ERROR(0): char '"' is not in the language
+Line 0 Token: ID Value: DOUBLE
+Line 0 Token: ID Value: QUOTES
+ERROR(0): char '"' is not in the language
+ERROR(1): char '"' is not in the language
+Line 1 Token: ID Value: dog
+ERROR(1): char '"' is not in the language
+ERROR(2): char '"' is not in the language
+ERROR(2): char '"' is not in the language
+ERROR(3): char '"' is not in the language
+Line 3 Token: NUMCONST Value: 123  Input: 123
+ERROR(3): char '"' is not in the language
+ERROR(4): char '"' is not in the language
+ERROR(4): char '"' is not in the language
+ERROR(5): char '"' is not in the language
+ERROR(5): char ''' is not in the language
+ERROR(5): char '"' is not in the language
+ERROR(6): char '"' is not in the language
+ERROR(6): char '\' is not in the language
+ERROR(6): char ''' is not in the language
+ERROR(6): char '\' is not in the language
+ERROR(6): char '"' is not in the language
+ERROR(6): char '\' is not in the language
+ERROR(6): char '\' is not in the language
+ERROR(6): char '\' is not in the language
+ERROR(6): char '^' is not in the language
+ERROR(6): char '"' is not in the language
+ERROR(7): char '"' is not in the language
+ERROR(7): char '\' is not in the language
+ERROR(7): char '\' is not in the language
+ERROR(7): char '\' is not in the language
+ERROR(7): char '^' is not in the language
+ERROR(7): char '"' is not in the language
+ERROR(8): char '"' is not in the language
+ERROR(8): char '\' is not in the language
+ERROR(8): char '\' is not in the language
+ERROR(8): char '\' is not in the language
+Line 8 Token: ID Value: x
+ERROR(8): char '"' is not in the language
+ERROR(9): char '"' is not in the language
+ERROR(9): char '\' is not in the language
+ERROR(9): char '\' is not in the language
+Line 9 Token: ID Value: x
+ERROR(9): char '"' is not in the language
+ERROR(10): char '"' is not in the language
+ERROR(10): char '\' is not in the language
+Line 10 Token: ID Value: x
+ERROR(10): char '"' is not in the language
+ERROR(11): char '"' is not in the language
+Line 11 Token: ID Value: a
+ERROR(11): char '\' is not in the language
+Line 11 Token: ID Value: d
+ERROR(11): char '\' is not in the language
+Line 11 Token: ID Value: o
+ERROR(11): char '\' is not in the language
+Line 11 Token: ID Value: g
+ERROR(11): char '\' is not in the language
+ERROR(11): char ''' is not in the language
+ERROR(11): char '\' is not in the language
+ERROR(11): char '"' is not in the language
+ERROR(11): char '\' is not in the language
+ERROR(11): char '\' is not in the language
+ERROR(11): char '\' is not in the language
+ERROR(11): char '^' is not in the language
+ERROR(11): char '"' is not in the language
+ERROR(12): char '"' is not in the language
+Line 12 Token: ID Value: dog
+Line 12 Token: ID Value: cat
+ERROR(12): char '"' is not in the language
+ERROR(13): char '"' is not in the language
+Line 13 Token: ID Value: dogs
+ERROR(13): char '^' is not in the language
+Line 13 Token: ID Value: Icats
+ERROR(13): char '^' is not in the language
+Line 13 Token: ID Value: Jrats
+ERROR(13): char '"' is not in the language
+ERROR(14): char '"' is not in the language
+Line 14 Token: ID Value: dogs
+ERROR(14): char '"' is not in the language
+ERROR(14): char '"' is not in the language
+Line 14 Token: ID Value: cats
+ERROR(14): char '"' is not in the language
+ERROR(14): char '"' is not in the language
+Line 14 Token: ID Value: rats
+ERROR(14): char '"' is not in the language
+ERROR(15): char '"' is not in the language
+Line 15 Token: ID Value: dogs
+ERROR(15): char '\' is not in the language
+ERROR(15): char '"' is not in the language
+ERROR(15): char '"' is not in the language
+Line 15 Token: ID Value: cats
+ERROR(15): char '"' is not in the language
+ERROR(15): char '\' is not in the language
+ERROR(15): char '"' is not in the language
+Line 15 Token: ID Value: rats
+ERROR(15): char '"' is not in the language
+ERROR(16): char '"' is not in the language
+Line 16 Token: ID Value: SINGLE
+Line 16 Token: ID Value: QUOTES
+ERROR(16): char '"' is not in the language
+ERROR(17): char ''' is not in the language
+Line 17 Token: ID Value: d
+ERROR(17): char ''' is not in the language
+ERROR(18): char ''' is not in the language
+Line 18 Token: NUMCONST Value: 1  Input: 1
+ERROR(18): char ''' is not in the language
+ERROR(19): char ''' is not in the language
+ERROR(19): char ''' is not in the language
+ERROR(20): char ''' is not in the language
+ERROR(20): char ''' is not in the language
+ERROR(21): char ''' is not in the language
+ERROR(21): char '"' is not in the language
+ERROR(21): char ''' is not in the language
+ERROR(22): char ''' is not in the language
+ERROR(22): char '\' is not in the language
+ERROR(22): char '"' is not in the language
+ERROR(22): char ''' is not in the language
+ERROR(23): char ''' is not in the language
+ERROR(23): char '\' is not in the language
+ERROR(23): char '\' is not in the language
+ERROR(23): char ''' is not in the language
+ERROR(24): char ''' is not in the language
+ERROR(24): char '\' is not in the language
+ERROR(24): char '^' is not in the language
+ERROR(24): char ''' is not in the language
+ERROR(25): char ''' is not in the language
+ERROR(25): char '\' is not in the language
+Line 25 Token: ID Value: x
+ERROR(25): char ''' is not in the language
+ERROR(26): char ''' is not in the language
+ERROR(26): char '\' is not in the language
+ERROR(26): char '@' is not in the language
+ERROR(26): char ''' is not in the language
+ERROR(27): char ''' is not in the language
+Line 27 Token: ID Value: a
+ERROR(27): char ''' is not in the language
+ERROR(28): char ''' is not in the language
+ERROR(28): char '\' is not in the language
+Line 28 Token: ID Value: d
+ERROR(28): char ''' is not in the language
+ERROR(29): char ''' is not in the language
+ERROR(29): char '^' is not in the language
+Line 29 Token: ID Value: I
+ERROR(29): char ''' is not in the language
+ERROR(30): char ''' is not in the language
+ERROR(30): char '^' is not in the language
+Line 30 Token: ID Value: J
+ERROR(30): char ''' is not in the language
+ERROR(31): char ''' is not in the language
+ERROR(31): char '\' is not in the language
+Line 31 Token: ID Value: t
+ERROR(31): char ''' is not in the language
+ERROR(32): char ''' is not in the language
+ERROR(32): char '\' is not in the language
+Line 32 Token: ID Value: n
+ERROR(32): char ''' is not in the language
+ERROR(33): char ''' is not in the language
+ERROR(33): char '\' is not in the language
+Line 33 Token: NUMCONST Value: 0  Input: 0
+ERROR(33): char ''' is not in the language
+ERROR(34): char ''' is not in the language
+ERROR(34): char '\' is not in the language
+ERROR(34): char ''' is not in the language
+ERROR(34): char ''' is not in the language
+ERROR(35): char '"' is not in the language
+Line 35 Token: ID Value: dogs
+ERROR(35): char '"' is not in the language
+ERROR(35): char '"' is not in the language
+Line 35 Token: ID Value: and
+ERROR(35): char '"' is not in the language
+ERROR(35): char '"' is not in the language
+Line 35 Token: ID Value: cats
+ERROR(35): char '"' is not in the language
+ERROR(36): char ''' is not in the language
+Line 36 Token: ID Value: O
+ERROR(36): char ''' is not in the language
+ERROR(36): char ''' is not in the language
+Line 36 Token: ID Value: M
+ERROR(36): char ''' is not in the language
+ERROR(36): char ''' is not in the language
+Line 36 Token: ID Value: G
+ERROR(36): char ''' is not in the language
+ERROR(37): char ''' is not in the language
+Line 37 Token: ID Value: meerkats
+Line 37 Token: ID Value: are
+Line 37 Token: ID Value: great
+ERROR(37): char ''' is not in the language
+ERROR(38): char '"' is not in the language
+Line 38 Token: ID Value: THE
+Line 38 Token: ID Value: END
+ERROR(38): char '"' is not in the language
+
+==============
+==============
+./c- textTest2.c-
+Line 0 Token: ID Value: Professor
+Line 0 Token: ID Value: Farnsworth
+ERROR(0): char ':' is not in the language
+ERROR(0): char '"' is not in the language
+Line 0 Token: ID Value: Amy
+Line 0 Token: ,
+Line 0 Token: ID Value: technology
+Line 0 Token: ID Value: isn
+ERROR(0): char ''' is not in the language
+Line 0 Token: ID Value: t
+Line 0 Token: ID Value: intrinsically
+Line 0 Token: ID Value: good
+Line 0 Token: ID Value: or
+Line 0 Token: ID Value: evil
+ERROR(0): char '.' is not in the language
+Line 0 Token: ID Value: It
+ERROR(0): char ''' is not in the language
+Line 0 Token: ID Value: s
+Line 0 Token: ID Value: how
+Line 0 Token: ID Value: it
+ERROR(0): char ''' is not in the language
+Line 0 Token: ID Value: s
+Line 0 Token: ID Value: used
+ERROR(0): char '.' is not in the language
+Line 0 Token: ID Value: Like
+Line 0 Token: ID Value: the
+Line 0 Token: ID Value: Death
+Line 0 Token: ID Value: Ray
+ERROR(0): char '.' is not in the language
+ERROR(0): char '"' is not in the language
+
+==============
+==============
+./c- textTest.c-
+Line 0 Token: ID Value: Professor
+Line 0 Token: ID Value: Farnsworth
+ERROR(0): char ':' is not in the language
+ERROR(0): char '"' is not in the language
+Line 0 Token: ID Value: Amy
+Line 0 Token: ,
+Line 0 Token: ID Value: technology
+Line 0 Token: ID Value: isn
+ERROR(0): char ''' is not in the language
+Line 0 Token: ID Value: t
+Line 0 Token: ID Value: intrinsically
+Line 0 Token: ID Value: good
+Line 0 Token: ID Value: or
+Line 1 Token: ID Value: evil
+ERROR(1): char '.' is not in the language
+Line 1 Token: ID Value: It
+ERROR(1): char ''' is not in the language
+Line 1 Token: ID Value: s
+Line 1 Token: ID Value: how
+Line 1 Token: ID Value: it
+ERROR(1): char ''' is not in the language
+Line 1 Token: ID Value: s
+Line 1 Token: ID Value: used
+ERROR(1): char '.' is not in the language
+Line 1 Token: ID Value: Like
+Line 1 Token: ID Value: the
+Line 1 Token: ID Value: Death
+Line 1 Token: ID Value: Ray
+ERROR(1): char '.' is not in the language
+ERROR(1): char '"' is not in the language
+
+* End of testing
+Kill all remaining c- processes
+=================================================
+Output Comparison
+ztest zexpected differ: char 1, line 1
+
+Your output differs from the expected output.
+digits in the day and time were changed to # for comparison.
+This is a two column comparison with YOUR OUTPUT ON THE LEFT
+with the EXPECTED OUTPUT ON THE RIGHT.
+
+NOTE: In the case of stochastic algorithms like Neural Network training
+we can only expect that you will be qualitatively the same.  You
+should hand check that your output seems reasonable.
+Run Tests                                                                                                         <
+Limited to 5 seconds total run time and 3000 lines of output                                                            Limited to 5 seconds total run time and 3000 lines of output
+/home/rs-cs-heckendo/TestWorld                                                                                          /home/rs-cs-heckendo/TestWorld
+./c- < gcd.c-                                                                                                           ./c- < gcd.c-
+Line 2 Token: INT                                                                                                       Line 2 Token: INT
+Line 2 Token: ID Value: gcd                                                                                             Line 2 Token: ID Value: gcd
+Line 2 Token: (                                                                                                         Line 2 Token: (
+Line 2 Token: INT                                                                                                       Line 2 Token: INT
+Line 2 Token: ID Value: u                                                                                               Line 2 Token: ID Value: u
+Line 2 Token: ,                                                                                                         Line 2 Token: ,
+Line 2 Token: ID Value: v                                                                                               Line 2 Token: ID Value: v
+Line 2 Token: )                                                                                                         Line 2 Token: )
+Line 3 Token: {                                                                                                         Line 3 Token: {
+Line 4 Token: IF                                                                                                        Line 4 Token: IF
+Line 4 Token: ID Value: v                                                                                               Line 4 Token: ID Value: v
+Line 4 Token: EQ                                                                                                        Line 4 Token: EQ
+Line 4 Token: NUMCONST Value: 0 Input: 0                                                                                Line 4 Token: NUMCONST Value: 0 Input: 0
+Line 4 Token: THEN                                                                                                      Line 4 Token: THEN
+Line 4 Token: RETURN                                                                                                    Line 4 Token: RETURN
+Line 4 Token: ID Value: u                                                                                               Line 4 Token: ID Value: u
+Line 4 Token: ;                                                                                                         Line 4 Token: ;
+Line 5 Token: ELSE                                                                                                      Line 5 Token: ELSE
+Line 5 Token: RETURN                                                                                                    Line 5 Token: RETURN
+Line 5 Token: ID Value: gcd                                                                                             Line 5 Token: ID Value: gcd
+Line 5 Token: (                                                                                                         Line 5 Token: (
+Line 5 Token: ID Value: v                                                                                               Line 5 Token: ID Value: v
+Line 5 Token: ,                                                                                                         Line 5 Token: ,
+Line 5 Token: ID Value: u                                                                                               Line 5 Token: ID Value: u
+Line 5 Token: -                                                                                                         Line 5 Token: -
+Line 5 Token: ID Value: u                                                                                               Line 5 Token: ID Value: u
+Line 5 Token: /                                                                                                         Line 5 Token: /
+Line 5 Token: ID Value: v                                                                                               Line 5 Token: ID Value: v
+Line 5 Token: *                                                                                                         Line 5 Token: *
+Line 5 Token: ID Value: v                                                                                               Line 5 Token: ID Value: v
+Line 5 Token: )                                                                                                         Line 5 Token: )
+Line 5 Token: ;                                                                                                         Line 5 Token: ;
+Line 6 Token: }                                                                                                         Line 6 Token: }
+Line 8 Token: ID Value: main                                                                                            Line 8 Token: ID Value: main
+Line 8 Token: (                                                                                                         Line 8 Token: (
+Line 8 Token: )                                                                                                         Line 8 Token: )
+Line 9 Token: {                                                                                                         Line 9 Token: {
+Line 10 Token: ID Value: output                                                                                         Line 10 Token: ID Value: output
+Line 10 Token: (                                                                                                        Line 10 Token: (
+Line 10 Token: ID Value: gcd                                                                                            Line 10 Token: ID Value: gcd
+Line 10 Token: (                                                                                                        Line 10 Token: (
+Line 10 Token: ID Value: input                                                                                          Line 10 Token: ID Value: input
+Line 10 Token: (                                                                                                        Line 10 Token: (
+Line 10 Token: )                                                                                                        Line 10 Token: )
+Line 10 Token: ,                                                                                                        Line 10 Token: ,
+Line 10 Token: ID Value: input                                                                                          Line 10 Token: ID Value: input
+Line 10 Token: (                                                                                                        Line 10 Token: (
+Line 10 Token: )                                                                                                        Line 10 Token: )
+Line 10 Token: )                                                                                                        Line 10 Token: )
+Line 10 Token: )                                                                                                        Line 10 Token: )
+Line 10 Token: ;                                                                                                        Line 10 Token: ;
+Line 11 Token: ID Value: outnl                                                                                          Line 11 Token: ID Value: outnl
+Line 11 Token: (                                                                                                        Line 11 Token: (
+Line 11 Token: )                                                                                                        Line 11 Token: )
+Line 11 Token: ;                                                                                                        Line 11 Token: ;
+Line 12 Token: }                                                                                                        Line 12 Token: }
+
+==============                                                                                                          ==============
+==============                                                                                                          ==============
+./c- badchar.c-                                                                                                         ./c- badchar.c-
+ERROR(0): char '!' is not in the language                                                                         |     ERROR(1): Invalid or misplaced input character: '!'. Character Ignored.
+ERROR(0): char '@' is not in the language                                                                         |     ERROR(1): Invalid or misplaced input character: '@'. Character Ignored.
+ERROR(0): char '#' is not in the language                                                                         |     ERROR(1): Invalid or misplaced input character: '#'. Character Ignored.
+ERROR(0): char '$' is not in the language                                                                         |     ERROR(1): Invalid or misplaced input character: '$'. Character Ignored.
+ERROR(0): char '%' is not in the language                                                                         |     Line 1 Token: %
+ERROR(0): char '^' is not in the language                                                                         |     ERROR(1): Invalid or misplaced input character: '^'. Character Ignored.
+ERROR(0): char '&' is not in the language                                                                         |     ERROR(1): Invalid or misplaced input character: '&'. Character Ignored.
+Line 0 Token: *                                                                                                   |     Line 1 Token: *
+Line 0 Token: (                                                                                                   |     Line 1 Token: (
+Line 0 Token: )                                                                                                   |     Line 1 Token: )
+ERROR(0): char '_' is not in the language                                                                         |     ERROR(1): Invalid or misplaced input character: '_'. Character Ignored.
+Line 0 Token: +                                                                                                   |     Line 1 Token: ADDASS
+Line 0 Token: =                                                                                                   |     Line 1 Token: -
+Line 0 Token: -                                                                                                   |     Line 2 Token: {
+Line 1 Token: {                                                                                                   |     Line 2 Token: }
+Line 1 Token: }                                                                                                   |     ERROR(2): Invalid or misplaced input character: '|'. Character Ignored.
+ERROR(1): char '|' is not in the language                                                                         |     Line 2 Token: [
+ERROR(1): char '[' is not in the language                                                                         |     Line 2 Token: ]
+ERROR(1): char ']' is not in the language                                                                         |     ERROR(2): Invalid or misplaced input character: '\'. Character Ignored.
+ERROR(1): char '\' is not in the language                                                                         |     Line 2 Token: :
+ERROR(1): char ':' is not in the language                                                                         |     Line 2 Token: ;
+Line 1 Token: ;                                                                                                   |     Line 2 Token: <
+ERROR(1): char '<' is not in the language                                                                         |     Line 2 Token: >
+ERROR(1): char '>' is not in the language                                                                         |     Line 2 Token: ?
+ERROR(1): char '?' is not in the language                                                                         |     Line 2 Token: ,
+Line 1 Token: ,                                                                                                   |     ERROR(2): Invalid or misplaced input character: '.'. Character Ignored.
+ERROR(1): char '.' is not in the language                                                                         |     Line 2 Token: /
+Line 1 Token: /                                                                                                   |     ERROR(2): Invalid or misplaced input character: '~'. Character Ignored.
+ERROR(1): char '~' is not in the language                                                                         <
+
+==============                                                                                                          ==============
+==============                                                                                                          ==============
+./c- cprogram.c-                                                                                                        ./c- cprogram.c-
+ERROR(0): char '#' is not in the language                                                                         |     ERROR(1): Invalid or misplaced input character: '#'. Character Ignored.
+Line 0 Token: ID Value: include                                                                                   <
+ERROR(0): char '<' is not in the language                                                                         <
+Line 0 Token: ID Value: stdio                                                                                     <
+ERROR(0): char '.' is not in the language                                                                         <
+Line 0 Token: ID Value: h                                                                                         <
+ERROR(0): char '>' is not in the language                                                                         <
+ERROR(1): char '#' is not in the language                                                                         <
+Line 1 Token: ID Value: include                                                                                         Line 1 Token: ID Value: include
+ERROR(1): char '<' is not in the language                                                                         |     Line 1 Token: <
+Line 1 Token: ID Value: stdlib                                                                                    |     Line 1 Token: ID Value: stdio
+ERROR(1): char '.' is not in the language                                                                         |     ERROR(1): Invalid or misplaced input character: '.'. Character Ignored.
+Line 1 Token: ID Value: h                                                                                               Line 1 Token: ID Value: h
+ERROR(1): char '>' is not in the language                                                                         |     Line 1 Token: >
+Line 3 Token: INT                                                                                                 |     ERROR(2): Invalid or misplaced input character: '#'. Character Ignored.
+Line 3 Token: ID Value: main                                                                                      |     Line 2 Token: ID Value: include
+Line 3 Token: (                                                                                                   |     Line 2 Token: <
+Line 3 Token: )                                                                                                   |     Line 2 Token: ID Value: stdlib
+Line 4 Token: {                                                                                                   |     ERROR(2): Invalid or misplaced input character: '.'. Character Ignored.
+Line 5 Token: INT                                                                                                 |     Line 2 Token: ID Value: h
+Line 5 Token: ID Value: x                                                                                         |     Line 2 Token: >
+Line 5 Token: =                                                                                                   |     Line 4 Token: INT
+Line 5 Token: NUMCONST Value: 666 Input: 666                                                                      |     Line 4 Token: ID Value: main
+Line 5 Token: ;                                                                                                   |     Line 4 Token: (
+Line 7 Token: IF                                                                                                  |     Line 4 Token: )
+Line 7 Token: (                                                                                                   |     Line 5 Token: {
+Line 7 Token: ID Value: x                                                                                         |     Line 6 Token: INT
+Line 7 Token: EQ                                                                                                  |     Line 6 Token: ID Value: x
+Line 7 Token: NUMCONST Value: 666 Input: 666                                                                      |     Line 6 Token: =
+Line 7 Token: )                                                                                                   |     Line 6 Token: NUMCONST Value: 666 Input: 666
+Line 7 Token: ID Value: printf                                                                                    |     Line 6 Token: ;
+Line 7 Token: (                                                                                                   |     Line 8 Token: IF
+ERROR(7): char '"' is not in the language                                                                         |     Line 8 Token: (
+Line 7 Token: ID Value: hog                                                                                       |     Line 8 Token: ID Value: x
+ERROR(7): char '\' is not in the language                                                                         |     Line 8 Token: EQ
+ERROR(7): char '\' is not in the language                                                                         |     Line 8 Token: NUMCONST Value: 666 Input: 666
+ERROR(7): char '"' is not in the language                                                                         |     Line 8 Token: )
+Line 7 Token: )                                                                                                   <
+Line 7 Token: ;                                                                                                   <
+Line 8 Token: ID Value: printf                                                                                          Line 8 Token: ID Value: printf
+Line 8 Token: (                                                                                                         Line 8 Token: (
+ERROR(8): char '"' is not in the language                                                                         |     Line 8 Token: STRINGCONST Value: "hog\" Len: 4 Input: "hog\\"
+ERROR(8): char '\' is not in the language                                                                         <
+Line 8 Token: ID Value: n                                                                                         <
+ERROR(8): char '"' is not in the language                                                                         <
+Line 8 Token: )                                                                                                         Line 8 Token: )
+Line 8 Token: ;                                                                                                         Line 8 Token: ;
+Line 9 Token: RETURN                                                                                              |     Line 9 Token: ID Value: printf
+Line 9 Token: NUMCONST Value: 0 Input: 0                                                                          |     Line 9 Token: (
+                                                                                                                  >     Line 9 Token: STRINGCONST Value: "
+                                                                                                                  >     " Len: 1 Input: "\n"
+                                                                                                                  >     Line 9 Token: )
+Line 9 Token: ;                                                                                                         Line 9 Token: ;
+Line 10 Token: }                                                                                                  |     Line 10 Token: RETURN
+                                                                                                                  >     Line 10 Token: NUMCONST Value: 0 Input: 0
+                                                                                                                  >     Line 10 Token: ;
+                                                                                                                  >     Line 11 Token: }
+
+==============                                                                                                          ==============
+==============                                                                                                          ==============
+./c- f22.c-                                                                                                             ./c- f22.c-
+Line 2 Token: ID Value: bool                                                                                      |     Line 2 Token: BOOL
+Line 2 Token: ID Value: gb                                                                                              Line 2 Token: ID Value: gb
+Line 2 Token: ;                                                                                                         Line 2 Token: ;
+Line 3 Token: ID Value: char                                                                                      |     Line 3 Token: CHAR
+Line 3 Token: ID Value: gc                                                                                              Line 3 Token: ID Value: gc
+Line 3 Token: ;                                                                                                         Line 3 Token: ;
+Line 4 Token: INT                                                                                                       Line 4 Token: INT
+Line 4 Token: ID Value: gi                                                                                              Line 4 Token: ID Value: gi
+Line 4 Token: ;                                                                                                         Line 4 Token: ;
+Line 7 Token: INT                                                                                                       Line 7 Token: INT
+Line 7 Token: ID Value: main                                                                                            Line 7 Token: ID Value: main
+Line 7 Token: (                                                                                                         Line 7 Token: (
+Line 7 Token: )                                                                                                         Line 7 Token: )
+Line 8 Token: {                                                                                                         Line 8 Token: {
+Line 9 Token: ID Value: bool                                                                                      |     Line 9 Token: BOOL
+Line 9 Token: ID Value: b                                                                                               Line 9 Token: ID Value: b
+Line 9 Token: ;                                                                                                         Line 9 Token: ;
+Line 10 Token: ID Value: char                                                                                     |     Line 10 Token: CHAR
+Line 10 Token: ID Value: c                                                                                              Line 10 Token: ID Value: c
+Line 10 Token: ;                                                                                                        Line 10 Token: ;
+Line 11 Token: INT                                                                                                      Line 11 Token: INT
+Line 11 Token: ID Value: i                                                                                              Line 11 Token: ID Value: i
+Line 11 Token: ,                                                                                                        Line 11 Token: ,
+Line 11 Token: ID Value: shuri                                                                                          Line 11 Token: ID Value: shuri
+Line 11 Token: ,                                                                                                        Line 11 Token: ,
+Line 11 Token: ID Value: tchalla                                                                                        Line 11 Token: ID Value: tchalla
+Line 11 Token: ,                                                                                                        Line 11 Token: ,
+Line 11 Token: ID Value: X23                                                                                            Line 11 Token: ID Value: X23
+Line 11 Token: ;                                                                                                        Line 11 Token: ;
+Line 12 Token: ID Value: static                                                                                   |     Line 12 Token: STATIC
+Line 12 Token: ID Value: bool                                                                                     |     Line 12 Token: BOOL
+Line 12 Token: ID Value: sb                                                                                             Line 12 Token: ID Value: sb
+ERROR(12): char ':' is not in the language                                                                        |     Line 12 Token: :
+Line 12 Token: NUMCONST Value: 44 Input: 44                                                                             Line 12 Token: NUMCONST Value: 44 Input: 44
+ERROR(12): char '>' is not in the language                                                                        |     Line 12 Token: >
+Line 12 Token: NUMCONST Value: 22 Input: 22                                                                             Line 12 Token: NUMCONST Value: 22 Input: 22
+Line 12 Token: ;                                                                                                        Line 12 Token: ;
+Line 13 Token: ID Value: static                                                                                   |     Line 13 Token: STATIC
+Line 13 Token: ID Value: char                                                                                     |     Line 13 Token: CHAR
+Line 13 Token: ID Value: sc                                                                                             Line 13 Token: ID Value: sc
+ERROR(13): char ':' is not in the language                                                                        |     Line 13 Token: :
+ERROR(13): char ''' is not in the language                                                                        |     Line 13 Token: CHARCONST Value: 'x' Input: 'x'
+Line 13 Token: ID Value: x                                                                                        <
+ERROR(13): char ''' is not in the language                                                                        <
+Line 13 Token: ;                                                                                                        Line 13 Token: ;
+Line 14 Token: ID Value: static                                                                                   |     Line 14 Token: STATIC
+Line 14 Token: INT                                                                                                      Line 14 Token: INT
+Line 14 Token: ID Value: si                                                                                             Line 14 Token: ID Value: si
+ERROR(14): char ':' is not in the language                                                                        |     Line 14 Token: :
+Line 14 Token: NUMCONST Value: 676 Input: 676                                                                           Line 14 Token: NUMCONST Value: 676 Input: 676
+Line 14 Token: ;                                                                                                        Line 14 Token: ;
+Line 15 Token: ID Value: bool                                                                                     |     Line 15 Token: BOOL
+Line 15 Token: ID Value: ba                                                                                             Line 15 Token: ID Value: ba
+ERROR(15): char '[' is not in the language                                                                        |     Line 15 Token: [
+Line 15 Token: NUMCONST Value: 6 Input: 6                                                                               Line 15 Token: NUMCONST Value: 6 Input: 6
+ERROR(15): char ']' is not in the language                                                                        |     Line 15 Token: ]
+ERROR(15): char ':' is not in the language                                                                        |     Line 15 Token: :
+Line 15 Token: NUMCONST Value: 89 Input: 89                                                                             Line 15 Token: NUMCONST Value: 89 Input: 89
+ERROR(15): char '<' is not in the language                                                                        |     Line 15 Token: <
+Line 15 Token: NUMCONST Value: 34 Input: 34                                                                             Line 15 Token: NUMCONST Value: 34 Input: 34
+Line 15 Token: ;                                                                                                        Line 15 Token: ;
+Line 16 Token: ID Value: char                                                                                     |     Line 16 Token: CHAR
+Line 16 Token: ID Value: ca                                                                                             Line 16 Token: ID Value: ca
+ERROR(16): char '[' is not in the language                                                                        |     Line 16 Token: [
+Line 16 Token: NUMCONST Value: 6 Input: 6                                                                               Line 16 Token: NUMCONST Value: 6 Input: 6
+ERROR(16): char ']' is not in the language                                                                        |     Line 16 Token: ]
+ERROR(16): char ':' is not in the language                                                                        |     Line 16 Token: :
+ERROR(16): char '"' is not in the language                                                                        |     Line 16 Token: STRINGCONST Value: "vibranium" Len: 9 Input: "vibranium"
+Line 16 Token: ID Value: vibranium                                                                                <
+ERROR(16): char '"' is not in the language                                                                        <
+Line 16 Token: ;                                                                                                        Line 16 Token: ;
+Line 17 Token: INT                                                                                                      Line 17 Token: INT
+Line 17 Token: ID Value: ia                                                                                             Line 17 Token: ID Value: ia
+ERROR(17): char '[' is not in the language                                                                        |     Line 17 Token: [
+Line 17 Token: NUMCONST Value: 6 Input: 6                                                                               Line 17 Token: NUMCONST Value: 6 Input: 6
+ERROR(17): char ']' is not in the language                                                                        |     Line 17 Token: ]
+Line 17 Token: ;                                                                                                        Line 17 Token: ;
+Line 21 Token: ID Value: b                                                                                        |     Line 20 Token: ID Value: b
+                                                                                                                  >     Line 20 Token: =
+                                                                                                                  >     Line 20 Token: ID Value: b
+                                                                                                                  >     Line 20 Token: AND
+                                                                                                                  >     Line 20 Token: ID Value: b
+                                                                                                                  >     Line 20 Token: OR
+                                                                                                                  >     Line 20 Token: BOOLCONST Value: 1 Input: true
+                                                                                                                  >     Line 20 Token: AND
+                                                                                                                  >     Line 20 Token: NOT
+                                                                                                                  >     Line 20 Token: BOOLCONST Value: 0 Input: false
+                                                                                                                  >     Line 20 Token: ;
+                                                                                                                  >     Line 21 Token: FOR
+                                                                                                                  >     Line 21 Token: ID Value: wakanda
+Line 21 Token: =                                                                                                        Line 21 Token: =
+Line 21 Token: ID Value: b                                                                                        |     Line 21 Token: ID Value: ia
+Line 21 Token: ID Value: and                                                                                      |     Line 21 Token: TO
+Line 21 Token: ID Value: b                                                                                        |     Line 21 Token: NUMCONST Value: 666 Input: 666
+Line 21 Token: ID Value: or                                                                                       |     Line 21 Token: BY
+Line 21 Token: ID Value: true                                                                                     |     Line 21 Token: NUMCONST Value: 42 Input: 42
+Line 21 Token: ID Value: and                                                                                      |     Line 21 Token: DO
+Line 21 Token: ID Value: not                                                                                      |     Line 21 Token: {
+Line 21 Token: ID Value: false                                                                                    |     Line 21 Token: IF
+                                                                                                                  >     Line 21 Token: ID Value: wakanda
+                                                                                                                  >     Line 21 Token: EQ
+                                                                                                                  >     Line 21 Token: NUMCONST Value: 42 Input: 42
+                                                                                                                  >     Line 21 Token: THEN
+                                                                                                                  >     Line 21 Token: BREAK
+Line 21 Token: ;                                                                                                        Line 21 Token: ;
+Line 22 Token: ID Value: for                                                                                      |     Line 21 Token: ELSE
+Line 22 Token: ID Value: wakanda                                                                                  |     Line 21 Token: ID Value: i
+Line 22 Token: =                                                                                                  |     Line 21 Token: INC
+Line 22 Token: ID Value: ia                                                                                       |     Line 21 Token: ;
+Line 22 Token: ID Value: to                                                                                       |     Line 21 Token: }
+Line 22 Token: NUMCONST Value: 666 Input: 666                                                                     <
+Line 22 Token: ID Value: by                                                                                       <
+Line 22 Token: NUMCONST Value: 42 Input: 42                                                                       <
+Line 22 Token: ID Value: do                                                                                       <
+Line 22 Token: {                                                                                                  <
+Line 22 Token: IF                                                                                                 <
+Line 22 Token: ID Value: wakanda                                                                                  <
+Line 22 Token: EQ                                                                                                 <
+Line 22 Token: NUMCONST Value: 42 Input: 42                                                                       <
+Line 22 Token: THEN                                                                                               <
+Line 22 Token: ID Value: break                                                                                    <
+Line 22 Token: ;                                                                                                  <
+Line 22 Token: ELSE                                                                                               <
+Line 22 Token: ID Value: i                                                                                              Line 22 Token: ID Value: i
+                                                                                                                  >     Line 22 Token: =
+                                                                                                                  >     Line 22 Token: NUMCONST Value: 3 Input: 3
+                                                                                                                  >     Line 22 Token: *
+                                                                                                                  >     Line 22 Token: *
+                                                                                                                  >     Line 22 Token: ID Value: ca
+Line 22 Token: +                                                                                                        Line 22 Token: +
+                                                                                                                  >     Line 22 Token: NUMCONST Value: 56 Input: 56
+                                                                                                                  >     Line 22 Token: %
+                                                                                                                  >     Line 22 Token: ID Value: i
+                                                                                                                  >     Line 22 Token: /
+                                                                                                                  >     Line 22 Token: NUMCONST Value: 3 Input: 3
+                                                                                                                  >     Line 22 Token: -
+                                                                                                                  >     Line 22 Token: ?
+                                                                                                                  >     Line 22 Token: NUMCONST Value: 6 Input: 6
+Line 22 Token: +                                                                                                        Line 22 Token: +
+                                                                                                                  >     Line 22 Token: ?
+                                                                                                                  >     Line 22 Token: ID Value: ia
+                                                                                                                  >     Line 22 Token: DEC
+                                                                                                                  >     Line 22 Token: ID Value: si
+Line 22 Token: ;                                                                                                        Line 22 Token: ;
+Line 22 Token: }                                                                                                  |     Line 23 Token: WHILE
+Line 23 Token: ID Value: i                                                                                        |     Line 23 Token: ID Value: shuri
+Line 23 Token: =                                                                                                  |     Line 23 Token: GEQ
+Line 23 Token: NUMCONST Value: 3 Input: 3                                                                         |     Line 23 Token: NUMCONST Value: 10 Input: 10
+Line 23 Token: *                                                                                                  |     Line 23 Token: AND
+Line 23 Token: *                                                                                                  <
+Line 23 Token: ID Value: ca                                                                                       <
+Line 23 Token: +                                                                                                  <
+Line 23 Token: NUMCONST Value: 56 Input: 56                                                                       <
+ERROR(23): char '%' is not in the language                                                                        <
+Line 23 Token: ID Value: i                                                                                              Line 23 Token: ID Value: i
+Line 23 Token: /                                                                                                  |     Line 23 Token: LEQ
+                                                                                                                  >     Line 23 Token: NUMCONST Value: 2 Input: 2
+                                                                                                                  >     Line 23 Token: AND
+                                                                                                                  >     Line 23 Token: ID Value: c
+                                                                                                                  >     Line 23 Token: EQ
+                                                                                                                  >     Line 23 Token: CHARCONST Value: 'z' Input: 'z'
+                                                                                                                  >     Line 23 Token: OR
+                                                                                                                  >     Line 23 Token: ID Value: ba
+                                                                                                                  >     Line 23 Token: [
+Line 23 Token: NUMCONST Value: 3 Input: 3                                                                               Line 23 Token: NUMCONST Value: 3 Input: 3
+Line 23 Token: -                                                                                                  |     Line 23 Token: ]
+ERROR(23): char '?' is not in the language                                                                        |     Line 23 Token: NEQ
+Line 23 Token: NUMCONST Value: 6 Input: 6                                                                         |     Line 23 Token: BOOLCONST Value: 1 Input: true
+Line 23 Token: +                                                                                                  |     Line 23 Token: DO
+ERROR(23): char '?' is not in the language                                                                        |     Line 23 Token: ID Value: shuri
+Line 23 Token: ID Value: ia                                                                                       |     Line 23 Token: DEC
+Line 23 Token: -                                                                                                  <
+Line 23 Token: -                                                                                                  <
+Line 23 Token: ID Value: si                                                                                       <
+Line 23 Token: ;                                                                                                        Line 23 Token: ;
+Line 24 Token: ID Value: while                                                                                    |     Line 25 Token: RETURN
+Line 24 Token: ID Value: shuri                                                                                    |     Line 25 Token: NUMCONST Value: 1284 Input: 1284
+ERROR(24): char '>' is not in the language                                                                        |     Line 25 Token: ;
+Line 24 Token: =                                                                                                  |     Line 26 Token: }
+Line 24 Token: NUMCONST Value: 10 Input: 10                                                                       |     Line 28 Token: INT
+Line 24 Token: ID Value: and                                                                                      |     Line 28 Token: ID Value: forever
+Line 24 Token: ID Value: i                                                                                        |     Line 28 Token: ,
+ERROR(24): char '<' is not in the language                                                                        |     Line 28 Token: ID Value: in
+Line 24 Token: =                                                                                                  |     Line 28 Token: ,
+Line 24 Token: NUMCONST Value: 2 Input: 2                                                                         |     Line 28 Token: ID Value: foreach
+Line 24 Token: ID Value: and                                                                                      |     Line 28 Token: ,
+Line 24 Token: ID Value: c                                                                                        |     Line 28 Token: ID Value: loop
+Line 24 Token: EQ                                                                                                 |     Line 28 Token: ,
+ERROR(24): char ''' is not in the language                                                                        |     Line 28 Token: ID Value: elsif
+Line 24 Token: ID Value: z                                                                                        |     Line 28 Token: ,
+ERROR(24): char ''' is not in the language                                                                        |     Line 28 Token: ID Value: range
+Line 24 Token: ID Value: or                                                                                       |     Line 28 Token: ,
+Line 24 Token: ID Value: ba                                                                                       |     Line 28 Token: ID Value: with
+ERROR(24): char '[' is not in the language                                                                        |     Line 28 Token: ,
+Line 24 Token: NUMCONST Value: 3 Input: 3                                                                         |     Line 28 Token: ID Value: xor
+ERROR(24): char ']' is not in the language                                                                        |     Line 28 Token: ;
+ERROR(24): char '!' is not in the language                                                                        <
+Line 24 Token: =                                                                                                  <
+Line 24 Token: ID Value: true                                                                                     <
+Line 24 Token: ID Value: do                                                                                       <
+Line 24 Token: ID Value: shuri                                                                                    <
+Line 24 Token: -                                                                                                  <
+Line 24 Token: -                                                                                                  <
+Line 24 Token: ;                                                                                                  <
+Line 26 Token: RETURN                                                                                             <
+Line 26 Token: NUMCONST Value: 1284 Input: 1284                                                                   <
+Line 26 Token: ;                                                                                                  <
+Line 27 Token: }                                                                                                  <
+Line 29 Token: INT                                                                                                <
+Line 29 Token: ID Value: forever                                                                                  <
+Line 29 Token: ,                                                                                                  <
+Line 29 Token: ID Value: in                                                                                       <
+Line 29 Token: ,                                                                                                  <
+Line 29 Token: ID Value: foreach                                                                                  <
+Line 29 Token: ,                                                                                                  <
+Line 29 Token: ID Value: loop                                                                                     <
+Line 29 Token: ,                                                                                                  <
+Line 29 Token: ID Value: elsif                                                                                    <
+Line 29 Token: ,                                                                                                  <
+Line 29 Token: ID Value: range                                                                                    <
+Line 29 Token: ,                                                                                                  <
+Line 29 Token: ID Value: with                                                                                     <
+Line 29 Token: ,                                                                                                  <
+Line 29 Token: ID Value: xor                                                                                      <
+Line 29 Token: ;                                                                                                  <
+
+==============                                                                                                          ==============
+==============                                                                                                          ==============
+./c- gcd.c-                                                                                                             ./c- gcd.c-
+Line 2 Token: INT                                                                                                       Line 2 Token: INT
+Line 2 Token: ID Value: gcd                                                                                             Line 2 Token: ID Value: gcd
+Line 2 Token: (                                                                                                         Line 2 Token: (
+Line 2 Token: INT                                                                                                       Line 2 Token: INT
+Line 2 Token: ID Value: u                                                                                               Line 2 Token: ID Value: u
+Line 2 Token: ,                                                                                                         Line 2 Token: ,
+Line 2 Token: ID Value: v                                                                                               Line 2 Token: ID Value: v
+Line 2 Token: )                                                                                                         Line 2 Token: )
+Line 3 Token: {                                                                                                         Line 3 Token: {
+Line 4 Token: IF                                                                                                        Line 4 Token: IF
+Line 4 Token: ID Value: v                                                                                               Line 4 Token: ID Value: v
+Line 4 Token: EQ                                                                                                        Line 4 Token: EQ
+Line 4 Token: NUMCONST Value: 0 Input: 0                                                                                Line 4 Token: NUMCONST Value: 0 Input: 0
+Line 4 Token: THEN                                                                                                      Line 4 Token: THEN
+Line 4 Token: RETURN                                                                                                    Line 4 Token: RETURN
+Line 4 Token: ID Value: u                                                                                               Line 4 Token: ID Value: u
+Line 4 Token: ;                                                                                                         Line 4 Token: ;
+Line 5 Token: ELSE                                                                                                      Line 5 Token: ELSE
+Line 5 Token: RETURN                                                                                                    Line 5 Token: RETURN
+Line 5 Token: ID Value: gcd                                                                                             Line 5 Token: ID Value: gcd
+Line 5 Token: (                                                                                                         Line 5 Token: (
+Line 5 Token: ID Value: v                                                                                               Line 5 Token: ID Value: v
+Line 5 Token: ,                                                                                                         Line 5 Token: ,
+Line 5 Token: ID Value: u                                                                                               Line 5 Token: ID Value: u
+Line 5 Token: -                                                                                                         Line 5 Token: -
+Line 5 Token: ID Value: u                                                                                               Line 5 Token: ID Value: u
+Line 5 Token: /                                                                                                         Line 5 Token: /
+Line 5 Token: ID Value: v                                                                                               Line 5 Token: ID Value: v
+Line 5 Token: *                                                                                                         Line 5 Token: *
+Line 5 Token: ID Value: v                                                                                               Line 5 Token: ID Value: v
+Line 5 Token: )                                                                                                         Line 5 Token: )
+Line 5 Token: ;                                                                                                         Line 5 Token: ;
+Line 6 Token: }                                                                                                         Line 6 Token: }
+Line 8 Token: ID Value: main                                                                                            Line 8 Token: ID Value: main
+Line 8 Token: (                                                                                                         Line 8 Token: (
+Line 8 Token: )                                                                                                         Line 8 Token: )
+Line 9 Token: {                                                                                                         Line 9 Token: {
+Line 10 Token: ID Value: output                                                                                         Line 10 Token: ID Value: output
+Line 10 Token: (                                                                                                        Line 10 Token: (
+Line 10 Token: ID Value: gcd                                                                                            Line 10 Token: ID Value: gcd
+Line 10 Token: (                                                                                                        Line 10 Token: (
+Line 10 Token: ID Value: input                                                                                          Line 10 Token: ID Value: input
+Line 10 Token: (                                                                                                        Line 10 Token: (
+Line 10 Token: )                                                                                                        Line 10 Token: )
+Line 10 Token: ,                                                                                                        Line 10 Token: ,
+Line 10 Token: ID Value: input                                                                                          Line 10 Token: ID Value: input
+Line 10 Token: (                                                                                                        Line 10 Token: (
+Line 10 Token: )                                                                                                        Line 10 Token: )
+Line 10 Token: )                                                                                                        Line 10 Token: )
+Line 10 Token: )                                                                                                        Line 10 Token: )
+Line 10 Token: ;                                                                                                        Line 10 Token: ;
+Line 11 Token: ID Value: outnl                                                                                          Line 11 Token: ID Value: outnl
+Line 11 Token: (                                                                                                        Line 11 Token: (
+Line 11 Token: )                                                                                                        Line 11 Token: )
+Line 11 Token: ;                                                                                                        Line 11 Token: ;
+Line 12 Token: }                                                                                                        Line 12 Token: }
+
+==============                                                                                                          ==============
+==============                                                                                                          ==============
+./c- htmlTest.c-                                                                                                        ./c- htmlTest.c-
+ERROR(0): char '<' is not in the language                                                                         |     Line 1 Token: <
+ERROR(0): char '?' is not in the language                                                                         |     Line 1 Token: ?
+Line 0 Token: ID Value: xml                                                                                       |     Line 1 Token: ID Value: xml
+Line 0 Token: ID Value: version                                                                                   |     Line 1 Token: ID Value: version
+Line 0 Token: =                                                                                                   |     Line 1 Token: =
+ERROR(0): char '"' is not in the language                                                                         |     Line 1 Token: STRINGCONST Value: "1.0" Len: 3 Input: "1.0"
+Line 0 Token: NUMCONST Value: 1 Input: 1                                                                          |     Line 1 Token: ?
+ERROR(0): char '.' is not in the language                                                                         |     Line 1 Token: >
+Line 0 Token: NUMCONST Value: 0 Input: 0                                                                          |     Line 2 Token: <
+ERROR(0): char '"' is not in the language                                                                         |     ERROR(2): Invalid or misplaced input character: '!'. Character Ignored.
+ERROR(0): char '?' is not in the language                                                                         |     Line 2 Token: ID Value: DOCTYPE
+ERROR(0): char '>' is not in the language                                                                         |     Line 2 Token: ID Value: html
+ERROR(1): char '<' is not in the language                                                                         |     Line 2 Token: ID Value: PUBLIC
+ERROR(1): char '!' is not in the language                                                                         |     Line 2 Token: STRINGCONST Value: "-//W3C//DTD XHTML 1.0 Transitional//EN" Len: 38 Input: "-//W3C//DTD XHTML 1.
+Line 1 Token: ID Value: DOCTYPE                                                                                   |     Line 2 Token: STRINGCONST Value: "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" Len: 55 Input: "htt
+Line 1 Token: ID Value: html                                                                                      |     Line 2 Token: >
+Line 1 Token: ID Value: PUBLIC                                                                                    |     Line 3 Token: <
+ERROR(1): char '"' is not in the language                                                                         <
+Line 1 Token: -                                                                                                   <
+ERROR(3): char '<' is not in the language                                                                         <
+Line 3 Token: ID Value: html                                                                                            Line 3 Token: ID Value: html
+Line 3 Token: ID Value: xmlns                                                                                           Line 3 Token: ID Value: xmlns
+Line 3 Token: =                                                                                                         Line 3 Token: =
+ERROR(3): char '"' is not in the language                                                                         |     Line 3 Token: STRINGCONST Value: "http://www.w3.org/1999/xhtml" Len: 28 Input: "http://www.w3.org/1999/xhtml"
+Line 3 Token: ID Value: http                                                                                      |     Line 3 Token: >
+ERROR(3): char ':' is not in the language                                                                         |     Line 4 Token: <
+ERROR(5): char '<' is not in the language                                                                         |     Line 4 Token: ID Value: head
+Line 5 Token: ID Value: head                                                                                      |     Line 4 Token: >
+ERROR(5): char '>' is not in the language                                                                         |     Line 5 Token: <
+ERROR(6): char '<' is not in the language                                                                         |     Line 5 Token: ID Value: title
+Line 6 Token: ID Value: title                                                                                     |     Line 5 Token: >
+ERROR(6): char '>' is not in the language                                                                         |     Line 5 Token: ID Value: Quotes
+Line 6 Token: ID Value: Quotes                                                                                    |     Line 5 Token: ID Value: I
+Line 6 Token: ID Value: I                                                                                         |     Line 5 Token: ID Value: Have
+Line 6 Token: ID Value: Have                                                                                      |     Line 5 Token: ID Value: Enjoyed
+Line 6 Token: ID Value: Enjoyed                                                                                   |     Line 5 Token: <
+ERROR(6): char '<' is not in the language                                                                         |     Line 5 Token: /
+                                                                                                                  >     Line 5 Token: ID Value: title
+                                                                                                                  >     Line 5 Token: >
+                                                                                                                  >     Line 6 Token: <
+                                                                                                                  >     Line 6 Token: ID Value: meta
+                                                                                                                  >     Line 6 Token: ID Value: name
+                                                                                                                  >     Line 6 Token: =
+                                                                                                                  >     Line 6 Token: STRINGCONST Value: "keywords" Len: 8 Input: "keywords"
+                                                                                                                  >     Line 6 Token: ID Value: content
+                                                                                                                  >     Line 6 Token: =
+                                                                                                                  >     Line 6 Token: STRINGCONST Value: "" Len: 0 Input: ""
+Line 6 Token: /                                                                                                         Line 6 Token: /
+Line 6 Token: ID Value: title                                                                                     |     Line 6 Token: >
+ERROR(6): char '>' is not in the language                                                                         |     Line 7 Token: <
+ERROR(7): char '<' is not in the language                                                                         <
+Line 7 Token: ID Value: meta                                                                                            Line 7 Token: ID Value: meta
+Line 7 Token: ID Value: name                                                                                            Line 7 Token: ID Value: name
+Line 7 Token: =                                                                                                         Line 7 Token: =
+ERROR(7): char '"' is not in the language                                                                         |     Line 7 Token: STRINGCONST Value: "description" Len: 11 Input: "description"
+Line 7 Token: ID Value: keywords                                                                                  <
+ERROR(7): char '"' is not in the language                                                                         <
+Line 7 Token: ID Value: content                                                                                         Line 7 Token: ID Value: content
+Line 7 Token: =                                                                                                         Line 7 Token: =
+ERROR(7): char '"' is not in the language                                                                         |     Line 7 Token: STRINGCONST Value: "" Len: 0 Input: ""
+ERROR(7): char '"' is not in the language                                                                         <
+Line 7 Token: /                                                                                                         Line 7 Token: /
+ERROR(7): char '>' is not in the language                                                                         |     Line 7 Token: >
+ERROR(8): char '<' is not in the language                                                                         |     Line 8 Token: <
+Line 8 Token: ID Value: meta                                                                                            Line 8 Token: ID Value: meta
+Line 8 Token: ID Value: name                                                                                      |     Line 8 Token: ID Value: http
+                                                                                                                  >     Line 8 Token: -
+                                                                                                                  >     Line 8 Token: ID Value: equiv
+Line 8 Token: =                                                                                                         Line 8 Token: =
+ERROR(8): char '"' is not in the language                                                                         |     Line 8 Token: STRINGCONST Value: "content-type" Len: 12 Input: "content-type"
+Line 8 Token: ID Value: description                                                                               <
+ERROR(8): char '"' is not in the language                                                                         <
+Line 8 Token: ID Value: content                                                                                         Line 8 Token: ID Value: content
+Line 8 Token: =                                                                                                         Line 8 Token: =
+ERROR(8): char '"' is not in the language                                                                         |     Line 8 Token: STRINGCONST Value: "text/html; charset=utf-8" Len: 24 Input: "text/html; charset=utf-8"
+ERROR(8): char '"' is not in the language                                                                         <
+Line 8 Token: /                                                                                                         Line 8 Token: /
+ERROR(8): char '>' is not in the language                                                                         |     Line 8 Token: >
+ERROR(9): char '<' is not in the language                                                                         |     Line 9 Token: <
+Line 9 Token: ID Value: meta                                                                                            Line 9 Token: ID Value: meta
+Line 9 Token: ID Value: http                                                                                            Line 9 Token: ID Value: http
+Line 9 Token: -                                                                                                         Line 9 Token: -
+Line 9 Token: ID Value: equiv                                                                                           Line 9 Token: ID Value: equiv
+Line 9 Token: =                                                                                                         Line 9 Token: =
+ERROR(9): char '"' is not in the language                                                                         |     Line 9 Token: STRINGCONST Value: "content-language" Len: 16 Input: "content-language"
+Line 9 Token: ID Value: content                                                                                   <
+Line 9 Token: -                                                                                                   <
+Line 9 Token: ID Value: type                                                                                      <
+ERROR(9): char '"' is not in the language                                                                         <
+Line 9 Token: ID Value: content                                                                                         Line 9 Token: ID Value: content
+Line 9 Token: =                                                                                                         Line 9 Token: =
+ERROR(9): char '"' is not in the language                                                                         |     Line 9 Token: STRINGCONST Value: "" Len: 0 Input: ""
+Line 9 Token: ID Value: text                                                                                      <
+Line 9 Token: /                                                                                                   <
+Line 9 Token: ID Value: html                                                                                      <
+Line 9 Token: ;                                                                                                   <
+Line 9 Token: ID Value: charset                                                                                   <
+Line 9 Token: =                                                                                                   <
+Line 9 Token: ID Value: utf                                                                                       <
+Line 9 Token: -                                                                                                   <
+Line 9 Token: NUMCONST Value: 8 Input: 8                                                                          <
+ERROR(9): char '"' is not in the language                                                                         <
+Line 9 Token: /                                                                                                         Line 9 Token: /
+ERROR(9): char '>' is not in the language                                                                         |     Line 9 Token: >
+ERROR(10): char '<' is not in the language                                                                        |     Line 10 Token: <
+Line 10 Token: ID Value: meta                                                                                     |     Line 10 Token: ID Value: link
+Line 10 Token: ID Value: http                                                                                     |     Line 10 Token: ID Value: href
+Line 10 Token: -                                                                                                  <
+Line 10 Token: ID Value: equiv                                                                                    <
+Line 10 Token: =                                                                                                        Line 10 Token: =
+ERROR(10): char '"' is not in the language                                                                        |     Line 10 Token: STRINGCONST Value: "[[home]]style.css" Len: 17 Input: "[[home]]style.css"
+Line 10 Token: ID Value: content                                                                                  |     Line 10 Token: ID Value: rel
+Line 10 Token: -                                                                                                  <
+Line 10 Token: ID Value: language                                                                                 <
+ERROR(10): char '"' is not in the language                                                                        <
+Line 10 Token: ID Value: content                                                                                  <
+Line 10 Token: =                                                                                                        Line 10 Token: =
+ERROR(10): char '"' is not in the language                                                                        |     Line 10 Token: STRINGCONST Value: "stylesheet" Len: 10 Input: "stylesheet"
+ERROR(10): char '"' is not in the language                                                                        |     Line 10 Token: ID Value: type
+                                                                                                                  >     Line 10 Token: =
+                                                                                                                  >     Line 10 Token: STRINGCONST Value: "text/css" Len: 8 Input: "text/css"
+Line 10 Token: /                                                                                                        Line 10 Token: /
+ERROR(10): char '>' is not in the language                                                                        |     Line 10 Token: >
+ERROR(11): char '<' is not in the language                                                                        |     Line 11 Token: <
+Line 11 Token: ID Value: link                                                                                           Line 11 Token: ID Value: link
+Line 11 Token: ID Value: href                                                                                     <
+Line 11 Token: =                                                                                                  <
+ERROR(11): char '"' is not in the language                                                                        <
+ERROR(11): char '[' is not in the language                                                                        <
+ERROR(11): char '[' is not in the language                                                                        <
+Line 11 Token: ID Value: home                                                                                     <
+ERROR(11): char ']' is not in the language                                                                        <
+ERROR(11): char ']' is not in the language                                                                        <
+Line 11 Token: ID Value: style                                                                                    <
+ERROR(11): char '.' is not in the language                                                                        <
+Line 11 Token: ID Value: css                                                                                      <
+ERROR(11): char '"' is not in the language                                                                        <
+Line 11 Token: ID Value: rel                                                                                            Line 11 Token: ID Value: rel
+Line 11 Token: =                                                                                                        Line 11 Token: =
+ERROR(11): char '"' is not in the language                                                                        |     Line 11 Token: ID Value: icon
+Line 11 Token: ID Value: stylesheet                                                                               <
+ERROR(11): char '"' is not in the language                                                                        <
+Line 11 Token: ID Value: type                                                                                           Line 11 Token: ID Value: type
+Line 11 Token: =                                                                                                        Line 11 Token: =
+ERROR(11): char '"' is not in the language                                                                        |     Line 11 Token: ID Value: image
+Line 11 Token: ID Value: text                                                                                     <
+Line 11 Token: /                                                                                                        Line 11 Token: /
+Line 11 Token: ID Value: css                                                                                      |     Line 11 Token: ID Value: gif
+ERROR(11): char '"' is not in the language                                                                        |     Line 11 Token: ID Value: href
+                                                                                                                  >     Line 11 Token: =
+                                                                                                                  >     Line 11 Token: [
+                                                                                                                  >     Line 11 Token: [
+                                                                                                                  >     Line 11 Token: ID Value: home
+                                                                                                                  >     Line 11 Token: ]
+                                                                                                                  >     Line 11 Token: ]
+                                                                                                                  >     Line 11 Token: ID Value: Media
+Line 11 Token: /                                                                                                        Line 11 Token: /
+ERROR(11): char '>' is not in the language                                                                        |     Line 11 Token: ID Value: Pics
+ERROR(12): char '<' is not in the language                                                                        |     Line 11 Token: /
+Line 12 Token: ID Value: link                                                                                     |     Line 11 Token: ID Value: favicon
+Line 12 Token: ID Value: rel                                                                                      |     ERROR(11): Invalid or misplaced input character: '.'. Character Ignored.
+Line 12 Token: =                                                                                                  |     Line 11 Token: ID Value: gif
+Line 12 Token: ID Value: icon                                                                                     |     Line 11 Token: >
+Line 12 Token: ID Value: type                                                                                     |     Line 12 Token: <
+Line 12 Token: =                                                                                                  <
+Line 12 Token: ID Value: image                                                                                    <
+Line 12 Token: /                                                                                                  <
+Line 12 Token: ID Value: gif                                                                                      <
+Line 12 Token: ID Value: href                                                                                     <
+Line 12 Token: =                                                                                                  <
+ERROR(12): char '[' is not in the language                                                                        <
+ERROR(12): char '[' is not in the language                                                                        <
+Line 12 Token: ID Value: home                                                                                     <
+ERROR(12): char ']' is not in the language                                                                        <
+ERROR(12): char ']' is not in the language                                                                        <
+Line 12 Token: ID Value: Media                                                                                    <
+Line 12 Token: /                                                                                                  <
+Line 12 Token: ID Value: Pics                                                                                     <
+Line 12 Token: /                                                                                                        Line 12 Token: /
+Line 12 Token: ID Value: favicon                                                                                  |     Line 12 Token: ID Value: head
+ERROR(12): char '.' is not in the language                                                                        |     Line 12 Token: >
+Line 12 Token: ID Value: gif                                                                                      |     Line 14 Token: <
+ERROR(12): char '>' is not in the language                                                                        |     Line 14 Token: ID Value: body
+ERROR(13): char '<' is not in the language                                                                        |     Line 14 Token: >
+Line 13 Token: /                                                                                                  |     Line 15 Token: <
+Line 13 Token: ID Value: head                                                                                     |     Line 15 Token: ID Value: div
+ERROR(13): char '>' is not in the language                                                                        |     Line 15 Token: ID Value: id
+ERROR(15): char '<' is not in the language                                                                        |     Line 15 Token: =
+Line 15 Token: ID Value: body                                                                                     |     Line 15 Token: STRINGCONST Value: "page" Len: 4 Input: "page"
+ERROR(15): char '>' is not in the language                                                                        |     Line 15 Token: >
+ERROR(16): char '<' is not in the language                                                                        |     Line 16 Token: <
+Line 16 Token: ID Value: div                                                                                            Line 16 Token: ID Value: div
+Line 16 Token: ID Value: id                                                                                             Line 16 Token: ID Value: id
+Line 16 Token: =                                                                                                        Line 16 Token: =
+ERROR(16): char '"' is not in the language                                                                        |     Line 16 Token: STRINGCONST Value: "header" Len: 6 Input: "header"
+Line 16 Token: ID Value: page                                                                                     |     Line 16 Token: >
+ERROR(16): char '"' is not in the language                                                                        |     Line 17 Token: <
+ERROR(16): char '>' is not in the language                                                                        |     Line 17 Token: ID Value: h1
+ERROR(17): char '<' is not in the language                                                                        |     Line 17 Token: >
+Line 17 Token: ID Value: div                                                                                      |     Line 17 Token: <
+Line 17 Token: ID Value: id                                                                                       |     Line 17 Token: ID Value: a
+                                                                                                                  >     Line 17 Token: ID Value: href
+Line 17 Token: =                                                                                                        Line 17 Token: =
+ERROR(17): char '"' is not in the language                                                                        |     Line 17 Token: STRINGCONST Value: "#" Len: 1 Input: "#"
+Line 17 Token: ID Value: header                                                                                   |     Line 17 Token: >
+ERROR(17): char '"' is not in the language                                                                        |     Line 17 Token: ID Value: Quotes
+ERROR(17): char '>' is not in the language                                                                        |     Line 17 Token: ID Value: I
+ERROR(18): char '<' is not in the language                                                                        |     Line 17 Token: ID Value: Have
+Line 18 Token: ID Value: h1                                                                                       |     Line 17 Token: ID Value: Enjoyed
+ERROR(18): char '>' is not in the language                                                                        |     Line 17 Token: <
+ERROR(18): char '<' is not in the language                                                                        |     Line 17 Token: /
+Line 18 Token: ID Value: a                                                                                        |     Line 17 Token: ID Value: a
+Line 18 Token: ID Value: href                                                                                     |     Line 17 Token: >
+Line 18 Token: =                                                                                                  |     Line 17 Token: <
+ERROR(18): char '"' is not in the language                                                                        |     Line 17 Token: /
+ERROR(18): char '#' is not in the language                                                                        |     Line 17 Token: ID Value: h1
+ERROR(18): char '"' is not in the language                                                                        |     Line 17 Token: >
+ERROR(18): char '>' is not in the language                                                                        <
+Line 18 Token: ID Value: Quotes                                                                                   <
+Line 18 Token: ID Value: I                                                                                        <
+Line 18 Token: ID Value: Have                                                                                     <
+Line 18 Token: ID Value: Enjoyed                                                                                  <
+ERROR(18): char '<' is not in the language                                                                        <
+Line 18 Token: /                                                                                                  <
+Line 18 Token: ID Value: a                                                                                        <
+ERROR(18): char '>' is not in the language                                                                        <
+ERROR(18): char '<' is not in the language                                                                        <
+Line 18 Token: /                                                                                                  <
+Line 18 Token: ID Value: h1                                                                                       <
+ERROR(18): char '>' is not in the language                                                                        <
+
+==============                                                                                                          ==============
+==============                                                                                                          ==============
+./c- quote.c-                                                                                                           ./c- quote.c-
+Line 1 Token: ID Value: The                                                                                       |     Line 2 Token: ID Value: The
+Line 1 Token: ID Value: art                                                                                       |     Line 2 Token: ID Value: art
+Line 1 Token: ID Value: of                                                                                        |     Line 2 Token: ID Value: of
+Line 1 Token: ID Value: programming                                                                               |     Line 2 Token: ID Value: programming
+Line 1 Token: ID Value: is                                                                                        |     Line 2 Token: ID Value: is
+Line 1 Token: ID Value: the                                                                                       |     Line 2 Token: ID Value: the
+Line 1 Token: ID Value: art                                                                                       |     Line 2 Token: ID Value: art
+Line 1 Token: ID Value: of                                                                                        |     Line 2 Token: ID Value: of
+Line 1 Token: ID Value: organizing                                                                                |     Line 2 Token: ID Value: organizing
+Line 1 Token: ID Value: complexity                                                                                |     Line 2 Token: ID Value: complexity
+ERROR(1): char '.' is not in the language                                                                         |     ERROR(2): Invalid or misplaced input character: '.'. Character Ignored.
+Line 2 Token: -                                                                                                   |     Line 3 Token: DEC
+Line 2 Token: -                                                                                                   |     Line 3 Token: ID Value: E
+Line 2 Token: ID Value: E                                                                                         |     ERROR(3): Invalid or misplaced input character: '.'. Character Ignored.
+ERROR(2): char '.' is not in the language                                                                         |     Line 3 Token: ID Value: W
+Line 2 Token: ID Value: W                                                                                         |     ERROR(3): Invalid or misplaced input character: '.'. Character Ignored.
+ERROR(2): char '.' is not in the language                                                                         |     Line 3 Token: ID Value: Dijkstra
+Line 2 Token: ID Value: Dijkstra                                                                                  <
+
+==============                                                                                                          ==============
+==============                                                                                                          ==============
+./c- quoteTest.c-                                                                                                       ./c- quoteTest.c-
+ERROR(0): char '"' is not in the language                                                                         |     Line 1 Token: STRINGCONST Value: "dog" Len: 3 Input: "dog"
+Line 0 Token: ID Value: dog                                                                                       |     Line 2 Token: STRINGCONST Value: "" Len: 0 Input: ""
+ERROR(0): char '"' is not in the language                                                                         |     Line 3 Token: STRINGCONST Value: "dog" Len: 3 Input: "\dog"
+ERROR(1): char '"' is not in the language                                                                         |     Line 4 Token: STRINGCONST Value: "dog"cat" Len: 7 Input: "dog\"cat"
+ERROR(1): char '"' is not in the language                                                                         |     Line 5 Token: STRINGCONST Value: ""dog"" Len: 5 Input: "\"dog\""
+ERROR(2): char '"' is not in the language                                                                         |     Line 6 Token: STRINGCONST Value: ""dog"cat"" Len: 9 Input: "\"dog\"cat\""
+ERROR(2): char '\' is not in the language                                                                         |     Line 7 Token: STRINGCONST Value: ""dog""cat"" Len: 10 Input: "\"dog\"\"cat\""
+Line 2 Token: ID Value: dog                                                                                       |     Line 8 Token: STRINGCONST Value: "dog\cat" Len: 7 Input: "dog\\cat"
+ERROR(2): char '"' is not in the language                                                                         |     Line 9 Token: STRINGCONST Value: "\dog\cat" Len: 8 Input: "\\dog\\cat"
+ERROR(3): char '"' is not in the language                                                                         |     Line 10 Token: STRINGCONST Value: "\dog\cat\" Len: 9 Input: "\\dog\\cat\\"
+Line 3 Token: ID Value: dog                                                                                       |     Line 11 Token: STRINGCONST Value: "dog\" Len: 4 Input: "dog\\"
+ERROR(3): char '\' is not in the language                                                                         |     Line 12 Token: STRINGCONST Value: "dog" Len: 3 Input: "dog"
+ERROR(3): char '"' is not in the language                                                                         |     Line 12 Token: STRINGCONST Value: "cat" Len: 3 Input: "cat"
+Line 3 Token: ID Value: cat                                                                                       |     Line 13 Token: STRINGCONST Value: ""dog"" Len: 5 Input: "\"dog\""
+ERROR(3): char '"' is not in the language                                                                         |     Line 14 Token: STRINGCONST Value: "abc"" Len: 4 Input: "\a\b\c\""
+ERROR(4): char '"' is not in the language                                                                         |     Line 15 Token: CHARCONST Value: 'a' Input: 'a'
+ERROR(4): char '\' is not in the language                                                                         |     Line 16 Token: CHARCONST Value: '"' Input: '"'
+ERROR(4): char '"' is not in the language                                                                         |     Line 17 Token: CHARCONST Value: '
+Line 4 Token: ID Value: dog                                                                                       |     ' Input: '\n'
+ERROR(4): char '\' is not in the language                                                                         |     Line 18 Token: CHARCONST Value: '\' Input: '\\'
+ERROR(4): char '"' is not in the language                                                                         |     Line 19 Token: CHARCONST Value: ''' Input: '\''
+ERROR(4): char '"' is not in the language                                                                         |     WARNING(20): character is 3 characters long and not a single character: ''abc''. The first char will be used.
+ERROR(5): char '"' is not in the language                                                                         |     Line 20 Token: CHARCONST Value: 'a' Input: 'abc'
+ERROR(5): char '\' is not in the language                                                                         <
+ERROR(5): char '"' is not in the language                                                                         <
+Line 5 Token: ID Value: dog                                                                                       <
+ERROR(5): char '\' is not in the language                                                                         <
+ERROR(5): char '"' is not in the language                                                                         <
+Line 5 Token: ID Value: cat                                                                                       <
+ERROR(5): char '\' is not in the language                                                                         <
+ERROR(5): char '"' is not in the language                                                                         <
+ERROR(5): char '"' is not in the language                                                                         <
+ERROR(6): char '"' is not in the language                                                                         <
+ERROR(6): char '\' is not in the language                                                                         <
+ERROR(6): char '"' is not in the language                                                                         <
+Line 6 Token: ID Value: dog                                                                                       <
+ERROR(6): char '\' is not in the language                                                                         <
+ERROR(6): char '"' is not in the language                                                                         <
+ERROR(6): char '\' is not in the language                                                                         <
+ERROR(6): char '"' is not in the language                                                                         <
+Line 6 Token: ID Value: cat                                                                                       <
+ERROR(6): char '\' is not in the language                                                                         <
+ERROR(6): char '"' is not in the language                                                                         <
+ERROR(6): char '"' is not in the language                                                                         <
+ERROR(7): char '"' is not in the language                                                                         <
+Line 7 Token: ID Value: dog                                                                                       <
+ERROR(7): char '\' is not in the language                                                                         <
+ERROR(7): char '\' is not in the language                                                                         <
+Line 7 Token: ID Value: cat                                                                                       <
+ERROR(7): char '"' is not in the language                                                                         <
+ERROR(8): char '"' is not in the language                                                                         <
+ERROR(8): char '\' is not in the language                                                                         <
+ERROR(8): char '\' is not in the language                                                                         <
+Line 8 Token: ID Value: dog                                                                                       <
+ERROR(8): char '\' is not in the language                                                                         <
+ERROR(8): char '\' is not in the language                                                                         <
+Line 8 Token: ID Value: cat                                                                                       <
+ERROR(8): char '"' is not in the language                                                                         <
+ERROR(9): char '"' is not in the language                                                                         <
+ERROR(9): char '\' is not in the language                                                                         <
+ERROR(9): char '\' is not in the language                                                                         <
+Line 9 Token: ID Value: dog                                                                                       <
+ERROR(9): char '\' is not in the language                                                                         <
+ERROR(9): char '\' is not in the language                                                                         <
+Line 9 Token: ID Value: cat                                                                                       <
+ERROR(9): char '\' is not in the language                                                                         <
+ERROR(9): char '\' is not in the language                                                                         <
+ERROR(9): char '"' is not in the language                                                                         <
+ERROR(10): char '"' is not in the language                                                                        <
+Line 10 Token: ID Value: dog                                                                                      <
+ERROR(10): char '\' is not in the language                                                                        <
+ERROR(10): char '\' is not in the language                                                                        <
+ERROR(10): char '"' is not in the language                                                                        <
+ERROR(11): char '"' is not in the language                                                                        <
+Line 11 Token: ID Value: dog                                                                                      <
+ERROR(11): char '"' is not in the language                                                                        <
+ERROR(11): char '"' is not in the language                                                                        <
+Line 11 Token: ID Value: cat                                                                                      <
+ERROR(11): char '"' is not in the language                                                                        <
+ERROR(12): char '"' is not in the language                                                                        <
+ERROR(12): char '\' is not in the language                                                                        <
+ERROR(12): char '"' is not in the language                                                                        <
+Line 12 Token: ID Value: dog                                                                                      <
+ERROR(12): char '\' is not in the language                                                                        <
+ERROR(12): char '"' is not in the language                                                                        <
+ERROR(12): char '"' is not in the language                                                                        <
+ERROR(13): char '"' is not in the language                                                                        <
+ERROR(13): char '\' is not in the language                                                                        <
+Line 13 Token: ID Value: a                                                                                        <
+ERROR(13): char '\' is not in the language                                                                        <
+Line 13 Token: ID Value: b                                                                                        <
+ERROR(13): char '\' is not in the language                                                                        <
+Line 13 Token: ID Value: c                                                                                        <
+ERROR(13): char '\' is not in the language                                                                        <
+ERROR(13): char '"' is not in the language                                                                        <
+ERROR(13): char '"' is not in the language                                                                        <
+ERROR(14): char ''' is not in the language                                                                        <
+Line 14 Token: ID Value: a                                                                                        <
+ERROR(14): char ''' is not in the language                                                                        <
+ERROR(15): char ''' is not in the language                                                                        <
+ERROR(15): char '"' is not in the language                                                                        <
+ERROR(15): char ''' is not in the language                                                                        <
+ERROR(16): char ''' is not in the language                                                                        <
+ERROR(16): char '\' is not in the language                                                                        <
+Line 16 Token: ID Value: n                                                                                        <
+ERROR(16): char ''' is not in the language                                                                        <
+ERROR(17): char ''' is not in the language                                                                        <
+ERROR(17): char '\' is not in the language                                                                        <
+ERROR(17): char '\' is not in the language                                                                        <
+ERROR(17): char ''' is not in the language                                                                        <
+ERROR(18): char ''' is not in the language                                                                        <
+ERROR(18): char '\' is not in the language                                                                        <
+ERROR(18): char ''' is not in the language                                                                        <
+ERROR(18): char ''' is not in the language                                                                        <
+ERROR(19): char ''' is not in the language                                                                        <
+Line 19 Token: ID Value: abc                                                                                      <
+ERROR(19): char ''' is not in the language                                                                        <
+
+==============                                                                                                          ==============
+==============                                                                                                          ==============
+./c- stringTest.c-                                                                                                      ./c- stringTest.c-
+ERROR(0): char '"' is not in the language                                                                         |     Line 1 Token: STRINGCONST Value: "DOUBLE QUOTES" Len: 13 Input: "DOUBLE QUOTES"
+Line 0 Token: ID Value: DOUBLE                                                                                    |     Line 2 Token: STRINGCONST Value: "dog" Len: 3 Input: "dog"
+Line 0 Token: ID Value: QUOTES                                                                                    |     Line 3 Token: STRINGCONST Value: "" Len: 0 Input: ""
+ERROR(0): char '"' is not in the language                                                                         |     Line 4 Token: STRINGCONST Value: "123" Len: 3 Input: "123"
+ERROR(1): char '"' is not in the language                                                                         |     Line 5 Token: STRINGCONST Value: " " Len: 2 Input: " "
+Line 1 Token: ID Value: dog                                                                                       |     Line 6 Token: STRINGCONST Value: "'" Len: 1 Input: "'"
+ERROR(1): char '"' is not in the language                                                                         |     Line 7 Token: STRINGCONST Value: "'"\^" Len: 4 Input: "\'\"\\\^"
+ERROR(2): char '"' is not in the language                                                                         |     Line 8 Token: STRINGCONST Value: "\^" Len: 2 Input: "\\\^"
+ERROR(2): char '"' is not in the language                                                                         |     Line 9 Token: STRINGCONST Value: "\x" Len: 2 Input: "\\\x"
+ERROR(3): char '"' is not in the language                                                                         |     Line 10 Token: STRINGCONST Value: "\x" Len: 2 Input: "\\x"
+Line 3 Token: NUMCONST Value: 123 Input: 123                                                                      |     Line 11 Token: STRINGCONST Value: "x" Len: 1 Input: "\x"
+ERROR(3): char '"' is not in the language                                                                         |     Line 12 Token: STRINGCONST Value: "adog'"\^" Len: 8 Input: "a\d\o\g\'\"\\\^"
+ERROR(4): char '"' is not in the language                                                                         |     Line 13 Token: STRINGCONST Value: "dog cat" Len: 7 Input: "dog cat"
+ERROR(4): char '"' is not in the language                                                                         |     Line 14 Token: STRINGCONST Value: "dogs^Icats^Jrats" Len: 16 Input: "dogs^Icats^Jrats"
+ERROR(5): char '"' is not in the language                                                                         |     Line 15 Token: STRINGCONST Value: "dogs" Len: 4 Input: "dogs"
+ERROR(5): char ''' is not in the language                                                                         |     Line 15 Token: STRINGCONST Value: "cats" Len: 4 Input: "cats"
+ERROR(5): char '"' is not in the language                                                                         |     Line 15 Token: STRINGCONST Value: "rats" Len: 4 Input: "rats"
+ERROR(6): char '"' is not in the language                                                                         |     Line 16 Token: STRINGCONST Value: "dogs"" Len: 5 Input: "dogs\""
+ERROR(6): char '\' is not in the language                                                                         |     Line 16 Token: ID Value: cats
+ERROR(6): char ''' is not in the language                                                                         |     Line 16 Token: STRINGCONST Value: ""rats" Len: 5 Input: "\"rats"
+ERROR(6): char '\' is not in the language                                                                         |     Line 17 Token: STRINGCONST Value: "SINGLE QUOTES" Len: 13 Input: "SINGLE QUOTES"
+ERROR(6): char '"' is not in the language                                                                         |     Line 18 Token: CHARCONST Value: 'd' Input: 'd'
+ERROR(6): char '\' is not in the language                                                                         |     Line 19 Token: CHARCONST Value: '1' Input: '1'
+ERROR(6): char '\' is not in the language                                                                         |     Line 20 Token: CHARCONST Value: ' ' Input: ' '
+ERROR(6): char '\' is not in the language                                                                         |     Line 21 Token: CHARCONST Value: ' ' Input: ' '
+ERROR(6): char '^' is not in the language                                                                         |     Line 22 Token: CHARCONST Value: '"' Input: '"'
+ERROR(6): char '"' is not in the language                                                                         |     Line 23 Token: CHARCONST Value: '"' Input: '\"'
+ERROR(7): char '"' is not in the language                                                                         |     Line 24 Token: CHARCONST Value: '\' Input: '\\'
+ERROR(7): char '\' is not in the language                                                                         |     Line 25 Token: CHARCONST Value: '^' Input: '\^'
+ERROR(7): char '\' is not in the language                                                                         |     Line 26 Token: CHARCONST Value: 'x' Input: '\x'
+ERROR(7): char '\' is not in the language                                                                         |     Line 27 Token: CHARCONST Value: '@' Input: '\@'
+ERROR(7): char '^' is not in the language                                                                         |     Line 28 Token: CHARCONST Value: 'a' Input: 'a'
+ERROR(7): char '"' is not in the language                                                                         |     Line 29 Token: CHARCONST Value: 'd' Input: '\d'
+ERROR(8): char '"' is not in the language                                                                         |     WARNING(30): character is 2 characters long and not a single character: ''^I''. The first char will be used.
+ERROR(8): char '\' is not in the language                                                                         |     Line 30 Token: CHARCONST Value: '^' Input: '^I'
+ERROR(8): char '\' is not in the language                                                                         |     WARNING(31): character is 2 characters long and not a single character: ''^J''. The first char will be used.
+ERROR(8): char '\' is not in the language                                                                         |     Line 31 Token: CHARCONST Value: '^' Input: '^J'
+Line 8 Token: ID Value: x                                                                                         |     Line 32 Token: CHARCONST Value: 't' Input: '\t'
+ERROR(8): char '"' is not in the language                                                                         |     Line 33 Token: CHARCONST Value: '
+ERROR(9): char '"' is not in the language                                                                         |     ' Input: '\n'
+ERROR(9): char '\' is not in the language                                                                         |     Line 34 Token: CHARCONST Value: ' ' Input: '\0'
+ERROR(9): char '\' is not in the language                                                                         |     Line 35 Token: CHARCONST Value: ''' Input: '\''
+Line 9 Token: ID Value: x                                                                                         |     Line 36 Token: STRINGCONST Value: "dogs" Len: 4 Input: "dogs"
+ERROR(9): char '"' is not in the language                                                                         |     Line 36 Token: STRINGCONST Value: "and" Len: 3 Input: "and"
+ERROR(10): char '"' is not in the language                                                                        |     Line 36 Token: STRINGCONST Value: "cats" Len: 4 Input: "cats"
+ERROR(10): char '\' is not in the language                                                                        |     Line 37 Token: CHARCONST Value: 'O' Input: 'O'
+Line 10 Token: ID Value: x                                                                                        |     Line 37 Token: CHARCONST Value: 'M' Input: 'M'
+ERROR(10): char '"' is not in the language                                                                        |     Line 37 Token: CHARCONST Value: 'G' Input: 'G'
+ERROR(11): char '"' is not in the language                                                                        |     WARNING(38): character is 18 characters long and not a single character: ''meerkats are great''. The first cha
+Line 11 Token: ID Value: a                                                                                        |     Line 38 Token: CHARCONST Value: 'm' Input: 'meerkats are great'
+ERROR(11): char '\' is not in the language                                                                        |     Line 39 Token: STRINGCONST Value: "THE END" Len: 7 Input: "THE END"
+Line 11 Token: ID Value: d                                                                                        <
+ERROR(11): char '\' is not in the language                                                                        <
+Line 11 Token: ID Value: o                                                                                        <
+ERROR(11): char '\' is not in the language                                                                        <
+Line 11 Token: ID Value: g                                                                                        <
+ERROR(11): char '\' is not in the language                                                                        <
+ERROR(11): char ''' is not in the language                                                                        <
+ERROR(11): char '\' is not in the language                                                                        <
+ERROR(11): char '"' is not in the language                                                                        <
+ERROR(11): char '\' is not in the language                                                                        <
+ERROR(11): char '\' is not in the language                                                                        <
+ERROR(11): char '\' is not in the language                                                                        <
+ERROR(11): char '^' is not in the language                                                                        <
+ERROR(11): char '"' is not in the language                                                                        <
+ERROR(12): char '"' is not in the language                                                                        <
+Line 12 Token: ID Value: dog                                                                                      <
+Line 12 Token: ID Value: cat                                                                                      <
+ERROR(12): char '"' is not in the language                                                                        <
+ERROR(13): char '"' is not in the language                                                                        <
+Line 13 Token: ID Value: dogs                                                                                     <
+ERROR(13): char '^' is not in the language                                                                        <
+Line 13 Token: ID Value: Icats                                                                                    <
+ERROR(13): char '^' is not in the language                                                                        <
+Line 13 Token: ID Value: Jrats                                                                                    <
+ERROR(13): char '"' is not in the language                                                                        <
+ERROR(14): char '"' is not in the language                                                                        <
+Line 14 Token: ID Value: dogs                                                                                     <
+ERROR(14): char '"' is not in the language                                                                        <
+ERROR(14): char '"' is not in the language                                                                        <
+Line 14 Token: ID Value: cats                                                                                     <
+ERROR(14): char '"' is not in the language                                                                        <
+ERROR(14): char '"' is not in the language                                                                        <
+Line 14 Token: ID Value: rats                                                                                     <
+ERROR(14): char '"' is not in the language                                                                        <
+ERROR(15): char '"' is not in the language                                                                        <
+Line 15 Token: ID Value: dogs                                                                                     <
+ERROR(15): char '\' is not in the language                                                                        <
+ERROR(15): char '"' is not in the language                                                                        <
+ERROR(15): char '"' is not in the language                                                                        <
+Line 15 Token: ID Value: cats                                                                                     <
+ERROR(15): char '"' is not in the language                                                                        <
+ERROR(15): char '\' is not in the language                                                                        <
+ERROR(15): char '"' is not in the language                                                                        <
+Line 15 Token: ID Value: rats                                                                                     <
+ERROR(15): char '"' is not in the language                                                                        <
+ERROR(16): char '"' is not in the language                                                                        <
+Line 16 Token: ID Value: SINGLE                                                                                   <
+Line 16 Token: ID Value: QUOTES                                                                                   <
+ERROR(16): char '"' is not in the language                                                                        <
+ERROR(17): char ''' is not in the language                                                                        <
+Line 17 Token: ID Value: d                                                                                        <
+ERROR(17): char ''' is not in the language                                                                        <
+ERROR(18): char ''' is not in the language                                                                        <
+Line 18 Token: NUMCONST Value: 1 Input: 1                                                                         <
+ERROR(18): char ''' is not in the language                                                                        <
+ERROR(19): char ''' is not in the language                                                                        <
+ERROR(19): char ''' is not in the language                                                                        <
+ERROR(20): char ''' is not in the language                                                                        <
+ERROR(20): char ''' is not in the language                                                                        <
+ERROR(21): char ''' is not in the language                                                                        <
+ERROR(21): char '"' is not in the language                                                                        <
+ERROR(21): char ''' is not in the language                                                                        <
+ERROR(22): char ''' is not in the language                                                                        <
+ERROR(22): char '\' is not in the language                                                                        <
+ERROR(22): char '"' is not in the language                                                                        <
+ERROR(22): char ''' is not in the language                                                                        <
+ERROR(23): char ''' is not in the language                                                                        <
+ERROR(23): char '\' is not in the language                                                                        <
+ERROR(23): char '\' is not in the language                                                                        <
+ERROR(23): char ''' is not in the language                                                                        <
+ERROR(24): char ''' is not in the language                                                                        <
+ERROR(24): char '\' is not in the language                                                                        <
+ERROR(24): char '^' is not in the language                                                                        <
+ERROR(24): char ''' is not in the language                                                                        <
+ERROR(25): char ''' is not in the language                                                                        <
+ERROR(25): char '\' is not in the language                                                                        <
+Line 25 Token: ID Value: x                                                                                        <
+ERROR(25): char ''' is not in the language                                                                        <
+ERROR(26): char ''' is not in the language                                                                        <
+ERROR(26): char '\' is not in the language                                                                        <
+ERROR(26): char '@' is not in the language                                                                        <
+ERROR(26): char ''' is not in the language                                                                        <
+ERROR(27): char ''' is not in the language                                                                        <
+Line 27 Token: ID Value: a                                                                                        <
+ERROR(27): char ''' is not in the language                                                                        <
+ERROR(28): char ''' is not in the language                                                                        <
+ERROR(28): char '\' is not in the language                                                                        <
+Line 28 Token: ID Value: d                                                                                        <
+ERROR(28): char ''' is not in the language                                                                        <
+ERROR(29): char ''' is not in the language                                                                        <
+ERROR(29): char '^' is not in the language                                                                        <
+Line 29 Token: ID Value: I                                                                                        <
+ERROR(29): char ''' is not in the language                                                                        <
+ERROR(30): char ''' is not in the language                                                                        <
+ERROR(30): char '^' is not in the language                                                                        <
+Line 30 Token: ID Value: J                                                                                        <
+ERROR(30): char ''' is not in the language                                                                        <
+ERROR(31): char ''' is not in the language                                                                        <
+ERROR(31): char '\' is not in the language                                                                        <
+Line 31 Token: ID Value: t                                                                                        <
+ERROR(31): char ''' is not in the language                                                                        <
+ERROR(32): char ''' is not in the language                                                                        <
+ERROR(32): char '\' is not in the language                                                                        <
+Line 32 Token: ID Value: n                                                                                        <
+ERROR(32): char ''' is not in the language                                                                        <
+ERROR(33): char ''' is not in the language                                                                        <
+ERROR(33): char '\' is not in the language                                                                        <
+Line 33 Token: NUMCONST Value: 0 Input: 0                                                                         <
+ERROR(33): char ''' is not in the language                                                                        <
+ERROR(34): char ''' is not in the language                                                                        <
+ERROR(34): char '\' is not in the language                                                                        <
+ERROR(34): char ''' is not in the language                                                                        <
+ERROR(34): char ''' is not in the language                                                                        <
+ERROR(35): char '"' is not in the language                                                                        <
+Line 35 Token: ID Value: dogs                                                                                     <
+ERROR(35): char '"' is not in the language                                                                        <
+ERROR(35): char '"' is not in the language                                                                        <
+Line 35 Token: ID Value: and                                                                                      <
+ERROR(35): char '"' is not in the language                                                                        <
+ERROR(35): char '"' is not in the language                                                                        <
+Line 35 Token: ID Value: cats                                                                                     <
+ERROR(35): char '"' is not in the language                                                                        <
+ERROR(36): char ''' is not in the language                                                                        <
+Line 36 Token: ID Value: O                                                                                        <
+ERROR(36): char ''' is not in the language                                                                        <
+ERROR(36): char ''' is not in the language                                                                        <
+Line 36 Token: ID Value: M                                                                                        <
+ERROR(36): char ''' is not in the language                                                                        <
+ERROR(36): char ''' is not in the language                                                                        <
+Line 36 Token: ID Value: G                                                                                        <
+ERROR(36): char ''' is not in the language                                                                        <
+ERROR(37): char ''' is not in the language                                                                        <
+Line 37 Token: ID Value: meerkats                                                                                 <
+Line 37 Token: ID Value: are                                                                                      <
+Line 37 Token: ID Value: great                                                                                    <
+ERROR(37): char ''' is not in the language                                                                        <
+ERROR(38): char '"' is not in the language                                                                        <
+Line 38 Token: ID Value: THE                                                                                      <
+Line 38 Token: ID Value: END                                                                                      <
+ERROR(38): char '"' is not in the language                                                                        <
+
+==============                                                                                                          ==============
+==============                                                                                                          ==============
+./c- textTest2.c-                                                                                                 |     ./c- textTest.c-
+Line 0 Token: ID Value: Professor                                                                                 |     Line 1 Token: ID Value: Professor
+Line 0 Token: ID Value: Farnsworth                                                                                |     Line 1 Token: ID Value: Farnsworth
+ERROR(0): char ':' is not in the language                                                                         |     Line 1 Token: :
+ERROR(0): char '"' is not in the language                                                                         |     ERROR(1): Invalid or misplaced input character: '"'. Character Ignored.
+Line 0 Token: ID Value: Amy                                                                                       |     Line 1 Token: ID Value: Amy
+Line 0 Token: ,                                                                                                   |     Line 1 Token: ,
+Line 0 Token: ID Value: technology                                                                                |     Line 1 Token: ID Value: technology
+Line 0 Token: ID Value: isn                                                                                       |     Line 1 Token: ID Value: isn
+ERROR(0): char ''' is not in the language                                                                         |     ERROR(1): Invalid or misplaced input character: '''. Character Ignored.
+Line 0 Token: ID Value: t                                                                                         |     Line 1 Token: ID Value: t
+Line 0 Token: ID Value: intrinsically                                                                             |     Line 1 Token: ID Value: intrinsically
+Line 0 Token: ID Value: good                                                                                      |     Line 1 Token: ID Value: good
+Line 0 Token: ID Value: or                                                                                        |     Line 1 Token: OR
+Line 0 Token: ID Value: evil                                                                                      |     Line 2 Token: ID Value: evil
+ERROR(0): char '.' is not in the language                                                                         |     ERROR(2): Invalid or misplaced input character: '.'. Character Ignored.
+Line 0 Token: ID Value: It                                                                                        |     Line 2 Token: ID Value: It
+ERROR(0): char ''' is not in the language                                                                         |     WARNING(2): character is 8 characters long and not a single character: ''s how it''. The first char will be us
+Line 0 Token: ID Value: s                                                                                         |     Line 2 Token: CHARCONST Value: 's' Input: 's how it'
+Line 0 Token: ID Value: how                                                                                       |     Line 2 Token: ID Value: s
+Line 0 Token: ID Value: it                                                                                        |     Line 2 Token: ID Value: used
+ERROR(0): char ''' is not in the language                                                                         |     ERROR(2): Invalid or misplaced input character: '.'. Character Ignored.
+Line 0 Token: ID Value: s                                                                                         |     Line 2 Token: ID Value: Like
+Line 0 Token: ID Value: used                                                                                      |     Line 2 Token: ID Value: the
+ERROR(0): char '.' is not in the language                                                                         |     Line 2 Token: ID Value: Death
+Line 0 Token: ID Value: Like                                                                                      |     Line 2 Token: ID Value: Ray
+Line 0 Token: ID Value: the                                                                                       |     ERROR(2): Invalid or misplaced input character: '.'. Character Ignored.
+Line 0 Token: ID Value: Death                                                                                     |     ERROR(2): Invalid or misplaced input character: '"'. Character Ignored.
+Line 0 Token: ID Value: Ray                                                                                       <
+ERROR(0): char '.' is not in the language                                                                         <
+ERROR(0): char '"' is not in the language                                                                         <
+
+==============                                                                                                          ==============
+==============                                                                                                          ==============
+./c- textTest.c-                                                                                                  |     ./c- textTest2.c-
+Line 0 Token: ID Value: Professor                                                                                 |     Line 1 Token: ID Value: Professor
+Line 0 Token: ID Value: Farnsworth                                                                                |     Line 1 Token: ID Value: Farnsworth
+ERROR(0): char ':' is not in the language                                                                         |     Line 1 Token: :
+ERROR(0): char '"' is not in the language                                                                         |     Line 1 Token: STRINGCONST Value: "Amy, technology isn't intrinsically good or evil. It's how it's used. Like t
+Line 0 Token: ID Value: Amy                                                                                       <
+Line 0 Token: ,                                                                                                   <
+Line 0 Token: ID Value: technology                                                                                <
+Line 0 Token: ID Value: isn                                                                                       <
+ERROR(0): char ''' is not in the language                                                                         <
+Line 0 Token: ID Value: t                                                                                         <
+Line 0 Token: ID Value: intrinsically                                                                             <
+Line 0 Token: ID Value: good                                                                                      <
+Line 0 Token: ID Value: or                                                                                        <
+Line 1 Token: ID Value: evil                                                                                      <
+ERROR(1): char '.' is not in the language                                                                         <
+Line 1 Token: ID Value: It                                                                                        <
+ERROR(1): char ''' is not in the language                                                                         <
+Line 1 Token: ID Value: s                                                                                         <
+Line 1 Token: ID Value: how                                                                                       <
+Line 1 Token: ID Value: it                                                                                        <
+ERROR(1): char ''' is not in the language                                                                         <
+Line 1 Token: ID Value: s                                                                                         <
+Line 1 Token: ID Value: used                                                                                      <
+ERROR(1): char '.' is not in the language                                                                         <
+Line 1 Token: ID Value: Like                                                                                      <
+Line 1 Token: ID Value: the                                                                                       <
+Line 1 Token: ID Value: Death                                                                                     <
+Line 1 Token: ID Value: Ray                                                                                       <
+ERROR(1): char '.' is not in the language                                                                         <
+ERROR(1): char '"' is not in the language                                                                         <
+
+* End of testing                                                                                                        * End of testing
+Kill all remaining c- processes                                                                                         Kill all remaining c- processes
