@@ -47,50 +47,249 @@ void printCharByChar(char* stringToPrint)
 
 %token <tokenData> ID NUMCONST CHARCONST STRINGCONST BOOLCONST
 %token <tokenData> IF ELSE THEN RETURN EQ NEQ GEQ LEQ INT OR
-%token <tokenData> OPERATOR ADDASS
+%token <tokenData> OPERATOR ADDASS SUBASS MULTASS DIVASS
 %token <tokenData> STATIC BOOL CHAR
 %token <tokenData> MISC
 %token <tokenData> AND NOT FOR WHILE BREAK TO BY DO INC DEC
 /* %type  <value> expression sumexp mulexp unary factor */
 
 %%
-statementlist : statementlist statement
+program
+    : decList
+    ;
+decList             
+    : decList decl
+    | decl
+    ;
+decl
+    : varDecl
+    | funDecl
+    ;
+varDecl
+    : typeSpec varDeclList ';'
+    ;
+scopedVarDecl
+    : STATIC typeSpec varDeclList ';'
+    | typeSpec varDeclList ';'
+    ;
+varDeclList
+    : varDeclList ',' varDeclInit
+    | varDeclInit
+    ;
+varDeclInit
+    : varDeclId
+    | varDeclId ':' simpleExp
+    ;
+varDeclId
+    : ID
+    | ID '['NUMCONST']'
+    ;
+typeSpec
+    : BOOL                                      { /*printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr)*/; }
+    | CHAR                                      { /*printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr)*/; }
+    | INT                                       { /*printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr)*/; }
+    ;
+funDecl
+    : typeSpec ID '(' parms ')' compoundStmt
+    | ID '(' parms ')' compoundStmt
+    ;
+parms
+    : %empty
+    | parmList
+    ;
+parmList
+    : parmList ';' parmTypeList
+    | parmTypeList
+    ;
+parmTypeList
+    : typeSpec parmIdList
+    ;
+parmIdList
+    : parmIdList ',' parmId
+    | parmId
+    ;
+parmId
+    : ID
+    | ID '['']'
+stmt
+    : expStmt
+    | compoundStmt
+    | selectStmt
+    | iterStmt
+    | returnStmt
+    | breakStmt
+    ;
+expStmt
+    : exp ';'
+    | ';'
+    ;
+compoundStmt
+    : '{' localDecls stmtList '}'
+    ;
+localDecls
+    : %empty
+    | localDecls scopedVarDecl
+    ;
+stmtList
+    : %empty
+    | stmtList stmt
+    ;
+selectStmt
+    : IF simpleExp THEN stmt
+    | IF simpleExp THEN stmt ELSE stmt
+    ;
+iterStmt
+    : WHILE simpleExp DO stmt
+    | FOR ID '=' iterRange DO stmt
+    ;
+iterRange
+    : simpleExp TO simpleExp
+    | simpleExp TO simpleExp BY simpleExp
+returnStmt
+    : RETURN ';'
+    | RETURN exp ';'
+    ;
+breakStmt
+    : BREAK ';'
+    ;
+exp
+    : mutable assignop exp
+    | mutable INC
+    | mutable DEC
+    | simpleExp
+    ;
+assignop
+    : '='
+    | ADDASS
+    | SUBASS
+    | MULTASS
+    | DIVASS
+    ;
+simpleExp
+    : simpleExp OR andExp
+    | andExp
+    ;
+andExp
+    : andExp AND unaryRelExp
+    | unaryRelExp
+    ;
+unaryRelExp
+    : NOT unaryRelExp
+    | relExp
+    ;
+relExp
+    : sumExp relop sumExp
+    | sumExp
+    ;
+relop
+    : '<'
+    | LEQ
+    | '>'
+    | GEQ
+    | EQ
+    | NEQ
+    ;
+sumExp
+    : sumExp sumop mulExp
+    | mulExp
+    ;
+sumop
+    : '+'
+    | '-'
+    ;
+mulExp
+    : mulExp mulop unaryExp
+    | unaryExp
+    ;
+mulop
+    : '*'
+    | '/'
+    | '%'
+    ;
+unaryExp
+    : unaryop unaryExp
+    | factor
+    ;
+unaryop
+    : '-'
+    | '*'
+    | '?'
+    ;
+factor
+    : mutable
+    | immutable
+    ;
+mutable
+    : ID
+    | ID '[' exp ']'
+    ;
+immutable
+    : '(' exp ')'
+    | call
+    | constant
+    ;
+call
+    : ID '(' args ')'
+    ;
+args
+    : %empty
+    | argList
+    ;
+argList
+    : argList ',' exp
+    | exp
+    ;
+constant
+    : NUMCONST
+    | CHARCONST
+    | STRINGCONST
+    | BOOLCONST
+    ;
+
+%%
+//////////////////////////////////
+// This is the code from Assign1
+//////////////////////////////////
+/* statementlist : statementlist statement
               | statement
               ;
 
-statement   : ID            { printf("Line %d Token: ID Value: %s\n", $1->linenum, $1->tokenstr); }
-            | NUMCONST      { printf("Line %d Token: NUMCONST Value: %d  Input: %s\n", $1->linenum, $1->numValue, $1->tokenstr); }
-            | CHARCONST     { printf("Line %d Token: CHARCONST Value: \'%c\'  Input: %s\n", $1->linenum, $1->charValue, $1->tokenstr); }
-            | STRINGCONST   { printf("Line %d Token: STRINGCONST Value: %s  Len: %d  Input: ", $1->linenum, $1->stringValue, strlen($1->stringValue) - 2); printf(R"(%s)", $1->tokenstr); printf("\n"); }
-            | BOOLCONST     { printf("Line %d Token: BOOLCONST Value: %d  Input: %s\n", $1->linenum, $1->boolValue, $1->tokenstr); }
-            | IF            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | ELSE          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | THEN          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | RETURN        { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | EQ            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | NEQ           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | GEQ           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | LEQ           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | INT           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | OPERATOR      { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | OR            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | ADDASS        { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | BOOL          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | CHAR          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | STATIC        { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | AND           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | NOT           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | FOR           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | WHILE         { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | BREAK         { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | TO            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | BY            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | DO            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | INC           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | DEC           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            | MISC          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
-            ;
-%%
+statement   
+    : ID            { printf("Line %d Token: ID Value: %s\n", $1->linenum, $1->tokenstr); }
+    | NUMCONST      { printf("Line %d Token: NUMCONST Value: %d  Input: %s\n", $1->linenum, $1->numValue, $1->tokenstr); }
+    | CHARCONST     { printf("Line %d Token: CHARCONST Value: \'%c\'  Input: %s\n", $1->linenum, $1->charValue, $1->tokenstr); }
+    | STRINGCONST   { printf("Line %d Token: STRINGCONST Value: %s  Len: %d  Input: ", $1->linenum, $1->stringValue, strlen($1->stringValue) - 2); printf(R"(%s)", $1->tokenstr); printf("\n"); }
+    | BOOLCONST     { printf("Line %d Token: BOOLCONST Value: %d  Input: %s\n", $1->linenum, $1->boolValue, $1->tokenstr); }
+    | IF            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | ELSE          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | THEN          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | RETURN        { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | EQ            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | NEQ           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | GEQ           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | LEQ           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | INT           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | OPERATOR      { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | OR            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | ADDASS        { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | SUBASS        { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | MULTASS       { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | DIVASS        { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | BOOL          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | CHAR          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | STATIC        { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | AND           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | NOT           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | FOR           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | WHILE         { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | BREAK         { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | TO            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | BY            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | DO            { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | INC           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | DEC           { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    | MISC          { printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr); }
+    ; */
 /* WARNING(30): character is 2 characters long and not a single character: ''^I''.  The first char will be used. */
 /* keyword     : IF
             | ELSE

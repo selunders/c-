@@ -168,9 +168,11 @@ static int setValue(int linenum, int tokenClass, char *svalue)
 "to"                    { return setValue(line, TO, (char*) "TO"); }
 "by"                    { return setValue(line, BY, (char*) "BY"); }
 "do"                    { return setValue(line, DO, (char*) "DO"); }
+'='                     { return setValue(line, yytext[0], yytext); }
 "++"                    { return setValue(line, INC, (char*) "INC"); }
 "--"                    { return setValue(line, DEC, (char*) "DEC"); }
 "+="                    { return setValue(line, ADDASS, (char*) "ADDASS"); }
+"-="                    { return setValue(line, SUBASS, (char*) "SUBASS"); }
 "=="                    { return setValue(line, EQ, (char*) "EQ"); }
 "!="                    { return setValue(line, NEQ, (char*) "NEQ"); }
 ">="                    { return setValue(line, GEQ, (char*) "GEQ"); }
@@ -183,9 +185,9 @@ static int setValue(int linenum, int tokenClass, char *svalue)
 \"(\\.|[^\"\n])*\"      { return setValue(line, STRINGCONST, yytext); }
 [a-zA-Z][a-zA-Z0-9]*    { return setValue(line, ID, yytext);}
 [ \t]                   ;
-[\=\+\-\*\/\(\)\%]        { return setValue(line, OPERATOR, yytext); }
+[\=\+\-\*\/\(\)\%]      { return setValue(line, yytext[0], yytext); }
 [\'\"\.\@\#\$\^\&\_\|\\\~\!]                { printf("ERROR(%d): Invalid or misplaced input character: \'%s\'. Character Ignored.\n", line, yytext); }
-[\%\*\(\)\-\{\}\[\]\;\:\<\>\?\,\/]          { return setValue(line, MISC, yytext); }
+[\%\*\(\)\-\{\}\[\]\;\:\<\>\?\,\/]          { return setValue(line, yytext[0], yytext); }
 .                       { printf("ERROR(%d): char \'%c\' is not in the language\n", line, yytext[0]); numErrors++; }
 %%
 /* \"[^\"^\n]*\"           { return setValue(line, STRINGCONST, yytext); } */
