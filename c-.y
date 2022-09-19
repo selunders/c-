@@ -94,9 +94,9 @@ decl
     | funDecl {$$ = $1;}
     ;
 varDecl
-    : typeSpec varDeclList ';'
+    : typeSpec[type] varDeclList[declList] ';'
         {
-            $$ = newDeclNode(DeclKind::VarK, $1, $2);
+            $$ = newDeclNode(DeclKind::VarK, $[type], NULL, $[declList], NULL, NULL);
         }
     ;
 scopedVarDecl

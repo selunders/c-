@@ -67,11 +67,6 @@ class TreeNode
         ExpType expType;
         bool isArray;
         bool isStatic;
-
-        TreeNode()
-        {
-            
-        }
 };
 
 #endif

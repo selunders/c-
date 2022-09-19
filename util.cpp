@@ -4,7 +4,7 @@
 
 using namespace std;
 
-TreeNode *newDeclNode(DeclKind kind, ExpType type, TokenData *token = NULL, TreeNode *c0 = NULL, TreeNode *c1 = NULL, TreeNode *c2 = NULL)
+TreeNode *newDeclNode(DeclKind kind, ExpType type, TokenData *token, TreeNode *c0, TreeNode *c1, TreeNode *c2)
 {
     TreeNode* t = new TreeNode;
 
@@ -37,7 +37,7 @@ TreeNode *newDeclNode(DeclKind kind, ExpType type, TokenData *token = NULL, Tree
     return t;
 }
 
-TreeNode *newStmtNode(StmtKind kind, TokenData *token, TreeNode *c0 = NULL, TreeNode *c1 = NULL, TreeNode *c2 = NULL)
+TreeNode *newStmtNode(StmtKind kind, TokenData *token, TreeNode *c0, TreeNode *c1, TreeNode *c2)
 {
     TreeNode*t = new TreeNode;
 
@@ -48,7 +48,7 @@ TreeNode *newStmtNode(StmtKind kind, TokenData *token, TreeNode *c0 = NULL, Tree
     return t;
 }
 
-TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0 = NULL, TreeNode *c1 = NULL, TreeNode *c2 = NULL)
+TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0, TreeNode *c1, TreeNode *c2)
 {
     TreeNode*t = new TreeNode;
 

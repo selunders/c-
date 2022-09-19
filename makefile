@@ -3,7 +3,7 @@ CC = g++
 
 SRCS = $(BIN).y  $(BIN).l
 HDRS = scanType.h globals.hpp util.hpp
-OBJS = lex.yy.o $(BIN).tab.o
+OBJS = lex.yy.o $(BIN).tab.o util.o
 CFLAGS = -std=c++11 -g
 
 
@@ -15,6 +15,9 @@ lex.yy.c : $(BIN).l $(BIN).tab.h $(HDRS)
 
 $(BIN).tab.h $(BIN).tab.c : $(BIN).y
 	bison -v -t -d $(BIN).y
+
+util.o :
+	$(CC) $(CFLAGS) -c util.cpp -o util.o
 
 clean :
 	rm -f *~ $(OBJS) $(BIN) lex.yy.c $(BIN).tab.h $(BIN).tab.c $(BIN).output
