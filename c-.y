@@ -1,3 +1,7 @@
+%code requires {
+    #include "globals.hpp"
+}
+
 %{
 // // // // // // // // // // // // // // // // // // // // // // // 
 // CS445 - Calculator Example Program written in the style of the C-
@@ -8,7 +12,9 @@
 
 // https://www.theurbanpenguin.com/4184-2/
 
-#include "scanType.h"  // TokenData Type
+#include "globals.hpp"
+// #include "scanType.h"  // TokenData Type
+#include "util.hpp"
 #include <stdio.h>
 #include <string.h>
 
@@ -18,6 +24,8 @@ extern int yylex();
 extern FILE *yyin;
 extern int line;         // ERR line number from the scanner!!
 extern int numErrors;    // ERR err count
+
+static TreeNode* rootNode;
 
 #define YYERROR_VERBOSE
 void yyerror(const char *msg)
@@ -41,8 +49,10 @@ void printCharByChar(char* stringToPrint)
 // this is included in the tab.h file
 // so scanType.h must be included before the tab.h file!!!!
 %union {
-    TokenData *tokenData;
-    double value;
+    ExpType type;
+    TreeNode* tree;
+    TokenData* tokenData;
+    // double value;
 }
 
 %token <tokenData> ID NUMCONST CHARCONST STRINGCONST BOOLCONST
@@ -50,22 +60,44 @@ void printCharByChar(char* stringToPrint)
 %token <tokenData> ADDASS SUBASS MULASS DIVASS
 %token <tokenData> STATIC BOOL CHAR
 %token <tokenData> AND NOT FOR WHILE BREAK TO BY DO INC DEC
+
+%type <tree> program decList decl varDecl varDeclList funDecl
+%type <type> typeSpec
 /* %type  <value> expression sumexp mulexp unary factor */
 
 %%
 program
-    : decList
+    : decList {rootNode = $1;}
     ;
 decList             
     : decList decl
-    | decl
+        {
+            TreeNode* t = $1;
+            if(t != NULL)
+            {
+                while(t->sibling != NULL)
+                {
+                    t = t->sibling;
+                }
+                t->sibling = $2;
+                $$ = $1;
+            }
+            else
+            {
+                $$ = $2;
+            }
+        }
+    | decl {$$ = $1;}
     ;
 decl
-    : varDecl
-    | funDecl
+    : varDecl {$$ = $1;}
+    | funDecl {$$ = $1;}
     ;
 varDecl
     : typeSpec varDeclList ';'
+        {
+            $$ = newDeclNode(DeclKind::VarK, $1, $2);
+        }
     ;
 scopedVarDecl
     : STATIC typeSpec varDeclList ';'
