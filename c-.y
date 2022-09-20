@@ -188,6 +188,11 @@ parmId
             printf("Found ID: %s\n\n", $1->tokenstr);
         }
     | ID '['']'
+        {
+            $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
+            $$->isArray = true;
+            printf("Found ID array: %s\n\n", $1->tokenstr);
+        }
 stmt
     : selectSuperStmt
     ;
