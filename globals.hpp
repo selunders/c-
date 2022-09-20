@@ -67,6 +67,17 @@ class TreeNode
         ExpType expType;
         bool isArray;
         bool isStatic;
+
+        TreeNode()
+        {
+            sibling = NULL;
+            int i;
+            for(i = 0; i < MAXCHILDREN; i++)
+            {
+                child[i] = NULL;
+            }
+            nodeKind = NodeKind::StmtK;
+        }
 };
 
 #endif

@@ -24,4 +24,11 @@ TreeNode* newExpNode(   ExpKind kind,
                         TreeNode* c1=NULL,
                         TreeNode* c2=NULL);
 
+TreeNode* addSibling(TreeNode* addToThis, TreeNode* nodeBeingAdded);
+void setType(TreeNode* t, ExpType type, bool isStatic);
+
+
+static void printSpaces();
+void printTree(TreeNode* tree);
+
 #endif

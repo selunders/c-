@@ -4,21 +4,18 @@
 
 %{
 // // // // // // // // // // // // // // // // // // // // // // // 
+// Based on:
 // CS445 - Calculator Example Program written in the style of the C-
 // compiler for the class.
 //
 // Robert Heckendorn
 // Jan 21, 2021    
 
-// https://www.theurbanpenguin.com/4184-2/
-
 #include "globals.hpp"
 // #include "scanType.h"  // TokenData Type
 #include "util.hpp"
 #include <stdio.h>
-#include <string.h>
-
-// double vars[26];    
+#include <string.h> 
 
 extern int yylex();
 extern FILE *yyin;
@@ -62,7 +59,10 @@ void printCharByChar(char* stringToPrint)
 %token <tokenData> AND NOT FOR WHILE BREAK TO BY DO INC DEC
 
 %type <tree> program decList decl varDecl varDeclList funDecl
+%type <tree> parms parmList parmTypeList parmIdList parmId
+%type <tree> compoundStmt
 %type <type> typeSpec
+%type <tokenData> constant
 /* %type  <value> expression sumexp mulexp unary factor */
 
 %%
@@ -94,9 +94,9 @@ decl
     | funDecl {$$ = $1;}
     ;
 varDecl
-    : typeSpec[type] varDeclList[declList] ';'
+    : typeSpec[type] varDeclList[vdeclList] ';'
         {
-            $$ = newDeclNode(DeclKind::VarK, $[type], NULL, $[declList], NULL, NULL);
+            $$ = newDeclNode(DeclKind::VarK, $[type], NULL, $[vdeclList], NULL, NULL);
         }
     ;
 scopedVarDecl
@@ -116,31 +116,77 @@ varDeclId
     | ID '['NUMCONST']'
     ;
 typeSpec
-    : BOOL                                      { /*printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr)*/; }
-    | CHAR                                      { /*printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr)*/; }
-    | INT                                       { /*printf("Line %d Token: %s\n", $1->linenum, $1->tokenstr)*/; }
+    : BOOL
+        {
+            //  printf("Line %d Token: %s, Value: %d\n", $1->linenum, $1->tokenstr, $1->boolValue);
+        }
+    | CHAR
+        {
+            //  printf("Line %d Token: %s char: %c\n", $1->linenum, $1->tokenstr, $1->charValue);
+        }
+    | INT
+        {
+            //  printf("Line %d Token: %s int: %c\n", $1->linenum, $1->tokenstr, $1->numValue);
+        }
     ;
 funDecl
-    : typeSpec ID '(' parms ')' compoundStmt
-    | ID '(' parms ')' compoundStmt
+    : typeSpec[type] ID[id] '(' parms[prms] ')' compoundStmt[cstmt]
+        {
+            $$ = newDeclNode(DeclKind::FuncK, $[type], $[id], $[prms], $[cstmt], NULL);
+            $$->attr.idIndex = $id->idIndex;
+        }
+    | ID[id] '(' parms[prms] ')' compoundStmt[cstmt]
+        {
+            $$ = newDeclNode(DeclKind::FuncK, ExpType::Void, $[id], $[prms], $[cstmt], NULL);
+        }
     ;
 parms
     : %empty
+        {
+            $$ = NULL;
+        }
     | parmList
+        {
+            $$ = $1;
+            // $$ = newDeclNode(DeclKind::ParamK, ExpType::UndefinedType, );
+        }
     ;
 parmList
-    : parmList ';' parmTypeList
+    : parmList[prmList] ';' parmTypeList[prmTypeList]
+        {
+            $$ = $[prmTypeList];
+            addSibling($$, $[prmList]);
+        }
     | parmTypeList
+        {
+            $$ = $1;
+        }
     ;
 parmTypeList
-    : typeSpec parmIdList
+    : typeSpec[type] parmIdList[prmidlist]
+        {
+            $$ = $[prmidlist];
+            printf("Found a list of parameters\n");
+            setType($$, $[type], $$->isStatic);
+        }
     ;
 parmIdList
-    : parmIdList ',' parmId
+    : parmIdList[prmidlist] ',' parmId[prmid]
+        {
+            $$ = $1;
+            addSibling($[prmid], $[prmidlist]);
+        }
     | parmId
+        {
+            $$ = $1;
+        }
     ;
 parmId
     : ID
+        {
+            $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
+            printf("Found ID: %s\n\n", $1->tokenstr);
+        }
     | ID '['']'
 stmt
     : selectSuperStmt
@@ -398,7 +444,7 @@ int main(int argc, char *argv[])
     // do the parsing
     numErrors = 0;
     yyparse();
-
+    printTree(rootNode);
     /* printf("Number of errors: %d\n", numErrors);   // ERR */
 
     return 0;
