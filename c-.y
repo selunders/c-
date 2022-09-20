@@ -54,19 +54,14 @@ void printCharByChar(char* stringToPrint)
 
 %token <tokenData> ID NUMCONST CHARCONST STRINGCONST BOOLCONST
 %token <tokenData> IF ELSE THEN RETURN EQ NEQ GEQ LEQ INT OR
-%token <tokenData> ADDASS SUBASS MULASS DIVASS MODULO
+%token <tokenData> ADDASS SUBASS MULASS DIVASS '=' MODULO
 %token <tokenData> STATIC BOOL CHAR
-%token <tokenData> AND NOT FOR WHILE BREAK TO BY DO INC DEC
+%token <tokenData> AND NOT FOR WHILE BREAK TO BY DO INC DEC SIZEOF MULTIPLY
 %type <tokenData> '+' '*' '-' '\\' '<' '>' '/' '?'
-/* %type <tree> program declList decl varDecl varDeclList varDeclInit varDeclId funDecl */
-/* %type <tree> parms parmList parmTypeList parmIdList parmId */
-/* %type <tree> stmt selectSuperStmt open_iterStmt open_stmt closed_iterStmt closed_stmt */
-/* %type <tree> compoundStmt */
 %type <type> typeSpec
-/* %type <tokenData> constant */
 %type <tree> program declList decl varDecl scopedVarDecl varDeclList varDeclInit varDeclId // typeSpec
 %type <tree> funDecl parms parmList parmTypeList parmIdList parmId stmt expStmt compoundStmt localDecls
-%type <tree> stmtList selectSuperStmt open_iterStmt closed_iterStmt open_stmt closed_stmt iterRange returnStmt breakStmt exp assignop simpleExp andExp
+%type <tree> stmtList selectSuperStmt open_iterStmt closed_iterStmt open_stmt closed_stmt otherStmt iterRange returnStmt breakStmt exp assignop simpleExp andExp
 %type <tree> unaryRelExp relExp relop sumExp sumop mulExp mulop unaryExp unaryop factor mutable immutable 
 %type <tree> call args argList constant
 /* %type <tree>  */
@@ -75,6 +70,11 @@ void printCharByChar(char* stringToPrint)
 
 /* %type <tree>  */
 
+/* %type <tree> program declList decl varDecl varDeclList varDeclInit varDeclId funDecl */
+/* %type <tree> parms parmList parmTypeList parmIdList parmId */
+/* %type <tree> stmt selectSuperStmt open_iterStmt open_stmt closed_iterStmt closed_stmt */
+/* %type <tree> compoundStmt */
+/* %type <tokenData> constant */
 /* %type  <value> expression sumexp mulexp unary factor */
 
 %%
@@ -200,8 +200,7 @@ parms
 parmList
     : parmList[prmList] ';' parmTypeList[prmTypeList]
         {
-            $$ = $[prmTypeList];
-            addSibling($$, $[prmList]);
+            $$ = addSibling($[prmTypeList], $[prmList]);
         }
     | parmTypeList
         {
@@ -219,8 +218,7 @@ parmTypeList
 parmIdList
     : parmIdList[prmidlist] ',' parmId[prmid]
         {
-            $$ = $1;
-            addSibling($[prmid], $[prmidlist]);
+            $$ = addSibling($[prmid], $[prmidlist]);
         }
     | parmId
         {
@@ -231,13 +229,13 @@ parmId
     : ID
         {
             $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
-            printf("Found ID: %s\n\n", $1->tokenstr);
+            // printf("Found ID: %s\n\n", $1->tokenstr);
         }
     | ID '['']'
         {
             $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             $$->isArray = true;
-            printf("Found ID array: %s\n\n", $1->tokenstr);
+            // printf("Found ID array: %s\n\n", $1->tokenstr);
         }
 stmt
     : selectSuperStmt
@@ -247,25 +245,61 @@ stmt
     ;
 otherStmt
     : expStmt
+        {
+            $$ = $1;
+        }
     | compoundStmt
+        {
+            $$ = $1;
+        }
     | closed_iterStmt
+        {
+            $$ = $1;
+        }
     | returnStmt
+        {
+            $$ = $1;
+        }
     | breakStmt
+        {
+            $$ = $1;
+        }
     ;
 expStmt
     : exp ';'
+        {
+            $$ = $1;
+        }
     | ';'
+        {
+            $$ = NULL;
+        }
     ;
 compoundStmt
-    : '{' localDecls stmtList '}'
+    : '{' localDecls[lcldecls] stmtList[stmtlist] '}'
+        {
+            $$ = newStmtNode(StmtKind::CompoundK, NULL, $[lcldecls], $[stmtlist], NULL);
+        }
     ;
 localDecls
     : %empty
-    | localDecls scopedVarDecl
+        {
+            $$ = NULL;
+        }
+    | localDecls[lcldecls] scopedVarDecl[svardecl]
+        {
+            $$ = addSibling($[svardecl], $[lcldecls]);
+        }
     ;
 stmtList
     : %empty
-    | stmtList stmt
+        {
+            $$ = NULL;
+        }
+    | stmtList[slist] stmt[s]
+        {
+            $$ = addSibling($[s], $[slist]);
+        }
     ;
 selectSuperStmt
     : open_stmt
@@ -278,60 +312,137 @@ selectSuperStmt
         }
     ;
 open_stmt
-    : IF simpleExp THEN selectSuperStmt
-    | IF simpleExp THEN closed_stmt ELSE open_stmt
+    : IF simpleExp[simpleexp] THEN selectSuperStmt[selectsuperstmt]
+        {
+            $$ = newStmtNode(StmtKind::IfK, NULL, $[simpleexp], $[selectsuperstmt], NULL);
+        }
+    | IF simpleExp[simpleexp] THEN closed_stmt[clsdstmt] ELSE open_stmt[opnstmt]
+        {
+            $$ = newStmtNode(StmtKind::IfK, NULL, $[simpleexp], $[clsdstmt], $[opnstmt]);
+        }
     | open_iterStmt
+        {
+            $$ = $1;
+        }
     ;
 closed_stmt
     : otherStmt
-    | IF simpleExp THEN closed_stmt ELSE closed_stmt 
+        {
+            $$ = $1;
+        }
+    | IF simpleExp[simpleexp] THEN closed_stmt[clsstmt1] ELSE closed_stmt[clsstmt2]
+        {
+            $$ = newStmtNode(StmtKind::IfK, NULL, $[simpleexp], $[clsstmt1], $[clsstmt2]);
+        }
     ;
 open_iterStmt
-    : WHILE simpleExp DO open_stmt
-    | FOR ID '=' iterRange DO open_stmt
+    : WHILE simpleExp[simpleexp] DO open_stmt[opnstmt]
+        {
+            $$ = newStmtNode(StmtKind::WhileK, NULL, $[simpleexp], $[opnstmt], NULL);
+        }
+    | FOR ID[id] '=' iterRange[itrrng] DO open_stmt[opnstmt]
+        {
+            TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
+            $$ = newStmtNode(StmtKind::ForK, NULL, tmp, $[itrrng], $[opnstmt]);
+        }
     ;
 closed_iterStmt
-    : WHILE simpleExp DO closed_stmt
-    | FOR ID '=' iterRange DO closed_stmt
+    : WHILE simpleExp[simpleexp] DO closed_stmt[clsdstmt]
+        {
+            $$ = newStmtNode(StmtKind::WhileK, NULL, $[simpleexp], $[clsdstmt], NULL);
+        }
+    | FOR ID[id] '=' iterRange[itrrng] DO closed_stmt[clsdstmt]
+        {
+            TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
+            $$ = newStmtNode(StmtKind::ForK, NULL, tmp, $[itrrng], $[clsdstmt]);
+        }
     ;
 iterRange
-    : simpleExp TO simpleExp
-    | simpleExp TO simpleExp BY simpleExp
+    : simpleExp[low] TO simpleExp[high]
+        {
+            $$ = newStmtNode(StmtKind::RangeK, NULL, $[low], $[high], NULL);
+        }
+    | simpleExp[low] TO simpleExp[high] BY simpleExp[step]
+        {
+            $$ = newStmtNode(StmtKind::RangeK, NULL, $[low], $[high], $[step]);
+        }
 returnStmt
     : RETURN ';'
-    | RETURN exp ';'
+        {
+            $$ = newStmtNode(StmtKind::ReturnK, NULL, NULL, NULL, NULL);
+        }
+    | RETURN exp[e] ';'
+        {
+            $$ = newStmtNode(StmtKind::ReturnK, NULL, $[e], NULL, NULL);
+        }
     ;
 breakStmt
     : BREAK ';'
+        {
+            $$ = newStmtNode(StmtKind::BreakK, NULL, NULL, NULL, NULL);
+        }
     ;
 exp
     : mutable assignop exp
     | mutable INC
     | mutable DEC
     | simpleExp
+        {
+            $$ = $1;
+        }
     ;
 assignop
     : '='
+        {
+            $$ = newExpNode(ExpKind::AssignK, $1, NULL, NULL, NULL);
+        }
     | ADDASS
+        {
+            $$ = newExpNode(ExpKind::AssignK, $1, NULL, NULL, NULL);
+        }
     | SUBASS
+        {
+            $$ = newExpNode(ExpKind::AssignK, $1, NULL, NULL, NULL);
+        }
     | MULASS
+        {
+            $$ = newExpNode(ExpKind::AssignK, $1, NULL, NULL, NULL);
+        }
     | DIVASS
+        {
+            $$ = newExpNode(ExpKind::AssignK, $1, NULL, NULL, NULL);
+        }
     ;
 simpleExp
     : simpleExp OR andExp
     | andExp
+        {
+            $$ = $1;
+        }
     ;
 andExp
     : andExp AND unaryRelExp
     | unaryRelExp
+        {
+            $$ = $1;
+        }
     ;
 unaryRelExp
     : NOT unaryRelExp
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, $2, NULL, NULL);
+        }
     | relExp
+        {
+            $$ = $1;
+        }
     ;
 relExp
     : sumExp relop sumExp
     | sumExp
+        {
+            $$ = $1;
+        }
     ;
 relop
     : '<'
@@ -362,6 +473,9 @@ relop
 sumExp
     : sumExp sumop mulExp
     | mulExp
+        {
+            $$ = $1;
+        }
     ;
 sumop
     : '+'
@@ -380,6 +494,7 @@ mulExp
 mulop
     : '*'
         {
+            $1->tokenclass = MULTIPLY;
             $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
         }
     | '/'
@@ -390,10 +505,20 @@ mulop
         {
             $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
         }
+    | MULTIPLY
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
     ;
 unaryExp
     : unaryop unaryExp
+        {
+            // addSibling
+        }
     | factor
+        {
+            $$ = $1;
+        }
     ;
 unaryop
     : '-'
@@ -402,42 +527,93 @@ unaryop
         }
     | '*'
         {
+            $1->tokenclass = SIZEOF;
             $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
         }
     | '?'
         {
             $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
         }
+    | SIZEOF
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
     ;
 factor
     : mutable
+        {
+            $$ = $1;
+        }
     | immutable
+        {
+            $$ = $1;
+        }
     ;
 mutable
     : ID
-    | ID '[' exp ']'
+        {
+            $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
+        }
+    | ID '[' exp[e] ']'
+        {
+            $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
+        }
     ;
 immutable
     : '(' exp ')'
+        {
+            $$ = $2;
+        }
     | call
+        {
+            $$ = $1;
+        }
     | constant
+        {
+            $$ = $1;
+        }
     ;
 call
-    : ID '(' args ')'
+    : ID '(' args[arguments] ')'
+        {
+            // TreeNode* tmp = newExpNode(ExpKind::IdK)
+            $$ = newExpNode(ExpKind::CallK, $1, $[arguments], NULL, NULL);
+        }
     ;
 args
     : %empty
+        {
+            $$ = NULL;
+        }
     | argList
+        {
+            $$ = $1;
+        }
     ;
 argList
     : argList ',' exp
     | exp
+        {
+            $$ = $1;
+        }
     ;
 constant
     : NUMCONST
+        {
+            $$ = newExpNode(ExpKind::ConstantK, $1, NULL, NULL, NULL);
+        }
     | CHARCONST
+        {
+            $$ = newExpNode(ExpKind::ConstantK, $1, NULL, NULL, NULL);
+        }
     | STRINGCONST
+        {
+            $$ = newExpNode(ExpKind::ConstantK, $1, NULL, NULL, NULL);
+        }
     | BOOLCONST
+        {
+            $$ = newExpNode(ExpKind::ConstantK, $1, NULL, NULL, NULL);
+        }
     ;
 
 %%
