@@ -54,23 +54,35 @@ void printCharByChar(char* stringToPrint)
 
 %token <tokenData> ID NUMCONST CHARCONST STRINGCONST BOOLCONST
 %token <tokenData> IF ELSE THEN RETURN EQ NEQ GEQ LEQ INT OR
-%token <tokenData> ADDASS SUBASS MULASS DIVASS
+%token <tokenData> ADDASS SUBASS MULASS DIVASS MODULO
 %token <tokenData> STATIC BOOL CHAR
 %token <tokenData> AND NOT FOR WHILE BREAK TO BY DO INC DEC
-
-%type <tree> program decList decl varDecl varDeclList funDecl
-%type <tree> parms parmList parmTypeList parmIdList parmId
-%type <tree> compoundStmt
+%type <tokenData> '+' '*' '-' '\\' '<' '>' '/' '?'
+/* %type <tree> program declList decl varDecl varDeclList varDeclInit varDeclId funDecl */
+/* %type <tree> parms parmList parmTypeList parmIdList parmId */
+/* %type <tree> stmt selectSuperStmt open_iterStmt open_stmt closed_iterStmt closed_stmt */
+/* %type <tree> compoundStmt */
 %type <type> typeSpec
-%type <tokenData> constant
+/* %type <tokenData> constant */
+%type <tree> program declList decl varDecl scopedVarDecl varDeclList varDeclInit varDeclId // typeSpec
+%type <tree> funDecl parms parmList parmTypeList parmIdList parmId stmt expStmt compoundStmt localDecls
+%type <tree> stmtList selectSuperStmt open_iterStmt closed_iterStmt open_stmt closed_stmt iterRange returnStmt breakStmt exp assignop simpleExp andExp
+%type <tree> unaryRelExp relExp relop sumExp sumop mulExp mulop unaryExp unaryop factor mutable immutable 
+%type <tree> call args argList constant
+/* %type <tree>  */
+/* %type <tree>  */
+/* %type <tree>  */
+
+/* %type <tree>  */
+
 /* %type  <value> expression sumexp mulexp unary factor */
 
 %%
 program
-    : decList {rootNode = $1;}
+    : declList {rootNode = $1;}
     ;
-decList             
-    : decList decl
+declList             
+    : declList decl
         {
             TreeNode* t = $1;
             if(t != NULL)
@@ -94,26 +106,60 @@ decl
     | funDecl {$$ = $1;}
     ;
 varDecl
-    : typeSpec[type] varDeclList[vdeclList] ';'
+    : typeSpec[type] varDeclList[vdecllist] ';'
         {
-            $$ = newDeclNode(DeclKind::VarK, $[type], NULL, $[vdeclList], NULL, NULL);
+            $$ = newDeclNode(DeclKind::VarK, $[type], NULL, $[vdecllist], NULL, NULL);
         }
     ;
 scopedVarDecl
-    : STATIC typeSpec varDeclList ';'
-    | typeSpec varDeclList ';'
+    : STATIC typeSpec[type] varDeclList[vdecllist] ';'
+        {
+            $$ = newDeclNode(DeclKind::VarK, $[type], NULL, $[vdecllist], NULL, NULL);
+            setType($$, $[type], true);
+            // Might need to actually do this:
+            // setType($$->child[0], ... )
+        }
+    | typeSpec[type] varDeclList[vdecllist] ';'
+        {
+            $$ = newDeclNode(DeclKind::VarK, $[type], NULL, $[vdecllist], NULL, NULL);
+            setType($$, $[type], false);
+            // Might need to actually do this:
+            // setType($$->child[0], ... )
+        }
     ;
 varDeclList
-    : varDeclList ',' varDeclInit
+    : varDeclList[vdecllist] ',' varDeclInit[vdeclinit]
+        {
+            $$ = $[vdeclinit];
+            addSibling($$, $[vdecllist]);
+        }
     | varDeclInit
+        {
+            $$ = $1;
+        }
     ;
 varDeclInit
     : varDeclId
-    | varDeclId ':' simpleExp
+        {
+            $$ = $1;
+        }
+    | varDeclId[vdeclid] ':' simpleExp[simpleexp]
+        {
+            $$ = $[vdeclid];
+            $$->child[0] = $[simpleexp];
+        }
     ;
 varDeclId
     : ID
+        {
+            $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
+            printf("Found ID: %s\n\n", $1->tokenstr);
+        }
     | ID '['NUMCONST']'
+        {
+            $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
+            printf("Found ID: %s\n\n", $1->tokenstr);
+        }
     ;
 typeSpec
     : BOOL
@@ -195,6 +241,9 @@ parmId
         }
 stmt
     : selectSuperStmt
+        {
+            $$ = $1;
+        }
     ;
 otherStmt
     : expStmt
@@ -220,7 +269,13 @@ stmtList
     ;
 selectSuperStmt
     : open_stmt
+        {
+            $$ = $1;
+        }
     | closed_stmt
+        {
+            $$ = $1;
+        }
     ;
 open_stmt
     : IF simpleExp THEN selectSuperStmt
@@ -280,11 +335,29 @@ relExp
     ;
 relop
     : '<'
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
     | LEQ
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
     | '>'
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
     | GEQ
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
     | EQ
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
     | NEQ
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
     ;
 sumExp
     : sumExp sumop mulExp
@@ -292,7 +365,13 @@ sumExp
     ;
 sumop
     : '+'
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
     | '-'
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
     ;
 mulExp
     : mulExp mulop unaryExp
@@ -300,8 +379,17 @@ mulExp
     ;
 mulop
     : '*'
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
     | '/'
-    | '%'
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
+    | MODULO
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
     ;
 unaryExp
     : unaryop unaryExp
@@ -309,8 +397,17 @@ unaryExp
     ;
 unaryop
     : '-'
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
     | '*'
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
     | '?'
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
     ;
 factor
     : mutable

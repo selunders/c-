@@ -187,7 +187,8 @@ static int setValue(int linenum, int tokenClass, char *svalue)
 \"(\\.|[^\"\n])*\"      { return setValue(line, STRINGCONST, yytext); }
 [a-zA-Z][a-zA-Z0-9]*    { return setValue(line, ID, yytext);}
 [ \t]                   ;
-[\=\+\-\*\/\(\)\%]      { return setValue(line, yytext[0], yytext); }
+[\%]                    { return setValue(line, MODULO, yytext); }
+[\=\+\-\*\/\(\)]        { return setValue(line, yytext[0], yytext); }
 [\'\"\.\@\#\$\^\&\_\|\\\~\!]                { printf("ERROR(%d): Invalid or misplaced input character: \'%s\'. Character Ignored.\n", line, yytext); }
 [\%\*\(\)\-\{\}\[\]\;\:\<\>\?\,\/]          { return setValue(line, yytext[0], yytext); }
 .                       { printf("ERROR(%d): char \'%c\' is not in the language\n", line, yytext[0]); numErrors++; }
