@@ -153,12 +153,12 @@ varDeclId
     : ID
         {
             $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
-            printf("Found ID: %s\n\n", $1->tokenstr);
+            // printf("Found ID: %s\n\n", $1->tokenstr);
         }
     | ID '['NUMCONST']'
         {
             $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
-            printf("Found ID: %s\n\n", $1->tokenstr);
+            // printf("Found ID: %s\n\n", $1->tokenstr);
         }
     ;
 typeSpec
@@ -211,7 +211,7 @@ parmTypeList
     : typeSpec[type] parmIdList[prmidlist]
         {
             $$ = $[prmidlist];
-            printf("Found a list of parameters\n");
+            // printf("Found a list of parameters\n");
             setType($$, $[type], $$->isStatic);
         }
     ;
@@ -383,9 +383,25 @@ breakStmt
         }
     ;
 exp
-    : mutable assignop exp
-    | mutable INC
-    | mutable DEC
+    : mutable[m] assignop[aop] exp[e]
+        {
+            $$ = $[aop];
+            $$->child[0] = $[m];
+            $$->child[1] = $[e];
+            // $$ = newExpNode(ExpKind::OpK, $[aop], $[m], $[e], NULL);
+        }
+    | mutable[m] INC[inc]
+        {
+            // $$ = newExpNode(ExpKind::OpK, $[inc], NULL, NULL, NULL;
+            // $$->child[0] = $[m];
+            $$ = newExpNode(ExpKind::OpK, $[inc], $[m], NULL, NULL);
+        }
+    | mutable[m] DEC[dec]
+        {
+            // $$ = $[dec];
+            // $$->child[0] = $[m];
+            $$ = newExpNode(ExpKind::OpK, $[dec], $[m], NULL, NULL);
+        }
     | simpleExp
         {
             $$ = $1;
@@ -414,14 +430,20 @@ assignop
         }
     ;
 simpleExp
-    : simpleExp OR andExp
+    : simpleExp[sexp] OR[or] andExp[aexp]
+        {
+            $$ = newExpNode(ExpKind::OpK, $[or], $[sexp], $[aexp], NULL);
+        }
     | andExp
         {
             $$ = $1;
         }
     ;
 andExp
-    : andExp AND unaryRelExp
+    : andExp[aexp] AND[and] unaryRelExp[urexp]
+        {
+            $$ = newExpNode(ExpKind::OpK, $[and], $[aexp], $[urexp], NULL);
+        }
     | unaryRelExp
         {
             $$ = $1;
@@ -438,7 +460,12 @@ unaryRelExp
         }
     ;
 relExp
-    : sumExp relop sumExp
+    : sumExp[sexp] relop[rop] sumExp[sexp2]
+        {
+            $$ = $[rop];;
+            $$->child[0] = $[sexp];
+            $$->child[1] = $[sexp2];
+        }
     | sumExp
         {
             $$ = $1;
@@ -471,7 +498,12 @@ relop
         }
     ;
 sumExp
-    : sumExp sumop mulExp
+    : sumExp[sexp] sumop[sop] mulExp[mexp]
+        {
+            $$ = $[sop];
+            $$->child[0] = $[sexp];
+            $$->child[1] = $[mexp];
+        }
     | mulExp
         {
             $$ = $1;
@@ -488,8 +520,16 @@ sumop
         }
     ;
 mulExp
-    : mulExp mulop unaryExp
+    : mulExp[mexp] mulop[mop] unaryExp[uexp]
+        {
+            $$ = $[mop];
+            $$->child[0] = $[mexp];
+            $$->child[1] = $[uexp];
+        }
     | unaryExp
+        {
+            $$ = $1;
+        }
     ;
 mulop
     : '*'
@@ -511,9 +551,10 @@ mulop
         }
     ;
 unaryExp
-    : unaryop unaryExp
+    : unaryop[uop] unaryExp[uexp]
         {
-            // addSibling
+            $$ = $[uop];
+            $$->child[0] = $[uexp];
         }
     | factor
         {
@@ -556,7 +597,7 @@ mutable
         }
     | ID '[' exp[e] ']'
         {
-            $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
+            $$ = newExpNode(ExpKind::IdK, $1, $[e], NULL, NULL);
         }
     ;
 immutable
@@ -591,7 +632,10 @@ args
         }
     ;
 argList
-    : argList ',' exp
+    : argList[args] ',' exp[e]
+        {
+            $$ = addSibling($[e], $[args]);
+        }
     | exp
         {
             $$ = $1;
