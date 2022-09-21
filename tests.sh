@@ -1,19 +1,15 @@
 #!/bin/bash
 
-
-
 if [ -z $1 ]; then
     echo 'make c-'
     make clean; make;
-    echo -e "\n"
-    echo "Assignment 2 files:"
+    echo 'Running ./c- on all the files in samplePrograms2'
     for file in samplePrograms2/*.c-
     do
         x=${file%.c-}
         y=${x##*/}
-        echo 'Running ./c- on all the files in samplePrograms2'
         # echo "./c- $file > myOutput/$y.out" 
-        ./c- $file > myOutput/$y.out
+        ./c- $file -p > myOutput/$y.out
     done
 
     echo -e "Complete. Files stored in myOutput/\n"

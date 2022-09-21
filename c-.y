@@ -16,6 +16,7 @@
 #include "util.hpp"
 #include <stdio.h>
 #include <string.h> 
+#include <unistd.h>
 
 extern int yylex();
 extern FILE *yyin;
@@ -781,7 +782,14 @@ factor        : ID                  { $$ = vars[$1->idIndex]; }
 extern int yydebug;
 int main(int argc, char *argv[])
 {
-    if (argc > 1) {
+    bool printTreeFlag = false;
+    bool printYYDEBUG = false;
+
+    int index;
+    char* cvalue = NULL;
+    int c;
+
+    /* if (argc > 1) {
         if ((yyin = fopen(argv[1], "r"))) {
             // file open successful
         }
@@ -790,15 +798,45 @@ int main(int argc, char *argv[])
             printf("ERROR: failed to open \'%s\'\n", argv[1]);
             exit(1);
         }
+    } */
+
+    while((c = getopt(argc, argv, "dp")) != -1)
+    {
+        switch(c)
+        {
+            case 'd':
+                yydebug = 1;
+            break;
+            case 'p':
+                printTreeFlag = true;
+            break;
+            default:
+            break; 
+        }
     }
 
+    for(index = optind; index < argc; index++)
+    {
+        if((yyin = fopen(argv[index], "r")))
+        {
+            break;
+        }
+    }
+    if(!yyin)
+    {
+        printf("Could not open file\n");
+        exit(1); 
+    }
     // init variables a through z
     /* for (int i=0; i<26; i++) vars[i] = 0.0; */
 
     // do the parsing
     numErrors = 0;
     yyparse();
-    printTree(rootNode);
+    if(printTreeFlag)
+    {
+        printTree(rootNode);
+    }
     /* printf("Number of errors: %d\n", numErrors);   // ERR */
 
     return 0;

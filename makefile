@@ -1,7 +1,7 @@
 BIN = c-
 CC = g++
 
-SRCS = $(BIN).y  $(BIN).l
+SRCS = $(BIN).y  $(BIN).l util.cpp
 HDRS = scanType.h globals.hpp util.hpp
 OBJS = lex.yy.o $(BIN).tab.o util.o
 CFLAGS = -std=c++11 -g
