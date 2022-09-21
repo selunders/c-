@@ -58,7 +58,7 @@ void printCharByChar(char* stringToPrint)
 %token <tokenData> STATIC BOOL CHAR
 %token <tokenData> AND NOT FOR WHILE BREAK TO BY DO INC DEC
 %token <tokenData> SIZEOF MULTIPLY NEGATIVE SUBTRACT
-%token <tokenData> '+' '*' '-' '\\' '<' '>' '/' '?' ';' '(' '{'
+%token <tokenData> '+' '*' '-' '\\' '<' '>' '/' '?' ';' '(' '{' '['
 %type <type> typeSpec
 %type <tree> program declList decl varDecl scopedVarDecl varDeclList varDeclInit varDeclId // typeSpec
 %type <tree> funDecl parms parmList parmTypeList parmIdList parmId stmt expStmt compoundStmt localDecls
@@ -348,7 +348,8 @@ open_iterStmt
         }
     | FOR ID[id] '=' iterRange[itrrng] DO open_stmt[opnstmt]
         {
-            TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
+            TreeNode* tmp = newDeclNode(DeclKind::VarK, ExpType::Integer, $[id], NULL, NULL, NULL);
+            // TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
             $$ = newStmtNode(StmtKind::ForK, $1, tmp, $[itrrng], $[opnstmt]);
         }
     ;
@@ -359,7 +360,8 @@ closed_iterStmt
         }
     | FOR ID[id] '=' iterRange[itrrng] DO closed_stmt[clsdstmt]
         {
-            TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
+            TreeNode* tmp = newDeclNode(DeclKind::VarK, ExpType::Integer, $[id], NULL, NULL, NULL);
+            // TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
             $$ = newStmtNode(StmtKind::ForK, $1, tmp, $[itrrng], $[clsdstmt]);
         }
     ;
@@ -610,10 +612,13 @@ mutable
     : ID
         {
             $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
+            $$->attr.string = strdup($1->tokenstr);
         }
     | ID '[' exp[e] ']'
         {
-            $$ = newExpNode(ExpKind::IdK, $1, $[e], NULL, NULL);
+            TreeNode* tmp = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
+            tmp->attr.string = strdup($1->tokenstr);
+            $$ = newExpNode(ExpKind::OpK, $2, tmp, $[e], NULL);
         }
     ;
 immutable
@@ -635,6 +640,7 @@ call
         {
             // TreeNode* tmp = newExpNode(ExpKind::IdK)
             $$ = newExpNode(ExpKind::CallK, $1, $[arguments], NULL, NULL);
+            $$->attr.string = strdup($1->tokenstr);
         }
     ;
 args
@@ -661,18 +667,28 @@ constant
     : NUMCONST
         {
             $$ = newExpNode(ExpKind::ConstantK, $1, NULL, NULL, NULL);
+            $$->attr.value = $1->numValue;
+            $$->expType = ExpType::Integer;
         }
     | CHARCONST
         {
             $$ = newExpNode(ExpKind::ConstantK, $1, NULL, NULL, NULL);
+            $$->attr.cvalue = $1->charValue;
+            $$->expType = ExpType::Char;
+            $$->isArray = false;
         }
     | STRINGCONST
         {
             $$ = newExpNode(ExpKind::ConstantK, $1, NULL, NULL, NULL);
+            $$->attr.string = strdup($1->stringValue);
+            $$->expType = ExpType::Char;
+            $$->isArray = true;
         }
     | BOOLCONST
         {
             $$ = newExpNode(ExpKind::ConstantK, $1, NULL, NULL, NULL);
+            $$->attr.value = $1->boolValue;
+            $$->expType = ExpType::Boolean;
         }
     ;
 

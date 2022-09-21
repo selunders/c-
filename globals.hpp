@@ -60,7 +60,9 @@ class TreeNode
             unsigned char cvalue;   // character
             char* string;           // string constant
             char* name;             // IdK
-            int idIndex;            // IdK
+        // Learning some about how unions work. Since I've already decleared a char*, I can't assign
+            // to 'name' because 'string' already exists. I can still read from 'name' though...
+            // int idIndex;            // IdK
             // char* name;             // IdK
         } attr;
 

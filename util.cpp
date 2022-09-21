@@ -194,13 +194,13 @@ char *expToString(ExpType type)
     switch (type)
     {
     case ExpType::Void:
-        return (char *)"Void";
+        return (char *)"void";
         break;
     case ExpType::Integer:
         return (char *)"int";
         break;
     case ExpType::Boolean:
-        return (char *)"Boolean";
+        return (char *)"bool";
         break;
     case ExpType::Char:
         return (char *)"char";
@@ -226,13 +226,13 @@ char *opToString(OpKind op)
     switch (op)
     {
     case OR:
-        return (char *)"OR";
+        return (char *)"or";
         break;
     case AND:
-        return (char *)"AND";
+        return (char *)"and";
         break;
     case NOT:
-        return (char *)"NOT";
+        return (char *)"not";
         break;
     case '<':
         return (char *)"<";
@@ -268,13 +268,16 @@ char *opToString(OpKind op)
         return (char *)"%";
         break;
     case NEGATIVE:
-        return (char *)"-";
+        return (char *)"chsign";
         break;
     case '?':
         return (char *)"?";
         break;
     case SIZEOF:
-        return (char *)"SIZEOF";
+        return (char *)"sizeof";
+        break;
+    case '[':
+        return (char*)"[";
         break;
     default:
         return (char *)"ERROR(opToString() in util.cpp)";
@@ -417,7 +420,10 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
                 printf("Var: %s ", tree->attr.name);
                 if (tree->isArray)
                     printf("of array ");
-                printf("of type %s", expToString(tree->expType));
+                if (tree->isStatic)
+                    printf("of static type %s", expToString(tree->expType));
+                else
+                    printf("of type %s", expToString(tree->expType));
                 break;
             case DeclKind::FuncK:
                 // printf("Var: %s ", tree->attr.name);
@@ -442,6 +448,27 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
                 printf("Op: %s", opToString(tree->attr.op));
                 break;
             case ExpKind::ConstantK:
+                switch (tree->expType)
+                {
+                case ExpType::Boolean:
+                    if (tree->attr.value == 0)
+                        printf("Const false");
+                    else
+                        printf("Const true");
+                    break;
+                case ExpType::Char:
+                    if (tree->isArray)
+                        printf("Const %s", tree->attr.string);
+                    else
+                        printf("Const \'%c\'", tree->attr.cvalue);
+                    break;
+                case ExpType::Integer:
+                    printf("Const %d", tree->attr.value);
+                    break;
+                default:
+                    printf("How'd you find this???\n\n\n");
+                    break;
+                }
                 break;
             case ExpKind::IdK:
                 printf("Id: %s", tree->attr.name);
@@ -452,6 +479,7 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
             case ExpKind::InitK:
                 break;
             case ExpKind::CallK:
+                printf("Call: %s", tree->attr.name);
                 break;
             default:
                 break;
