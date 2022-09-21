@@ -230,13 +230,15 @@ parmIdList
 parmId
     : ID
         {
-            $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
+            $$ = newDeclNode(DeclKind::ParamK, ExpType::UndefinedType,  $1, NULL, NULL, NULL);
+            // $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             $$->isArray = false;
             // printf("Found ID: %s\n\n", $1->tokenstr);
         }
     | ID '['']'
         {
-            $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
+            $$ = newDeclNode(DeclKind::ParamK, ExpType::UndefinedType, $1, NULL, NULL, NULL);
+            // $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             $$->isArray = true;
             // printf("Found ID array: %s\n\n", $1->tokenstr);
         }

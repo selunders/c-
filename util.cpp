@@ -25,21 +25,23 @@ TreeNode *newDeclNode(DeclKind kind, ExpType type, TokenData *token, TreeNode *c
     TreeNode *t = new TreeNode();
     // printf("New tree node created at %p ", t);
     // printf("of type: ");
-    switch (kind)
-    {
-        case DeclKind::VarK:
-            t->attr.name = strdup(token->tokenstr);
-            // printf("VarK\n");
-            break;
-        case DeclKind::FuncK:
-            // printf("Setting function name to %s\n\n", strdup(token->tokenstr));
-            t->attr.name = strdup(token->tokenstr);
-            // printf("FuncK\n");
-            break;
-        case DeclKind::ParamK:
-            // printf("DeclK\n");j
-            break;
-    }
+    t->attr.name = strdup(token->tokenstr);
+    // switch (kind)
+    // {
+    //     case DeclKind::VarK:
+    //         t->attr.name = strdup(token->tokenstr);
+    //         // printf("VarK\n");
+    //         break;
+    //     case DeclKind::FuncK:
+    //         // printf("Setting function name to %s\n\n", strdup(token->tokenstr));
+    //         t->attr.name = strdup(token->tokenstr);
+    //         // printf("FuncK\n");
+    //         break;
+    //     case DeclKind::ParamK:
+    //         t->attr.name = strdup(token->tokenstr);
+    //         // printf("DeclK\n");j
+    //         break;
+    // }
 
     t->child[0] = c0;
     t->child[1] = c1;
@@ -78,6 +80,7 @@ TreeNode *newStmtNode(StmtKind kind, TokenData *token, TreeNode *c0, TreeNode *c
     TreeNode *t = new TreeNode();
 
     t->nodeKind = NodeKind::StmtK;
+    t->subkind.stmt = kind;
 
     t->child[0] = c0;
     t->child[1] = c1;
@@ -109,19 +112,19 @@ TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0, TreeNode *c1,
         t->attr.op = token->tokenclass;
         break;
     case ExpKind::ConstantK:
-        switch(token->tokenclass)
+        switch (token->tokenclass)
         {
-            case NUMCONST:
-                t->attr.value = token->numValue;
+        case NUMCONST:
+            t->attr.value = token->numValue;
             break;
-            case CHARCONST:
-                t->attr.cvalue = token->charValue;
+        case CHARCONST:
+            t->attr.cvalue = token->charValue;
             break;
-            case STRINGCONST:
-                t->attr.string = strdup(token->stringValue);
+        case STRINGCONST:
+            t->attr.string = strdup(token->stringValue);
             break;
-            case BOOLCONST:
-                t->attr.value = token->numValue;
+        case BOOLCONST:
+            t->attr.value = token->numValue;
             break;
         }
         break;
@@ -184,35 +187,35 @@ void setType(TreeNode *t, ExpType type, bool isStatic)
 //////////////////////
 // Printing the AST
 
-char* expToString(ExpType type)
+char *expToString(ExpType type)
 {
-    switch(type)
+    switch (type)
     {
-        case ExpType::Void:
-            return (char*) "Void";
-            break;
-        case ExpType::Integer:
-            return (char*) "int";
-            break;
-        case ExpType::Boolean:
-            return (char*) "Boolean";
-            break;
-        case ExpType::Char:
-            return (char*) "char";
-            break;
-        case ExpType::CharInt:
-            return (char*) "CharInt";
-            break;
-        case ExpType::Equal:
-            return (char*) "Equal";
-            break;
-        case ExpType::UndefinedType:
-            return (char*) "UndefinedType";
-            break;
-        default:
-            printf("\n\n Error with expToString in globals.hpp\n\n");
-            return (char*) "ERROR IN GLOBALS.HPP EXPTOSTRING";
-            break;
+    case ExpType::Void:
+        return (char *)"Void";
+        break;
+    case ExpType::Integer:
+        return (char *)"int";
+        break;
+    case ExpType::Boolean:
+        return (char *)"Boolean";
+        break;
+    case ExpType::Char:
+        return (char *)"char";
+        break;
+    case ExpType::CharInt:
+        return (char *)"CharInt";
+        break;
+    case ExpType::Equal:
+        return (char *)"Equal";
+        break;
+    case ExpType::UndefinedType:
+        return (char *)"UndefinedType";
+        break;
+    default:
+        printf("\n\n Error with expToString in globals.hpp\n\n");
+        return (char *)"ERROR IN GLOBALS.HPP EXPTOSTRING";
+        break;
     }
 }
 
@@ -239,9 +242,9 @@ enum class NodeRelation
     Sibling
 };
 
-void printSTree(TreeNode* tree, NodeRelation relation, int relIndex, int layer)
+void printSTree(TreeNode *tree, NodeRelation relation, int relIndex, int layer)
 {
-    if(tree != NULL)
+    if (tree != NULL)
     {
         printSpaces(layer);
         printf("Test");
@@ -261,7 +264,7 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
         switch (relation)
         {
         case NodeRelation::Parent:
-            switch(tree->nodeKind)
+            switch (tree->nodeKind)
             {
                 // case NodeKind::DeclK:
                 //     switch(tree->subkind.decl)
@@ -312,44 +315,78 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
         }
         switch (tree->nodeKind)
         {
-            case NodeKind::DeclK:
-                // printf("DeclK with subtype ");
-                switch (tree->subkind.decl)
-                {
-                    case DeclKind::VarK:
-                        printf("Var: %s ", tree->attr.name);
-                        if(tree->isArray)
-                            printf("of array ");
-                        printf("of type %s", expToString(tree->expType));
-                        break;
-                    case DeclKind::FuncK:
-                        // printf("Var: %s ", tree->attr.name);
-                        // printf("About to print\n");
-                        printf("Func: %s ", tree->attr.name);
-                        // printf("Func: %s", tree->attr.name);
-                        break;
-                    case DeclKind::ParamK:
-                        printf("ParamK");
-                        break;
-                }
+        case NodeKind::DeclK:
+            // printf("DeclK with subtype ");
+            switch (tree->subkind.decl)
+            {
+            case DeclKind::VarK:
+                printf("Var: %s ", tree->attr.name);
+                if (tree->isArray)
+                    printf("of array ");
+                printf("of type %s", expToString(tree->expType));
                 break;
-            case NodeKind::ExpK:
-                // printf("ExpK");
-                switch(tree->subkind.exp)
-                {
-                    case ExpKind::IdK:
-                        printf("Id: %s", tree->attr.name);
-                        break;
-                    default:
-                        break;
-                }
+            case DeclKind::FuncK:
+                // printf("Var: %s ", tree->attr.name);
+                // printf("About to print\n");
+                printf("Func: %s ", tree->attr.name);
+                printf("returns type %s", expToString(tree->expType));
+                // printf("Func: %s", tree->attr.name);
                 break;
-            case NodeKind::StmtK:
-                printf("StmtK");
+            case DeclKind::ParamK:
+                printf("Parm: %s ", tree->attr.name);
+                if (tree->isArray)
+                    printf("of array ");
+                printf("of type %s", expToString(tree->expType));
+                break;
+            }
+            break;
+        case NodeKind::ExpK:
+            // printf("ExpK");
+            switch (tree->subkind.exp)
+            {
+            case ExpKind::IdK:
+                printf("Id: %s", tree->attr.name);
                 break;
             default:
-                printf("Found unknown node???\n\n");
                 break;
+            }
+            break;
+        case NodeKind::StmtK:
+            // printf("StmtK");
+            switch(tree->subkind.stmt)
+            {
+                case StmtKind::NullK:
+                    printf("Null");
+                break;
+                case StmtKind::IfK:
+                    printf("If");
+                break;
+                case StmtKind::WhileK:
+                    printf("While");
+                break;
+                case StmtKind::ForK:
+                    printf("For");
+                break;
+                case StmtKind::CompoundK:
+                    printf("Compound");
+                break;
+                case StmtKind::ReturnK:
+                    printf("Return");
+                break;
+                case StmtKind::BreakK:
+                    printf("Break");
+                break;
+                case StmtKind::RangeK:
+                    printf("Range");
+                break;
+                default:
+                    printf("... how'd you get here? (util.cpp ~380ish)\n\n");
+                    break;
+            }
+            break;
+        default:
+            printf("Found unknown node???\n\n");
+            break;
         }
         // nodeCount++;
         // printf("%d\n", nodeCount);
@@ -358,20 +395,20 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
         {
             if (tree->child[i] != NULL)
             {
-                printRTree(tree->child[i], NodeRelation::Child, i, layer+1);
+                printRTree(tree->child[i], NodeRelation::Child, i, layer + 1);
                 // printf("child %d is not NULL %p\n", i, tree->child[i]);
             }
             // else
             // printf("child %d is NULL\n", i);
         }
         // UNINDENT;
-            if (tree->sibling != NULL)
-            {
-                if(relation == NodeRelation::Sibling)
-                    printRTree(tree->sibling, NodeRelation::Sibling, id+1, layer);
-                else
-                    printRTree(tree->sibling, NodeRelation::Sibling, 1, layer);
-            }
+        if (tree->sibling != NULL)
+        {
+            if (relation == NodeRelation::Sibling)
+                printRTree(tree->sibling, NodeRelation::Sibling, id + 1, layer);
+            else
+                printRTree(tree->sibling, NodeRelation::Sibling, 1, layer);
+        }
         // INDENT;
         // tree = NULL;
         // tree = tree->sibling;
