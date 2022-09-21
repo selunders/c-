@@ -110,6 +110,7 @@ TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0, TreeNode *c1,
     {
     case ExpKind::OpK:
         t->attr.op = token->tokenclass;
+        // printf("\n\n Set op to %d\n\n", token->tokenclass);
         break;
     case ExpKind::ConstantK:
         switch (token->tokenclass)
@@ -133,6 +134,7 @@ TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0, TreeNode *c1,
         // t->attr.idIndex = token->idIndex;
         break;
     case ExpKind::AssignK:
+        t->attr.op = token->tokenclass;
         // t->attr.name = strdup(token->tokenstr);
         break;
     case ExpKind::InitK:
@@ -215,6 +217,98 @@ char *expToString(ExpType type)
     default:
         printf("\n\n Error with expToString in globals.hpp\n\n");
         return (char *)"ERROR IN GLOBALS.HPP EXPTOSTRING";
+        break;
+    }
+}
+
+char *opToString(OpKind op)
+{
+    switch (op)
+    {
+    case OR:
+        return (char *)"OR";
+        break;
+    case AND:
+        return (char *)"AND";
+        break;
+    case NOT:
+        return (char *)"NOT";
+        break;
+    case '<':
+        return (char *)"<";
+        break;
+    case LEQ:
+        return (char *)"<=";
+        break;
+    case '>':
+        return (char *)">";
+        break;
+    case GEQ:
+        return (char *)">=";
+        break;
+    case EQ:
+        return (char *)"==";
+        break;
+    case NEQ:
+        return (char *)"!=";
+        break;
+    case '+':
+        return (char *)"+";
+        break;
+    case SUBTRACT:
+        return (char *)"-";
+        break;
+    case MULTIPLY:
+        return (char *)"*";
+        break;
+    case '/':
+        return (char *)"/";
+        break;
+    case MODULO:
+        return (char *)"%";
+        break;
+    case NEGATIVE:
+        return (char *)"-";
+        break;
+    case '?':
+        return (char *)"?";
+        break;
+    case SIZEOF:
+        return (char *)"SIZEOF";
+        break;
+    default:
+        return (char *)"ERROR(opToString() in util.cpp)";
+        break;
+    }
+}
+
+char *assignToString(OpKind op)
+{
+    switch (op)
+    {
+    case INC:
+        return (char *)"++";
+        break;
+    case DEC:
+        return (char *)"--";
+        break;
+    case ADDASS:
+        return (char *)"+=";
+        break;
+    case SUBASS:
+        return (char *)"-=";
+        break;
+    case MULASS:
+        return (char *)"*=";
+        break;
+    case DIVASS:
+        return (char *)"/=";
+        break;
+    case '=':
+        return (char *)"=";
+        break;
+    default:
+        return (char *)"ERROR(assignToString() in util.cpp)";
         break;
     }
 }
@@ -344,8 +438,20 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
             // printf("ExpK");
             switch (tree->subkind.exp)
             {
+            case ExpKind::OpK:
+                printf("Op: %s", opToString(tree->attr.op));
+                break;
+            case ExpKind::ConstantK:
+                break;
             case ExpKind::IdK:
                 printf("Id: %s", tree->attr.name);
+                break;
+            case ExpKind::AssignK:
+                printf("Assign: %s", assignToString(tree->attr.op));
+                break;
+            case ExpKind::InitK:
+                break;
+            case ExpKind::CallK:
                 break;
             default:
                 break;
@@ -353,35 +459,35 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
             break;
         case NodeKind::StmtK:
             // printf("StmtK");
-            switch(tree->subkind.stmt)
+            switch (tree->subkind.stmt)
             {
-                case StmtKind::NullK:
-                    printf("Null");
+            case StmtKind::NullK:
+                printf("Null");
                 break;
-                case StmtKind::IfK:
-                    printf("If");
+            case StmtKind::IfK:
+                printf("If");
                 break;
-                case StmtKind::WhileK:
-                    printf("While");
+            case StmtKind::WhileK:
+                printf("While");
                 break;
-                case StmtKind::ForK:
-                    printf("For");
+            case StmtKind::ForK:
+                printf("For");
                 break;
-                case StmtKind::CompoundK:
-                    printf("Compound");
+            case StmtKind::CompoundK:
+                printf("Compound");
                 break;
-                case StmtKind::ReturnK:
-                    printf("Return");
+            case StmtKind::ReturnK:
+                printf("Return");
                 break;
-                case StmtKind::BreakK:
-                    printf("Break");
+            case StmtKind::BreakK:
+                printf("Break");
                 break;
-                case StmtKind::RangeK:
-                    printf("Range");
+            case StmtKind::RangeK:
+                printf("Range");
                 break;
-                default:
-                    printf("... how'd you get here? (util.cpp ~380ish)\n\n");
-                    break;
+            default:
+                printf("... how'd you get here? (util.cpp ~380ish)\n\n");
+                break;
             }
             break;
         default:

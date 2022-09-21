@@ -140,6 +140,7 @@ static int setValue(int linenum, int tokenClass, char *svalue)
         default:
             break;
     }
+    yylval.tokenData->tokenclass = tokenClass;
     // printf("Line %d Token: %s\n", yylval.tokenData->linenum, yylval.tokenData->tokenstr);
     return tokenClass;
 }

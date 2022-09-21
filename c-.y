@@ -56,8 +56,9 @@ void printCharByChar(char* stringToPrint)
 %token <tokenData> IF ELSE THEN RETURN EQ NEQ GEQ LEQ INT OR
 %token <tokenData> ADDASS SUBASS MULASS DIVASS '=' MODULO
 %token <tokenData> STATIC BOOL CHAR
-%token <tokenData> AND NOT FOR WHILE BREAK TO BY DO INC DEC SIZEOF MULTIPLY
-%type <tokenData> '+' '*' '-' '\\' '<' '>' '/' '?' ';' '(' '{'
+%token <tokenData> AND NOT FOR WHILE BREAK TO BY DO INC DEC
+%token <tokenData> SIZEOF MULTIPLY NEGATIVE SUBTRACT
+%token <tokenData> '+' '*' '-' '\\' '<' '>' '/' '?' ';' '(' '{'
 %type <type> typeSpec
 %type <tree> program declList decl varDecl scopedVarDecl varDeclList varDeclInit varDeclId // typeSpec
 %type <tree> funDecl parms parmList parmTypeList parmIdList parmId stmt expStmt compoundStmt localDecls
@@ -399,13 +400,13 @@ exp
         {
             // $$ = newExpNode(ExpKind::OpK, $[inc], NULL, NULL, NULL;
             // $$->child[0] = $[m];
-            $$ = newExpNode(ExpKind::OpK, $[inc], $[m], NULL, NULL);
+            $$ = newExpNode(ExpKind::AssignK, $[inc], $[m], NULL, NULL);
         }
     | mutable[m] DEC[dec]
         {
             // $$ = $[dec];
             // $$->child[0] = $[m];
-            $$ = newExpNode(ExpKind::OpK, $[dec], $[m], NULL, NULL);
+            $$ = newExpNode(ExpKind::AssignK, $[dec], $[m], NULL, NULL);
         }
     | simpleExp
         {
@@ -521,6 +522,11 @@ sumop
         }
     | '-'
         {
+            $1->tokenclass = SUBTRACT;
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
+    | SUBTRACT
+        {
             $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
         }
     ;
@@ -569,6 +575,7 @@ unaryExp
 unaryop
     : '-'
         {
+            $1->tokenclass = NEGATIVE;
             $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
         }
     | '*'
@@ -581,6 +588,10 @@ unaryop
             $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
         }
     | SIZEOF
+        {
+            $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+        }
+    | NEGATIVE
         {
             $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
         }
