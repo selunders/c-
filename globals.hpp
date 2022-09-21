@@ -59,7 +59,7 @@ class TreeNode
             int value;              // for int or boolean
             unsigned char cvalue;   // character
             char* string;           // string constant
-            // char* name;             // IdK
+            char* name;             // IdK
             int idIndex;            // IdK
             // char* name;             // IdK
         } attr;
