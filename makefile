@@ -1,9 +1,9 @@
 BIN = c-
 CC = g++
 
-SRCS = $(BIN).y  $(BIN).l util.cpp
+SRCS = $(BIN).y  $(BIN).l util.cpp main.cpp
 HDRS = scanType.h globals.hpp util.hpp
-OBJS = lex.yy.o $(BIN).tab.o util.o
+OBJS = lex.yy.o $(BIN).tab.o util.o main.o
 CFLAGS = -std=c++11 -g
 
 
@@ -18,6 +18,9 @@ $(BIN).tab.h $(BIN).tab.c : $(BIN).y
 
 util.o :
 	$(CC) $(CFLAGS) -c util.cpp -o util.o
+
+main.o :
+	$(CC) $(CFLAGS) -c main.cpp -o main.o
 
 clean :
 	rm -f *~ $(OBJS) $(BIN) lex.yy.c $(BIN).tab.h $(BIN).tab.c $(BIN).output
