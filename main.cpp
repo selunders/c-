@@ -2,6 +2,7 @@
 #include "c-.tab.h"
 #include <unistd.h>
 #include "util.hpp"
+#include "symbolTable.hpp"
 
 extern FILE* yyin;
 extern FILE* yyout;
@@ -19,17 +20,6 @@ int main(int argc, char *argv[])
     int index;
     char* cvalue = NULL;
     int c;
-
-    /* if (argc > 1) {
-        if ((yyin = fopen(argv[1], "r"))) {
-            // file open successful
-        }
-        else {
-            // failed to open file
-            printf("ERROR: failed to open \'%s\'\n", argv[1]);
-            exit(1);
-        }
-    } */
 
     while((c = getopt(argc, argv, "dDpPh")) != -1)
     {
@@ -54,6 +44,7 @@ int main(int argc, char *argv[])
         }
     }
     
+    // If printHelp flag is selected, ONLY print the help statement
     if(printHelp)
     {
         printf("usage: c- [options] [sourcefile]\n");
@@ -89,6 +80,9 @@ int main(int argc, char *argv[])
         {
             printTree(rootNode);
         }
+        
+
+
         /* printf("Number of errors: %d\n", numErrors);   // ERR */
     }
 
