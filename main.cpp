@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include "util.hpp"
 #include "symbolTable.hpp"
+#include "analyze.hpp"
 
 extern FILE* yyin;
 extern FILE* yyout;
@@ -13,7 +14,7 @@ int main(int argc, char *argv[])
 {
     bool printTreeFlag = false;
     bool printYYDEBUG = false;
-    bool sybtabDEBUG = false;
+    bool symbTabDEBUG = false;
     bool printTypeInfo = false;
     bool printHelp = false;
 
@@ -29,7 +30,7 @@ int main(int argc, char *argv[])
                 yydebug = 1;
             break;
             case 'D':
-                sybtabDEBUG = true;
+                symbTabDEBUG = true;
             break;
             case 'p':
                 printTreeFlag = true;
@@ -82,7 +83,8 @@ int main(int argc, char *argv[])
         }
         
 
-
+        SymbolTable* symbolTable = new SymbolTable();
+        semanticAnalysis(symbolTable, rootNode);
         /* printf("Number of errors: %d\n", numErrors);   // ERR */
     }
 

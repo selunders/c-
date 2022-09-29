@@ -3,6 +3,8 @@
 
 #include "globals.hpp"
 
+void semanticAnalysis(SymbolTable*, TreeNode*);
+
 void buildSymTab(TreeNode * );
 
 void typeCheck(TreeNode * );

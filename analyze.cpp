@@ -2,22 +2,24 @@
 #include "symbolTable.hpp"
 #include "analyze.hpp"
 
+using namespace std;
+
 static int location = 0;
 
-static void traverse(TreeNode * t, void (* preProc) (TreeNode *), void (* postProc) (TreeNode*))
+static void traverse(SymbolTable* st, TreeNode * t, void (* preProc) (SymbolTable*, TreeNode *), void (* postProc) (SymbolTable*, TreeNode*))
 {
     if(t != NULL)
     {
-        preProc(t);
+        preProc(st, t);
         {
             int i;
             for(i = 0; i < MAXCHILDREN; i++)
             {
-                traverse(t->child[i], preProc, postProc);
+                traverse(st, t->child[i], preProc, postProc);
             }
         }
-        postProc(t);
-        traverse(t->sibling, preProc, postProc);
+        postProc(st, t);
+        traverse(st, t->sibling, preProc, postProc);
     }
 }
 
@@ -29,7 +31,7 @@ static void nullProc(TreeNode * t)
         return;
 }
 
-static void insertNode(SymbolTable symbolTable, TreeNode * t)
+static void insertNode(SymbolTable* symbolTable, TreeNode * t)
 {
     switch(t->nodeKind)
     {
@@ -62,10 +64,7 @@ static void insertNode(SymbolTable symbolTable, TreeNode * t)
                 break;
                 
                 case ExpKind::IdK:
-                    if(symbolTable.insert(t->attr.string, t))
-                    {
-                        // printf("Inserted id %s\n", t->attr.name);
-                    }
+
                 break;
                 
                 case ExpKind::InitK:
@@ -84,6 +83,8 @@ static void insertNode(SymbolTable symbolTable, TreeNode * t)
                 case StmtKind::BreakK:
                 break;
                 case StmtKind::CompoundK:
+                    // symbolTable->enter((string) t->attr.string);
+                    printf("\n\nEntered Compound statement scope %s in symtab\n\n", t->attr.string);
                 break;
                 case StmtKind::ForK:
                 break;
@@ -103,4 +104,9 @@ static void insertNode(SymbolTable symbolTable, TreeNode * t)
         
         break;
     }
+}
+
+void semanticAnalysis(SymbolTable* st, TreeNode* root)
+{
+    traverse(st, root, insertNode, insertNode);
 }
