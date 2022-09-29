@@ -39,13 +39,13 @@ static void insertNode(SymbolTable *st, TreeNode *t)
     {
     case NodeKind::DeclK:
     {
-        TreeNode* tmp = (TreeNode *)st->lookup(t->attr.string);
+        TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
         if (tmp != NULL)
         {
-            printf("ERROR(%d): Symbol '%s' is already declared at line %d.\n", t->lineno, t->attr.string,tmp->lineno);
+            printf("ERROR(%d): Symbol '%s' is already declared at line %d.\n", t->lineno, t->attr.string, tmp->lineno);
             numAnalyzeErrors++;
         }
-            // printf("ERROR(%Dd: Symbol '%s' is already declared at line %d.\n", tmp->lineno);
+        // printf("ERROR(%Dd: Symbol '%s' is already declared at line %d.\n", tmp->lineno);
         else
         {
             switch (t->subkind.decl)
@@ -76,13 +76,19 @@ static void insertNode(SymbolTable *st, TreeNode *t)
 
         case ExpKind::CallK:
         {
-            TreeNode* tmp = (TreeNode*) st->lookup(t->attr.string);
-            if(tmp != NULL)
+            TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
+            if (tmp != NULL)
             {
-                if((tmp->nodeKind == NodeKind::DeclK) && (tmp->subkind.decl != DeclKind::FuncK))
+                if ((tmp->nodeKind == NodeKind::DeclK) && (tmp->subkind.decl != DeclKind::FuncK))
                 {
                     printf("ERROR(%d): '%s' is a simple variable and cannot be called.\n", t->lineno, tmp->attr.string);
+                    numAnalyzeErrors++;
                 }
+            }
+            else
+            {
+                printf("ERROR(%d): Symbol '%s' is not declared.\n", t->lineno, t->attr.string);
+                numAnalyzeErrors++;
             }
 
             break;
@@ -91,8 +97,16 @@ static void insertNode(SymbolTable *st, TreeNode *t)
             break;
 
         case ExpKind::IdK:
-
-            break;
+        {
+            // printf("Searching tree for %s\n", t->attr.string);
+            TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
+            if(tmp == NULL)
+            {
+                printf("ERROR(%d): Symbol '%s' is not declared.\n", t->lineno, t->attr.string);
+                numAnalyzeErrors++;
+            }
+        }
+        break;
 
         case ExpKind::InitK:
             break;
@@ -141,9 +155,17 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root)
     numAnalyzeErrors = 0;
     st->enter((string) "Global");
     traverse(st, root, insertNode, nullProc);
-    TreeNode* mainPointer = (TreeNode*) st->lookup((string) "main");
-    if((mainPointer != NULL) && (mainPointer->nodeKind == NodeKind::DeclK) && (mainPointer->subkind.decl == DeclKind::FuncK))
-    {}
+
+    // Do final check for main()
+    TreeNode *mainPointer = (TreeNode *)st->lookup((string) "main");
+    if ((mainPointer != NULL) && (mainPointer->nodeKind == NodeKind::DeclK) && (mainPointer->subkind.decl == DeclKind::FuncK))
+    {
+    }
     else
+    {
         printf("ERROR(LINKER): A function named 'main()' must be defined.\n");
+        numAnalyzeErrors++;
+    }
+    printf("Number of warnings: %d\n", numAnalyzeWarnings);
+    printf("Number of errors: %d\n", numAnalyzeErrors);
 }

@@ -69,6 +69,7 @@ class TreeNode
         ExpType expType;
         bool isArray;
         bool isStatic;
+        bool isUsed;
 
         TreeNode()
         {
@@ -79,6 +80,9 @@ class TreeNode
                 child[i] = NULL;
             }
             nodeKind = NodeKind::StmtK;
+            isArray = false;
+            isStatic = false;
+            isUsed = false;
         }
 };
 
