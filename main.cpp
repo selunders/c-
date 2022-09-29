@@ -73,9 +73,6 @@ int main(int argc, char *argv[])
         /* for (int i=0; i<26; i++) vars[i] = 0.0; */
 
         // do the parsing
-        int numErrors = 0;
-        int numWarnings = 0;
-        
         yyparse();
         if(printTreeFlag)
         {
@@ -84,6 +81,7 @@ int main(int argc, char *argv[])
         
 
         SymbolTable* symbolTable = new SymbolTable();
+        symbolTable->debug(symbTabDEBUG);
         semanticAnalysis(symbolTable, rootNode);
         /* printf("Number of errors: %d\n", numErrors);   // ERR */
     }

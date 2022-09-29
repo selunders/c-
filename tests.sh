@@ -3,8 +3,9 @@
 if [ -z $1 ]; then
     echo 'make c-'
     make clean; make;
-    echo 'Running ./c- on all the files in samplePrograms2'
-    for file in samplePrograms2/*.c-
+    echo 'Running ./c- on all the files in sampleOutput3'
+    # for file in samplePrograms2/*.c-
+    for file in sampleOutput3/*.c-
     do
         x=${file%.c-}
         y=${x##*/}
@@ -15,14 +16,16 @@ if [ -z $1 ]; then
     echo -e "Complete. Files stored in myOutput/\n"
 
     echo 'Diffing outputs'
-    for file in samplePrograms2/*.out
+    for file in sampleOutput3/*.out
     do
         x=${file%.out}
         y=${x##*/}
         echo -e "\nsdiff -l -s myOutput/$y.out $file"
         sdiff -l -s myOutput/$y.out $file
+        # rm myOutput/$y.out
     done
 else
-    echo "sdiff myOutput/$1.out samplePrograms2/$1.out"
-    sdiff myOutput/$1.out samplePrograms2/$1.out
+    ./c- sampleOutput3/$1.c- -p > myOutput/$1.out
+    echo "sdiff myOutput/$1.out sampleOutput3/$1.out"
+    sdiff myOutput/$1.out sampleOutput3/$1.out
 fi

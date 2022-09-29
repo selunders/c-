@@ -419,9 +419,10 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
             case DeclKind::VarK:
                 printf("Var: %s ", tree->attr.name);
                 if (tree->isArray)
-                    printf("of array ");
+                    printf("is array ");
                 if (tree->isStatic)
-                    printf("of static type %s", expToString(tree->expType));
+                    // printf("of static type %s", expToString(tree->expType));
+                    printf("of type %s", expToString(tree->expType));
                 else
                     printf("of type %s", expToString(tree->expType));
                 break;
@@ -435,7 +436,7 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
             case DeclKind::ParamK:
                 printf("Parm: %s ", tree->attr.name);
                 if (tree->isArray)
-                    printf("of array ");
+                    printf("is array ");
                 printf("of type %s", expToString(tree->expType));
                 break;
             }
