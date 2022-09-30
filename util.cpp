@@ -25,20 +25,20 @@ TreeNode *newDeclNode(DeclKind kind, ExpType type, TokenData *token, TreeNode *c
     TreeNode *t = new TreeNode();
     // printf("New tree node created at %p ", t);
     // printf("of type: ");
-    t->attr.name = strdup(token->tokenstr);
+    t->attr.string = strdup(token->tokenstr);
     // switch (kind)
     // {
     //     case DeclKind::VarK:
-    //         t->attr.name = strdup(token->tokenstr);
+    //         t->attr.string = strdup(token->tokenstr);
     //         // printf("VarK\n");
     //         break;
     //     case DeclKind::FuncK:
     //         // printf("Setting function name to %s\n\n", strdup(token->tokenstr));
-    //         t->attr.name = strdup(token->tokenstr);
+    //         t->attr.string = strdup(token->tokenstr);
     //         // printf("FuncK\n");
     //         break;
     //     case DeclKind::ParamK:
-    //         t->attr.name = strdup(token->tokenstr);
+    //         t->attr.string = strdup(token->tokenstr);
     //         // printf("DeclK\n");j
     //         break;
     // }
@@ -130,18 +130,18 @@ TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0, TreeNode *c1,
         }
         break;
     case ExpKind::IdK:
-        t->attr.name = strdup(token->tokenstr);
+        t->attr.string = strdup(token->tokenstr);
         // t->attr.idIndex = token->idIndex;
         break;
     case ExpKind::AssignK:
         t->attr.op = token->tokenclass;
-        // t->attr.name = strdup(token->tokenstr);
+        // t->attr.string = strdup(token->tokenstr);
         break;
     case ExpKind::InitK:
-        // t->attr.name = strdup(token->tokenstr);
+        // t->attr.string = strdup(token->tokenstr);
         break;
     case ExpKind::CallK:
-        // t->attr.name = strdup(token->tokenstr);
+        // t->attr.string = strdup(token->tokenstr);
         break;
     default:
         break;
@@ -417,7 +417,7 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
             switch (tree->subkind.decl)
             {
             case DeclKind::VarK:
-                printf("Var: %s ", tree->attr.name);
+                printf("Var: %s ", tree->attr.string);
                 if (tree->isArray)
                     printf("is array ");
                 if (tree->isStatic)
@@ -427,14 +427,14 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
                     printf("of type %s", expToString(tree->expType));
                 break;
             case DeclKind::FuncK:
-                // printf("Var: %s ", tree->attr.name);
+                // printf("Var: %s ", tree->attr.string);
                 // printf("About to print\n");
-                printf("Func: %s ", tree->attr.name);
+                printf("Func: %s ", tree->attr.string);
                 printf("returns type %s", expToString(tree->expType));
-                // printf("Func: %s", tree->attr.name);
+                // printf("Func: %s", tree->attr.string);
                 break;
             case DeclKind::ParamK:
-                printf("Parm: %s ", tree->attr.name);
+                printf("Parm: %s ", tree->attr.string);
                 if (tree->isArray)
                     printf("is array ");
                 printf("of type %s", expToString(tree->expType));
@@ -472,7 +472,7 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
                 }
                 break;
             case ExpKind::IdK:
-                printf("Id: %s", tree->attr.name);
+                printf("Id: %s", tree->attr.string);
                 break;
             case ExpKind::AssignK:
                 printf("Assign: %s", assignToString(tree->attr.op));
@@ -480,7 +480,7 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
             case ExpKind::InitK:
                 break;
             case ExpKind::CallK:
-                printf("Call: %s", tree->attr.name);
+                printf("Call: %s", tree->attr.string);
                 break;
             default:
                 break;

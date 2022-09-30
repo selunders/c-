@@ -29,7 +29,7 @@ analyze.o :
 	$(CC) $(CFLAGS) -c analyze.cpp -o analyze.o
 
 clean :
-	rm -f *~ $(OBJS) $(BIN) lex.yy.c $(BIN).tab.h $(BIN).tab.c $(BIN).output
+	rm -f *~ $(OBJS) $(BIN) lex.yy.c $(BIN).tab.h $(BIN).tab.c $(BIN).output *.gch
 
 tar : $(HDRS) $(SRCS) makefile
 	tar -cvf $(BIN).tar $(HDRS) $(SRCS) $(DOCS) makefile

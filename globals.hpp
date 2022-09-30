@@ -7,7 +7,6 @@
 #include <ctype.h>
 #include <string.h>
 
-
 #define MAXCHILDREN 3
 // #ifndef FALSE
 // #define FALSE 0
@@ -19,71 +18,147 @@
 
 typedef int OpKind;
 
-enum class TokenType {
-    ID, NUMCONST, CHARCONST, STRINGCONST, BOOLCONST,
-    IF, ELSE, THEN, RETURN, EQ, NEQ, GEQ, LEQ, INT, OR,
-    ADDASS, SUBASS, MULASS, DIVASS,
-    STATIC, BOOL, CHAR,
-    AND, NOT, FOR, WHILE, BREAK, TO, BY, DO, INC, DEC
+enum class TokenType
+{
+    ID,
+    NUMCONST,
+    CHARCONST,
+    STRINGCONST,
+    BOOLCONST,
+    IF,
+    ELSE,
+    THEN,
+    RETURN,
+    EQ,
+    NEQ,
+    GEQ,
+    LEQ,
+    INT,
+    OR,
+    ADDASS,
+    SUBASS,
+    MULASS,
+    DIVASS,
+    STATIC,
+    BOOL,
+    CHAR,
+    AND,
+    NOT,
+    FOR,
+    WHILE,
+    BREAK,
+    TO,
+    BY,
+    DO,
+    INC,
+    DEC
 };
 
 // typedef TokenType TT;
 
-enum class NodeKind { DeclK, StmtK, ExpK };
-enum class DeclKind { VarK, FuncK, ParamK };
-enum class StmtKind { NullK, IfK, WhileK, ForK, CompoundK, ReturnK, BreakK, RangeK };
-enum class ExpKind  { OpK, ConstantK, IdK, AssignK, InitK, CallK };
-enum class ExpType  { Void, Integer, Boolean, Char, CharInt, Equal, UndefinedType };
-enum class VarKind  { None, Local, Global, Parameter, LocalStatic };
-
+enum class NodeKind
+{
+    DeclK,
+    StmtK,
+    ExpK
+};
+enum class DeclKind
+{
+    VarK,
+    FuncK,
+    ParamK
+};
+enum class StmtKind
+{
+    NullK,
+    IfK,
+    WhileK,
+    ForK,
+    CompoundK,
+    ReturnK,
+    BreakK,
+    RangeK
+};
+enum class ExpKind
+{
+    OpK,
+    ConstantK,
+    IdK,
+    AssignK,
+    InitK,
+    CallK
+};
+enum class ExpType
+{
+    Void,
+    Integer,
+    Boolean,
+    Char,
+    CharInt,
+    Equal,
+    UndefinedType
+};
+enum class VarKind
+{
+    None,
+    Local,
+    Global,
+    Parameter,
+    LocalStatic
+};
 
 class TreeNode
 {
-    public:
-        TreeNode* child[MAXCHILDREN];
-        TreeNode* sibling;
+public:
+    TreeNode *child[MAXCHILDREN];
+    TreeNode *sibling;
 
-        int lineno;
-        NodeKind nodeKind;
+    int lineno;
+    NodeKind nodeKind;
 
-        union
-        {
-            DeclKind    decl;   // DeclK
-            StmtKind    stmt;   // StmtK
-            ExpKind     exp;    // ExpK
-        } subkind;
-        
-        union
-        {
-            OpKind op;              // type of token (same as bison)
-            int value;              // for int or boolean
-            unsigned char cvalue;   // character
-            char* string;           // string constant
-            char* name;             // IdK
+    union
+    {
+        DeclKind decl; // DeclK
+        StmtKind stmt; // StmtK
+        ExpKind exp;   // ExpK
+    } subkind;
+
+    union
+    {
+        OpKind op;            // type of token (same as bison)
+        int value;            // for int or boolean
+        unsigned char cvalue; // character
+        char *string;         // IdK
+        // char* string;           // string constant
         // Learning some about how unions work. Since I've already decleared a char*, I can't assign
-            // to 'name' because 'string' already exists. I can still read from 'name' though...
-            // int idIndex;            // IdK
-            // char* name;             // IdK
-        } attr;
+        // to 'name' because 'string' already exists. I can still read from 'name' though...
+        // int idIndex;            // IdK
+        // char* name;             // IdK
+    } attr;
 
-        ExpType expType;
-        bool isArray;
-        bool isStatic;
-        bool isUsed;
+    ExpType expType;
+    bool isArray;
+    bool isStatic;
+    bool isInit;
+    bool isDefined;
+    bool isUsed;
 
-        TreeNode()
+    // bool enteredScope;
+    TreeNode()
+    {
+        sibling = NULL;
+        int i;
+        for (i = 0; i < MAXCHILDREN; i++)
         {
-            sibling = NULL;
-            int i;
-            for(i = 0; i < MAXCHILDREN; i++)
-            {
-                child[i] = NULL;
-            }
-            nodeKind = NodeKind::StmtK;
-            isArray = false;
-            isStatic = false;
-            isUsed = false;
+            child[i] = NULL;
         }
+        nodeKind = NodeKind::StmtK;
+        isArray = false;
+        isStatic = false;
+        isInit = false;
+        isUsed = false;
+        isDefined = false;
+    }
 };
 
 #endif
