@@ -183,10 +183,10 @@ void setType(TreeNode *t, ExpType type, bool isStatic)
         printf("%d Setting %s from %s to %s\n", t->lineno, t->attr.string, expToString(t->expType), expToString(type));
         // if(t->expType == ExpType::UndefinedType)
         // {
-        if(t->nodeKind != NodeKind::ExpK || t->subkind.exp != ExpKind::ConstantK)
+        if (t->nodeKind != NodeKind::ExpK || t->subkind.exp != ExpKind::ConstantK)
         {
 
-        t->expType = type;
+            t->expType = type;
         }
         // }
         t->isStatic = isStatic;
@@ -285,7 +285,7 @@ char *opToString(OpKind op)
         return (char *)"sizeof";
         break;
     case '[':
-        return (char*)"[";
+        return (char *)"[";
         break;
     default:
         return (char *)"ERROR(opToString() in util.cpp)";
@@ -357,7 +357,7 @@ void printSTree(TreeNode *tree, NodeRelation relation, int relIndex, int layer)
     }
 }
 
-void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
+void printBasicTree(TreeNode *tree, NodeRelation relation, int id, int layer)
 {
     int i;
     INDENT;
@@ -534,11 +534,12 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
         // nodeCount++;
         // printf("%d\n", nodeCount);
         printf(" [line: %d]\n", tree->lineno);
+        // printf(" [line: %d]\nexpType::%s\n", tree->lineno, expToString(tree->expType));
         for (i = 0; i < MAXCHILDREN; i++)
         {
             if (tree->child[i] != NULL)
             {
-                printRTree(tree->child[i], NodeRelation::Child, i, layer + 1);
+                printBasicTree(tree->child[i], NodeRelation::Child, i, layer + 1);
                 // printf("child %d is not NULL %p\n", i, tree->child[i]);
             }
             // else
@@ -548,9 +549,9 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
         if (tree->sibling != NULL)
         {
             if (relation == NodeRelation::Sibling)
-                printRTree(tree->sibling, NodeRelation::Sibling, id + 1, layer);
+                printBasicTree(tree->sibling, NodeRelation::Sibling, id + 1, layer);
             else
-                printRTree(tree->sibling, NodeRelation::Sibling, 1, layer);
+                printBasicTree(tree->sibling, NodeRelation::Sibling, 1, layer);
         }
         // INDENT;
         // tree = NULL;
@@ -559,9 +560,214 @@ void printRTree(TreeNode *tree, NodeRelation relation, int id, int layer)
     UNINDENT;
 }
 
-void printTree(TreeNode *tree)
+void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer)
 {
-    printRTree(tree, NodeRelation::Parent, 0, 0);
+    int i;
+    INDENT;
+    // printf("My addr:%p\n My Children:\n%p\n%p\n%p\n\n", tree, tree->child[0], tree->child[1], tree->child[2]);
+    // while (tree != NULL)
+    if (tree != NULL)
+    {
+        printSpaces(layer);
+        switch (relation)
+        {
+        case NodeRelation::Parent:
+            switch (tree->nodeKind)
+            {
+                // case NodeKind::DeclK:
+                //     switch(tree->subkind.decl)
+                //     {
+                //         case DeclKind::VarK:
+                //             printf("Var: ");
+                //             break;
+                //         case DeclKind::FuncK:
+                //             printf("Func: ");
+                //             break;
+                //         default:
+                //             printf("Couldn't tell: ");
+                //             break;
+                //         // case DeclKind::ParamK:
+                //             // printf("Param");
+                //             // break;
+                //     }
+                //     break;
+                // case NodeKind::ExpK:
+                //     switch(tree->subkind.exp)
+                //     {
+                //         case ExpKind::IdK:
+                //             printf("Var: ");
+                //             if(tree->isArray)
+                //                 printf("of array ");
+                //             printf("of type ", expToString(tree->expType));
+                //         break;
+                //     }
+                //     break;
+                // case NodeKind::StmtK:
+                //     switch(tree->subkind.stmt)
+                //     {
+
+                //     }
+                //     break;
+            }
+            // printf("Staring with node of type: %d\n\n", tree->subkind.decl);
+            break;
+        case NodeRelation::Child:
+            printf("Child: %d  ", id);
+            break;
+        case NodeRelation::Sibling:
+            printf("Sibling: %d  ", id);
+            break;
+        default:
+            printf("You shouldn't be here?\n\n\n");
+            break;
+        }
+        switch (tree->nodeKind)
+        {
+        case NodeKind::DeclK:
+            // printf("DeclK with subtype ");
+            switch (tree->subkind.decl)
+            {
+            case DeclKind::VarK:
+                printf("Var: %s ", tree->attr.string);
+                if (tree->isArray)
+                    printf("is array ");
+                if (tree->isStatic)
+                    // printf("of static type %s", expToString(tree->expType));
+                    printf("of type %s", expToString(tree->expType));
+                else
+                    printf("of type %s", expToString(tree->expType));
+                break;
+            case DeclKind::FuncK:
+                // printf("Var: %s ", tree->attr.string);
+                // printf("About to print\n");
+                printf("Func: %s ", tree->attr.string);
+                printf("returns type %s", expToString(tree->expType));
+                // printf("Func: %s", tree->attr.string);
+                break;
+            case DeclKind::ParamK:
+                printf("Parm: %s ", tree->attr.string);
+                if (tree->isArray)
+                    printf("is array ");
+                printf("of type %s", expToString(tree->expType));
+                break;
+            }
+            break;
+        case NodeKind::ExpK:
+            // printf("ExpK");
+            switch (tree->subkind.exp)
+            {
+            case ExpKind::OpK:
+                printf("Op: %s", opToString(tree->attr.op));
+                break;
+            case ExpKind::ConstantK:
+                switch (tree->expType)
+                {
+                case ExpType::Boolean:
+                    if (tree->attr.value == 0)
+                        printf("Const false");
+                    else
+                        printf("Const true");
+                    break;
+                case ExpType::Char:
+                    if (tree->isArray)
+                        printf("Const %s", tree->attr.string);
+                    else
+                        printf("Const \'%c\'", tree->attr.cvalue);
+                    break;
+                case ExpType::Integer:
+                    printf("Const %d", tree->attr.value);
+                    break;
+                default:
+                    printf("How'd you find this???\n\n\n");
+                    break;
+                }
+                break;
+            case ExpKind::IdK:
+                printf("Id: %s", tree->attr.string);
+                break;
+            case ExpKind::AssignK:
+                printf("Assign: %s", assignToString(tree->attr.op));
+                break;
+            case ExpKind::InitK:
+                break;
+            case ExpKind::CallK:
+                printf("Call: %s", tree->attr.string);
+                break;
+            default:
+                break;
+            }
+            break;
+        case NodeKind::StmtK:
+            // printf("StmtK");
+            switch (tree->subkind.stmt)
+            {
+            case StmtKind::NullK:
+                printf("Null");
+                break;
+            case StmtKind::IfK:
+                printf("If");
+                break;
+            case StmtKind::WhileK:
+                printf("While");
+                break;
+            case StmtKind::ForK:
+                printf("For");
+                break;
+            case StmtKind::CompoundK:
+                printf("Compound");
+                break;
+            case StmtKind::ReturnK:
+                printf("Return");
+                break;
+            case StmtKind::BreakK:
+                printf("Break");
+                break;
+            case StmtKind::RangeK:
+                printf("Range");
+                break;
+            default:
+                printf("... how'd you get here? (util.cpp ~380 haha actually 728ish)\n\n");
+                break;
+            }
+            break;
+        default:
+            printf("Found unknown node???\n\n");
+            break;
+        }
+        // nodeCount++;
+        // printf("%d\n", nodeCount);
+        printf(" [line: %d] || expType::%s\n", tree->lineno, expToString(tree->expType));
+        for (i = 0; i < MAXCHILDREN; i++)
+        {
+            if (tree->child[i] != NULL)
+            {
+                printTypedTree(tree->child[i], NodeRelation::Child, i, layer + 1);
+                // printf("child %d is not NULL %p\n", i, tree->child[i]);
+            }
+            // else
+            // printf("child %d is NULL\n", i);
+        }
+        // UNINDENT;
+        if (tree->sibling != NULL)
+        {
+            if (relation == NodeRelation::Sibling)
+                printTypedTree(tree->sibling, NodeRelation::Sibling, id + 1, layer);
+            else
+                printTypedTree(tree->sibling, NodeRelation::Sibling, 1, layer);
+        }
+        // INDENT;
+        // tree = NULL;
+        // tree = tree->sibling;
+    }
+    UNINDENT;
+}
+
+void printTree(TreeNode *tree, bool printTypeInfo)
+{
+    if (printTypeInfo)
+        printTypedTree(tree, NodeRelation::Parent, 0, 0);
+    else
+        printBasicTree(tree, NodeRelation::Parent, 0, 0);
 }
 //
 //////////////////////

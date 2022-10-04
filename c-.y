@@ -402,13 +402,17 @@ exp
             $$ = $[aop];
             $$->child[0] = $[m];
             $$->child[1] = $[e];
-            if($[m] != NULL)
-            {
+            // if($[m] != NULL)
+            // {
                 // printf("initializing node at %p\n", $[m]);
                 $[m]->isInit = true;
-                $[aop]->expType = $[m]->expType;
-            }
-
+                // $[aop]->expType = $[m]->expType;
+            // }
+            // if($[aop]->expType == ExpType::UndefinedType)
+            // {
+                // $$->expType = $[m]->expType;
+            // }
+            
             //     printf("Set %s to initialized\n", $[m]->attr.string);
             // printf("Initializing %s\n\n", $[m]->attr.string);
             // $$ = newExpNode(ExpKind::OpK, $[aop], $[m], $[e], NULL);
@@ -434,22 +438,27 @@ assignop
     : '='
         {
             $$ = newExpNode(ExpKind::AssignK, $1, NULL, NULL, NULL);
+            $$->expType = ExpType::UndefinedType;
         }
     | ADDASS
         {
             $$ = newExpNode(ExpKind::AssignK, $1, NULL, NULL, NULL);
+            $$->expType = ExpType::Boolean;
         }
     | SUBASS
         {
             $$ = newExpNode(ExpKind::AssignK, $1, NULL, NULL, NULL);
+            $$->expType = ExpType::Boolean;
         }
     | MULASS
         {
             $$ = newExpNode(ExpKind::AssignK, $1, NULL, NULL, NULL);
+            $$->expType = ExpType::Boolean;
         }
     | DIVASS
         {
             $$ = newExpNode(ExpKind::AssignK, $1, NULL, NULL, NULL);
+            $$->expType = ExpType::Boolean;
         }
     ;
 simpleExp
@@ -466,6 +475,7 @@ andExp
     : andExp[aexp] AND[and] unaryRelExp[urexp]
         {
             $$ = newExpNode(ExpKind::OpK, $[and], $[aexp], $[urexp], NULL);
+            $$->expType = ExpType::Boolean;
         }
     | unaryRelExp
         {
@@ -476,6 +486,7 @@ unaryRelExp
     : NOT unaryRelExp
         {
             $$ = newExpNode(ExpKind::OpK, $1, $2, NULL, NULL);
+            $$->expType == ExpType::Boolean;
         }
     | relExp
         {
@@ -488,6 +499,7 @@ relExp
             $$ = $[rop];
             $$->child[0] = $[sexp];
             $$->child[1] = $[sexp2];
+            $$->expType = ExpType::Boolean;
         }
     | sumExp
         {
@@ -526,6 +538,7 @@ sumExp
             $$ = $[sop];
             $$->child[0] = $[sexp];
             $$->child[1] = $[mexp];
+            $$->expType = ExpType::Integer;
         }
     | mulExp
         {
@@ -553,6 +566,7 @@ mulExp
             $$ = $[mop];
             $$->child[0] = $[mexp];
             $$->child[1] = $[uexp];
+            $$->expType = ExpType::Integer;
         }
     | unaryExp
         {
@@ -583,6 +597,7 @@ unaryExp
         {
             $$ = $[uop];
             $$->child[0] = $[uexp];
+            $$->expType = ExpType::Integer;
         }
     | factor
         {

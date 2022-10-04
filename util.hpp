@@ -31,7 +31,7 @@ char* assignToString(OpKind op);
 char* expToString(ExpType type);
 char* opToString(OpKind op);
 static void printSpaces(int layer);
-void printTree(TreeNode* tree);
+void printTree(TreeNode* tree, bool printTypeTree);
  
 
 #endif

@@ -159,7 +159,7 @@ public:
     bool seenInit;
     bool isDefined;
     bool isUsed;
-    // bool alreadyTraversed;
+    bool alreadyTraversed;
 
     // bool enteredScope;
     TreeNode()
@@ -178,7 +178,7 @@ public:
         isUsed = false;
         isDefined = false;
         expType = ExpType::UndefinedType;
-        // alreadyTraversed = false;
+        alreadyTraversed = false;
     }
 };
 
