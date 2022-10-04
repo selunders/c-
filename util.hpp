@@ -27,7 +27,9 @@ TreeNode* newExpNode(   ExpKind kind,
 TreeNode* addSibling(TreeNode* addToThis, TreeNode* nodeBeingAdded);
 void setType(TreeNode* t, ExpType type, bool isStatic);
 
+char* assignToString(OpKind op);
 char* expToString(ExpType type);
+char* opToString(OpKind op);
 static void printSpaces(int layer);
 void printTree(TreeNode* tree);
  

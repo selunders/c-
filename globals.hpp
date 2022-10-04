@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include "symbolTable.hpp"
 
 #define MAXCHILDREN 3
 // #ifndef FALSE
@@ -35,6 +36,8 @@ enum class TokenType
     LEQ,
     INT,
     OR,
+    ASSIGN,
+    ADD,
     ADDASS,
     SUBASS,
     MULASS,
@@ -96,7 +99,9 @@ enum class ExpType
     Char,
     CharInt,
     Equal,
-    UndefinedType
+    UndefinedType,
+    Array,
+    LHS
 };
 enum class VarKind
 {
@@ -106,6 +111,17 @@ enum class VarKind
     Parameter,
     LocalStatic
 };
+
+// enum class OpType
+// {
+//     Bool,
+//     Array,
+//     Int,
+//     LHS,
+//     Char,
+//     IntOrChar,
+//     Any
+// };
 
 class TreeNode
 {
@@ -140,8 +156,10 @@ public:
     bool isArray;
     bool isStatic;
     bool isInit;
+    bool seenInit;
     bool isDefined;
     bool isUsed;
+    // bool alreadyTraversed;
 
     // bool enteredScope;
     TreeNode()
@@ -156,8 +174,124 @@ public:
         isArray = false;
         isStatic = false;
         isInit = false;
+        seenInit = false;
         isUsed = false;
         isDefined = false;
+        expType = ExpType::UndefinedType;
+        // alreadyTraversed = false;
+    }
+};
+
+class OpTypeInfo
+{
+public:
+    ExpType lhs;
+    ExpType rhs;
+    ExpType returnType;
+    bool equalTypes;
+    bool bothArrays;
+    bool leftArray;
+    bool isUnary;
+    bool passesEqualCheck(SymbolTable* st, TreeNode* t)
+    {
+        if(equalTypes)
+            return (t->child[0]->expType == t->child[1]->expType);
+        else
+            return (t->child[0]->expType != t->child[1]->expType);
+    }
+
+    bool passesLeftCheck(ExpType LEFT)
+    {
+        if (lhs == ExpType::UndefinedType)
+        {
+            return true;
+        }
+        else if (lhs == ExpType::CharInt)
+        {
+            if (LEFT == ExpType::Integer || LEFT == ExpType::Char)
+            {
+                return true;
+            }
+        }
+        else if (lhs == LEFT)
+            return true;
+        else
+            return false;
+    }
+
+    bool passesRightCheck(ExpType RIGHT)
+    {
+        if (rhs == ExpType::UndefinedType)
+        {
+            return true;
+        }
+        else if (rhs == ExpType::CharInt)
+        {
+            if (RIGHT == ExpType::Integer || RIGHT == ExpType::Char)
+            {
+                return true;
+            }
+        }
+        else if (rhs == RIGHT)
+            return true;
+        else
+            return false;
+    }
+
+    bool arrayCheck(bool leftIsArr, bool rightIsArr)
+    {
+        bool passesCheck = true;
+        if (bothArrays)
+            if (!leftIsArr || !rightIsArr)
+                passesCheck = false;
+        if (equalTypes)
+            if (leftIsArr != rightIsArr)
+                passesCheck = false;
+        if (leftArray)
+            if (!leftIsArr || rightIsArr)
+                passesCheck = false;
+        return passesCheck;
+    }
+
+    bool returnTypeCheck(ExpType retType, bool isArray)
+    {
+        if(isArray)
+            return false;
+        if (returnType == ExpType::UndefinedType)
+        {
+            return true;
+        }
+        else if (returnType == ExpType::CharInt)
+        {
+            if (retType == ExpType::Integer || retType == ExpType::Char)
+            {
+                return true;
+            }
+        }
+        else if (returnType == retType)
+            return true;
+        return false;
+    }
+
+    OpTypeInfo(ExpType LHS, ExpType RHS, ExpType ReturnType, bool SameTypes, bool BothAreArrays, bool LeftIsArray)
+    {
+        lhs = LHS;
+        rhs = RHS;
+        returnType = ReturnType;
+        equalTypes = SameTypes;
+        bothArrays = BothAreArrays;
+        leftArray = LeftIsArray;
+        isUnary = false;
+    }
+    OpTypeInfo(ExpType LHS, ExpType ReturnType, bool LeftIsArray)
+    {
+        lhs = LHS;
+        returnType = ReturnType;
+        leftArray = LeftIsArray;
+        isUnary = true;
+    }
+    OpTypeInfo()
+    {
     }
 };
 

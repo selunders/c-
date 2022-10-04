@@ -178,9 +178,17 @@ TreeNode *addSibling(TreeNode *addToThis, TreeNode *nodeBeingAdded)
 
 void setType(TreeNode *t, ExpType type, bool isStatic)
 {
-    while (t)
+    while (t != NULL)
     {
+        printf("%d Setting %s from %s to %s\n", t->lineno, t->attr.string, expToString(t->expType), expToString(type));
+        // if(t->expType == ExpType::UndefinedType)
+        // {
+        if(t->nodeKind != NodeKind::ExpK || t->subkind.exp != ExpKind::ConstantK)
+        {
+
         t->expType = type;
+        }
+        // }
         t->isStatic = isStatic;
         t = t->sibling;
     }

@@ -184,6 +184,8 @@ funDecl
         {
             $$ = newDeclNode(DeclKind::FuncK, $[type], $[id], $[prms], $[cstmt], NULL);
             $[cstmt]->attr.string = $[id]->tokenstr;
+            $$->isDefined = true;
+            setType($$, $[type], $$->isStatic);
             // $[cstmt]->attr.string = $[id]->tokenstr ? strdup($[id]->tokenstr) : (char*) "";
             // $$->attr.idIndex = $id->idIndex;
         }
@@ -400,6 +402,15 @@ exp
             $$ = $[aop];
             $$->child[0] = $[m];
             $$->child[1] = $[e];
+            if($[m] != NULL)
+            {
+                // printf("initializing node at %p\n", $[m]);
+                $[m]->isInit = true;
+                $[aop]->expType = $[m]->expType;
+            }
+
+            //     printf("Set %s to initialized\n", $[m]->attr.string);
+            // printf("Initializing %s\n\n", $[m]->attr.string);
             // $$ = newExpNode(ExpKind::OpK, $[aop], $[m], $[e], NULL);
         }
     | mutable[m] INC[inc]
