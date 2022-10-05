@@ -21,10 +21,11 @@ if [ -z $1 ]; then
         x=${file%.out}
         y=${x##*/}
         echo -e "\nsdiff -l -s myOutput/$y.out $file"
-        sdiff -l -s myOutput/$y.out $file
+        sdiff -l -s  myOutput/$y.out $file
         # rm myOutput/$y.out
     done
 else
+    make clean; make;
     ./c- sampleOutput3/$1.c- -p > myOutput/$1.out
     echo "sdiff myOutput/$1.out sampleOutput3/$1.out"
     sdiff myOutput/$1.out sampleOutput3/$1.out

@@ -401,7 +401,9 @@ exp
         {
             $$ = $[aop];
             $$->child[0] = $[m];
+            $[m]->isUsed = true;
             $$->child[1] = $[e];
+            $[e]->isUsed = true;
             // if($[m] != NULL)
             // {
                 // printf("initializing node at %p\n", $[m]);
@@ -498,7 +500,9 @@ relExp
         {
             $$ = $[rop];
             $$->child[0] = $[sexp];
+            $[sexp]->isUsed = true;
             $$->child[1] = $[sexp2];
+            $[sexp2]->isUsed = true;
             $$->expType = ExpType::Boolean;
         }
     | sumExp
@@ -537,7 +541,9 @@ sumExp
         {
             $$ = $[sop];
             $$->child[0] = $[sexp];
+            $[sexp]->isUsed = true;
             $$->child[1] = $[mexp];
+            $[mexp]->isUsed = true;
             $$->expType = ExpType::Integer;
         }
     | mulExp
@@ -565,7 +571,9 @@ mulExp
         {
             $$ = $[mop];
             $$->child[0] = $[mexp];
+            $[mexp]->isUsed = true;
             $$->child[1] = $[uexp];
+            $[uexp]->isUsed = true;
             $$->expType = ExpType::Integer;
         }
     | unaryExp

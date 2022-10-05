@@ -160,6 +160,7 @@ public:
     bool isDefined;
     bool isDeclared;
     bool isUsed;
+    bool finalCheckDone;
     bool alreadyTraversed;
 
     // bool enteredScope;
@@ -181,6 +182,7 @@ public:
         expType = ExpType::UndefinedType;
         alreadyTraversed = false;
         isDeclared = false;
+        finalCheckDone = false;
     }
 };
 
@@ -208,7 +210,7 @@ public:
     bool passesLeftCheck(TreeNode *t)
     {
         ExpType LEFT = t->child[0]->expType;
-        if (lhs == ExpType::UndefinedType)
+        if (lhs == ExpType::UndefinedType || LEFT == ExpType::UndefinedType)
         {
             return true;
         }
@@ -317,7 +319,7 @@ public:
         // printf("%d %s array\n", t->child[0]->attr.op, t->child[0]->isArray ? (char*) "is" : (char*) "is not");
         if (onlyWorksWithArrays)
         {
-            if (t->child[0]->isArray)
+            if (t->child[0]->isArray || t->child[0]->expType == ExpType::UndefinedType)
                 return true;
             else
                 return false;

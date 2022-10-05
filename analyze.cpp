@@ -172,16 +172,16 @@ static void findTypes(SymbolTable *st, TreeNode *t)
     //     findTypes(st, t->child[i]);
     //     i++;
     // }
-    // printf("Aaaaahhhhh\n");
+    printf("Aaaaahhhhh\n");
 
     if (t->expType != ExpType::UndefinedType)
     {
-        // printf("Aaaaaaaaahhhhhhhh\n");
+        printf("Aaaaaaaaahhhhhhhh\n");
         // return t->expType;
     }
     else
     {
-        // printf("Aaaaaaaaaaaaahhhhhhhhhhh\n");
+        printf("Aaaaaaaaaaaaahhhhhhhhhhh\n");
         switch (t->nodeKind)
         {
         case NodeKind::DeclK:
@@ -391,12 +391,46 @@ static void analyzeSiblings(SymbolTable *st, TreeNode *t)
 {
 }
 
+static void usageCheck(SymbolTable *st, TreeNode *t, bool *null = NULL)
+{
+    switch (t->nodeKind)
+    {
+    case NodeKind::DeclK:
+        switch (t->subkind.decl)
+        {
+        case DeclKind::FuncK:
+            break;
+        case DeclKind::ParamK:
+            break;
+        case DeclKind::VarK:
+        {
+            TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
+            if (!tmp->finalCheckDone)
+            {
+                if (!tmp->isUsed)
+                {
+                    printf("WARNING(%d): The variable '%s' seems not to be used.\n", t->lineno, t->attr.string);
+                }
+                tmp->finalCheckDone = true;
+            }
+            break;
+        }
+        }
+        break;
+    case NodeKind::ExpK:
+        break;
+    case NodeKind::StmtK:
+        break;
+    }
+}
+
 static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
 {
     switch (t->nodeKind)
     {
     case NodeKind::DeclK:
     {
+        // printf("Aaaaaahhhhhh\n");
         TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
         if (!st->insert(t->attr.string, t))
         {
@@ -405,6 +439,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         break;
     }
     case NodeKind::ExpK:
+        // printf("Aaaaaaaaaaahhhhhhh\n");
         switch (t->subkind.exp)
         {
         case ExpKind::AssignK:
@@ -488,8 +523,13 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             }
             else
             {
-                t->isDeclared = tmp->isDeclared;
                 t->isArray = tmp->isArray;
+                t->isDeclared = tmp->isDeclared;
+                t->isStatic = tmp->isStatic;
+                if (t->isUsed)
+                    tmp->isUsed = true;
+                else if (tmp->isUsed)
+                    t->isUsed = true;
                 if (tmp->expType != ExpType::UndefinedType)
                 {
                     t->expType = tmp->expType;
@@ -565,7 +605,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             }
 
             OpTypeInfo currentOp = opInfoMap[t->attr.op];
-            if (t->child[0]->isDeclared)
+            // if (t->child[0]->isDeclared)
             {
                 if (!currentOp.isUnary)
                 {
@@ -597,7 +637,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 }
                 else
                 {
-                    if (!currentOp.passesLeftCheck(t))
+                    if (!currentOp.passesLeftCheck(t) && t->attr.op != SIZEOF)
                     {
                         printf("ERROR(%d): Unary '%s' requires an operand of type %s but was given type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[0]->expType));
                     }
@@ -620,6 +660,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         }
         break;
     case NodeKind::StmtK:
+        // printf("Aaaaaaaaaaaaaaaaaaaaaaaaahhhhhhhhhhhhhhhhhhhhhh\n");
         switch (t->subkind.stmt)
         {
         case StmtKind::BreakK:
@@ -641,6 +682,11 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         case StmtKind::RangeK:
             break;
         case StmtKind::ReturnK:
+            if (t->child[0]->isArray)
+            {
+                printf("ERROR(%d): Cannot return an array.\n", t->lineno);
+                numAnalyzeErrors++;
+            }
             break;
         case StmtKind::WhileK:
             st->enter((string) "While");
@@ -672,6 +718,7 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root)
     // traverse(st, root, findTypes, findTypes);
     // traverse(st, root, nullProc, moveUpTypes);
     traverse(st, root, nullProc, printAnalysis);
+    traverse(st, root, nullProc, usageCheck);
     // traverse(st, root, printAnalysis, nullProc);
     // Do final check for main()
     TreeNode *mainPointer = (TreeNode *)st->lookup((string) "main");
