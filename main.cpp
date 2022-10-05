@@ -76,12 +76,12 @@ int main(int argc, char *argv[])
         yyparse();
         if(printTreeFlag)
         {
-            printf("Not printing type info\n");
+            // printf("Not printing type info\n");
             printTree(rootNode, false);
         }
         else if(printTypeInfo)
         {
-            printf("Printing type info\n");
+            // printf("Printing type info\n");
             printTree(rootNode, true);
         }
         
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
         SymbolTable* symbolTable = new SymbolTable();
         symbolTable->debug(symbTabDEBUG);
         semanticAnalysis(symbolTable, rootNode);
-            printTree(rootNode, true);
+            // printTree(rootNode, true);
         /* printf("Number of errors: %d\n", numErrors);   // ERR */
     }
 

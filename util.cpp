@@ -180,7 +180,7 @@ void setType(TreeNode *t, ExpType type, bool isStatic)
 {
     while (t != NULL)
     {
-        printf("%d Setting %s from %s to %s\n", t->lineno, t->attr.string, expToString(t->expType), expToString(type));
+        // printf("%d Setting %s from %s to %s\n", t->lineno, t->attr.string, expToString(t->expType), expToString(type));
         // if(t->expType == ExpType::UndefinedType)
         // {
         if (t->nodeKind != NodeKind::ExpK || t->subkind.exp != ExpKind::ConstantK)
@@ -190,6 +190,7 @@ void setType(TreeNode *t, ExpType type, bool isStatic)
         }
         // }
         t->isStatic = isStatic;
+        t->isDeclared = true;
         t = t->sibling;
     }
 }
@@ -222,8 +223,14 @@ char *expToString(ExpType type)
     case ExpType::UndefinedType:
         return (char *)"UndefinedType";
         break;
+    case ExpType::Array:
+        return (char *)"Array";
+        break;
+    case ExpType::LHS:
+        return (char*)"LHS";
+        break;
     default:
-        printf("\n\n Error with expToString in globals.hpp\n\n");
+        printf("\n\n Error with expToString in util.cpp\n\n");
         return (char *)"ERROR IN GLOBALS.HPP EXPTOSTRING";
         break;
     }

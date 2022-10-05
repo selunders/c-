@@ -158,6 +158,7 @@ public:
     bool isInit;
     bool seenInit;
     bool isDefined;
+    bool isDeclared;
     bool isUsed;
     bool alreadyTraversed;
 
@@ -179,6 +180,7 @@ public:
         isDefined = false;
         expType = ExpType::UndefinedType;
         alreadyTraversed = false;
+        isDeclared = false;
     }
 };
 
@@ -192,16 +194,20 @@ public:
     bool bothArrays;
     bool leftArray;
     bool isUnary;
-    bool passesEqualCheck(SymbolTable* st, TreeNode* t)
+    bool worksWithArrays;
+    bool onlyWorksWithArrays;
+    bool passesEqualCheck(TreeNode *t)
     {
-        if(equalTypes)
+        if (equalTypes)
             return (t->child[0]->expType == t->child[1]->expType);
         else
-            return (t->child[0]->expType != t->child[1]->expType);
+            return true;
+        // return (t->child[0]->expType != t->child[1]->expType);
     }
 
-    bool passesLeftCheck(ExpType LEFT)
+    bool passesLeftCheck(TreeNode *t)
     {
+        ExpType LEFT = t->child[0]->expType;
         if (lhs == ExpType::UndefinedType)
         {
             return true;
@@ -213,14 +219,20 @@ public:
                 return true;
             }
         }
+        else if (lhs == ExpType::Array)
+        {
+            if (t->child[0]->isArray)
+                return true;
+        }
         else if (lhs == LEFT)
             return true;
         else
             return false;
     }
 
-    bool passesRightCheck(ExpType RIGHT)
+    bool passesRightCheck(TreeNode *t)
     {
+        ExpType RIGHT = t->child[1]->expType;
         if (rhs == ExpType::UndefinedType)
         {
             return true;
@@ -237,9 +249,87 @@ public:
         else
             return false;
     }
-
-    bool arrayCheck(bool leftIsArr, bool rightIsArr)
+    bool isArrayAndWorks(TreeNode *t)
     {
+        // if (t->child[0]->isArray || t->child[1]->isArray)
+        // {
+        //     if (worksWithArrays)
+        //     {
+        //         return true;
+        //     }
+        //     else
+        //         return false;
+        // }
+        // else
+        //     return true;
+
+        if (t->child[1] != NULL)
+        {
+            if (t->child[0]->isArray || t->child[1]->isArray)
+            {
+                if (worksWithArrays)
+                {
+                    return true;
+                }
+                else
+                    return false;
+            }
+            else
+                return true;
+        }
+        else
+        {
+        if (t->child[0]->isArray)
+        {
+            if (worksWithArrays)
+            {
+                return true;
+            }
+            else
+                return false;
+        }
+        else
+            return true;
+        }
+
+        // if (worksWithArrays)
+        //     if (t->child[0]->isArray)
+        //     {
+        //         if (t->child[1] == NULL)
+        //             return true;
+        //         else if (t->child[1]->isArray)
+        //             return true;
+        //         else
+        //             return false;
+        //     }
+        //     else if (t->child[0]->isArray)
+        //         if (t->child[1] == NULL)
+        //             return false;
+        //         else if (t->child[1]->isArray)
+        //             return false;
+        //         else
+        //             return true;
+    }
+
+    bool onlyArrayAndWorks(TreeNode *t)
+    {
+        // Only used for unary sizeof op I believe
+        // printf("%d %s array\n", t->child[0]->attr.op, t->child[0]->isArray ? (char*) "is" : (char*) "is not");
+        if (onlyWorksWithArrays)
+        {
+            if (t->child[0]->isArray)
+                return true;
+            else
+                return false;
+        }
+        else
+            return true;
+    }
+
+    bool arrayCheck(TreeNode *t)
+    {
+        bool leftIsArr = t->child[0]->isArray;
+        bool rightIsArr = t->child[1]->isArray;
         bool passesCheck = true;
         if (bothArrays)
             if (!leftIsArr || !rightIsArr)
@@ -253,9 +343,11 @@ public:
         return passesCheck;
     }
 
-    bool returnTypeCheck(ExpType retType, bool isArray)
+    bool returnTypeCheck(TreeNode *t)
     {
-        if(isArray)
+        ExpType retType = t->expType;
+        bool isArray = t->isArray;
+        if (isArray)
             return false;
         if (returnType == ExpType::UndefinedType)
         {
@@ -273,7 +365,7 @@ public:
         return false;
     }
 
-    OpTypeInfo(ExpType LHS, ExpType RHS, ExpType ReturnType, bool SameTypes, bool BothAreArrays, bool LeftIsArray)
+    OpTypeInfo(ExpType LHS, ExpType RHS, ExpType ReturnType, bool SameTypes, bool BothAreArrays, bool LeftIsArray, bool WorksWithArrays)
     {
         lhs = LHS;
         rhs = RHS;
@@ -282,13 +374,17 @@ public:
         bothArrays = BothAreArrays;
         leftArray = LeftIsArray;
         isUnary = false;
+        worksWithArrays = WorksWithArrays;
+        onlyWorksWithArrays = false;
     }
-    OpTypeInfo(ExpType LHS, ExpType ReturnType, bool LeftIsArray)
+    OpTypeInfo(ExpType LHS, ExpType ReturnType, bool LeftIsArray, bool WorksWithArrays, bool OnlyWorksWithArrs)
     {
         lhs = LHS;
         returnType = ReturnType;
         leftArray = LeftIsArray;
         isUnary = true;
+        worksWithArrays = WorksWithArrays;
+        onlyWorksWithArrays = OnlyWorksWithArrs;
     }
     OpTypeInfo()
     {

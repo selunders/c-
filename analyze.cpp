@@ -15,77 +15,78 @@ int numAnalyzeWarnings;
 int numAnalyzeErrors;
 map<OpKind, OpTypeInfo> opInfoMap;
 static int location = 0;
+static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope);
 
 void InitOpTypeList()
 {
-    opInfoMap[AND] = OpTypeInfo(ExpType::Boolean, ExpType::Boolean, ExpType::Boolean, true, false, false);
-    opInfoMap[OR] = OpTypeInfo(ExpType::Boolean, ExpType::Boolean, ExpType::Boolean, true, false, false);
-    opInfoMap[EQ] = OpTypeInfo(ExpType::UndefinedType, ExpType::UndefinedType, ExpType::Boolean, true, false, false);
-    opInfoMap[NEQ] = OpTypeInfo(ExpType::UndefinedType, ExpType::UndefinedType, ExpType::Boolean, true, false, false);
-    opInfoMap['<'] = OpTypeInfo(ExpType::UndefinedType, ExpType::UndefinedType, ExpType::Boolean, true, false, false);
-    opInfoMap[LEQ] = OpTypeInfo(ExpType::UndefinedType, ExpType::UndefinedType, ExpType::Boolean, true, false, false);
-    opInfoMap['>'] = OpTypeInfo(ExpType::UndefinedType, ExpType::UndefinedType, ExpType::Boolean, true, false, false);
-    opInfoMap[GEQ] = OpTypeInfo(ExpType::UndefinedType, ExpType::UndefinedType, ExpType::Boolean, true, false, false);
-    opInfoMap['='] = OpTypeInfo(ExpType::UndefinedType, ExpType::UndefinedType, ExpType::Boolean, true, false, false);
-    opInfoMap[ADDASS] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, true, false, false);
-    opInfoMap[SUBASS] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, true, false, false);
-    opInfoMap[MULASS] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, true, false, false);
-    opInfoMap[DIVASS] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, true, false, false);
-    opInfoMap['+'] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, true, false, false);
-    opInfoMap[SUBTRACT] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, true, false, false);
-    opInfoMap[MULTIPLY] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, true, false, false);
-    opInfoMap['\\'] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, true, false, false);
-    opInfoMap[MODULO] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, true, false, false);
-    opInfoMap['['] = OpTypeInfo(ExpType::Array, ExpType::Integer, ExpType::LHS, false, false, true);
+    opInfoMap[AND] = OpTypeInfo(ExpType::Boolean, ExpType::Boolean, ExpType::Boolean, false, false, false, false);
+    opInfoMap[OR] = OpTypeInfo(ExpType::Boolean, ExpType::Boolean, ExpType::Boolean, false, false, false, false);
+    opInfoMap[EQ] = OpTypeInfo(ExpType::UndefinedType, ExpType::UndefinedType, ExpType::Boolean, true, false, false, true);
+    opInfoMap[NEQ] = OpTypeInfo(ExpType::UndefinedType, ExpType::UndefinedType, ExpType::Boolean, true, false, false, true);
+    opInfoMap['<'] = OpTypeInfo(ExpType::UndefinedType, ExpType::UndefinedType, ExpType::Boolean, true, false, false, true);
+    opInfoMap[LEQ] = OpTypeInfo(ExpType::UndefinedType, ExpType::UndefinedType, ExpType::Boolean, true, false, false, true);
+    opInfoMap['>'] = OpTypeInfo(ExpType::UndefinedType, ExpType::UndefinedType, ExpType::Boolean, true, false, false, true);
+    opInfoMap[GEQ] = OpTypeInfo(ExpType::UndefinedType, ExpType::UndefinedType, ExpType::Boolean, true, false, false, true);
+    opInfoMap['='] = OpTypeInfo(ExpType::UndefinedType, ExpType::UndefinedType, ExpType::Boolean, true, false, false, true);
+    opInfoMap[ADDASS] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false);
+    opInfoMap[SUBASS] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false);
+    opInfoMap[MULASS] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false);
+    opInfoMap[DIVASS] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false);
+    opInfoMap['+'] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false);
+    opInfoMap[SUBTRACT] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false);
+    opInfoMap[MULTIPLY] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false);
+    opInfoMap['\\'] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false);
+    opInfoMap[MODULO] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false);
+    opInfoMap['['] = OpTypeInfo(ExpType::Array, ExpType::Integer, ExpType::LHS, false, false, true, true);
     // Unary
-    opInfoMap[INC] = OpTypeInfo(ExpType::Integer, ExpType::Integer, false);
-    opInfoMap[DEC] = OpTypeInfo(ExpType::Integer, ExpType::Integer, false);
-    opInfoMap[NOT] = OpTypeInfo(ExpType::Boolean, ExpType::Boolean, false);
-    opInfoMap[SIZEOF] = OpTypeInfo(ExpType::Array, ExpType::Integer, true);
-    opInfoMap[NEGATIVE] = OpTypeInfo(ExpType::Integer, ExpType::Integer, false);
-    opInfoMap['?'] = OpTypeInfo(ExpType::Integer, ExpType::Integer, false);
+    opInfoMap[INC] = OpTypeInfo(ExpType::Integer, ExpType::Integer, false, false, false);
+    opInfoMap[DEC] = OpTypeInfo(ExpType::Integer, ExpType::Integer, false, false, false);
+    opInfoMap[NOT] = OpTypeInfo(ExpType::Boolean, ExpType::Boolean, false, false, false);
+    opInfoMap[SIZEOF] = OpTypeInfo(ExpType::Array, ExpType::Integer, true, true, true);
+    opInfoMap[NEGATIVE] = OpTypeInfo(ExpType::Integer, ExpType::Integer, false, false, false);
+    opInfoMap['?'] = OpTypeInfo(ExpType::Integer, ExpType::Integer, false, false, false);
     // Array Operators
     // opInfoMap[NEGATIVE] = OpTypeInfo(ExpType::Array, ExpType::Integer, ExpType::LHS, false, false, true);
 }
 
-static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *, TreeNode *), void (*postProc)(SymbolTable *, TreeNode *))
+static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *, TreeNode *, bool *), void (*postProc)(SymbolTable *, TreeNode *, bool *))
 {
     bool enteredScope = false;
     if (t != NULL)
     {
-        if (t->nodeKind == NodeKind::StmtK)
-        {
-            switch (t->subkind.stmt)
-            {
-            case StmtKind::BreakK:
-                break;
-            case StmtKind::CompoundK:
-                st->enter((string) "Compound Statement");
-                enteredScope = true;
-                break;
-            case StmtKind::ForK:
-                st->enter((string) "For");
-                enteredScope = true;
-                break;
-            case StmtKind::IfK:
-                st->enter((string) "If");
-                enteredScope = true;
-                break;
-            case StmtKind::NullK:
-                break;
-            case StmtKind::RangeK:
-                break;
-            case StmtKind::ReturnK:
-                break;
-            case StmtKind::WhileK:
-                st->enter((string) "While");
-                break;
-            default:
-                break;
-            }
-            // printf("Entered compound statement\n");
-        }
-        preProc(st, t);
+        // if (t->nodeKind == NodeKind::StmtK)
+        // {
+        //     switch (t->subkind.stmt)
+        //     {
+        //     case StmtKind::BreakK:
+        //         break;
+        //     case StmtKind::CompoundK:
+        //         st->enter((string) "Compound Statement");
+        //         enteredScope = true;
+        //         break;
+        //     case StmtKind::ForK:
+        //         st->enter((string) "For");
+        //         enteredScope = true;
+        //         break;
+        //     case StmtKind::IfK:
+        //         st->enter((string) "If");
+        //         enteredScope = true;
+        //         break;
+        //     case StmtKind::NullK:
+        //         break;
+        //     case StmtKind::RangeK:
+        //         break;
+        //     case StmtKind::ReturnK:
+        //         break;
+        //     case StmtKind::WhileK:
+        //         st->enter((string) "While");
+        //         break;
+        //     default:
+        //         break;
+        //     }
+        //     // printf("Entered compound statement\n");
+        // }
+        preProc(st, t, &enteredScope);
         {
             int i;
             for (i = 0; i < MAXCHILDREN; i++)
@@ -93,18 +94,18 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
                 traverse(st, t->child[i], preProc, postProc);
             }
         }
-        postProc(st, t);
+        postProc(st, t, &enteredScope);
         if (enteredScope)
         {
             st->leave();
-            printf("Left compound statement\n");
+            // printf("Left scop\n");
             enteredScope = false;
         }
         traverse(st, t->sibling, preProc, postProc);
     }
 }
 
-static void nullProc(SymbolTable *st, TreeNode *t)
+static void nullProc(SymbolTable *st, TreeNode *t, bool *enteredScope)
 {
     if (t == NULL)
         return;
@@ -348,49 +349,59 @@ static void findTypes(SymbolTable *st, TreeNode *t)
     // return ExpType::UndefinedType;
 }
 
-static void printAnalysis(SymbolTable *st, TreeNode *t)
+static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *null = NULL)
+{
+    switch (t->nodeKind)
+    {
+
+    case NodeKind::ExpK:
+        switch (t->subkind.exp)
+        {
+        case ExpKind::AssignK:
+        {
+            if (t->attr.op == '=')
+            {
+                t->expType = t->child[0]->expType;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
+}
+
+static void analyzeChildren(SymbolTable *st, TreeNode *t)
+{
+    bool enteredScope;
+    int i = 0;
+    while (t != NULL)
+    {
+        t = t->child[i];
+        printAnalysis(st, t, &enteredScope);
+        if (enteredScope)
+        {
+            st->leave();
+            enteredScope = false;
+        }
+        i++;
+    }
+}
+static void analyzeSiblings(SymbolTable *st, TreeNode *t)
+{
+}
+
+static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
 {
     switch (t->nodeKind)
     {
     case NodeKind::DeclK:
     {
         TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
-        // if (tmp != NULL)
-        // {
-        // if(tmp->alreadyTraversed == true)
-        // {
-        // printf("ERROR(%d): Symbol '%s' is already declared at line %d.\n", t->lineno, t->attr.string, tmp->lineno);
-        // numAnalyzeErrors++;
-        // }
-        // else
-        // tmp->alreadyTraversed = true;
-        // }
-        // else
-        // printf("not declared\n");
-        // printf("ERROR(%Dd: Symbol '%s' is already declared at line %d.\n", tmp->lineno);
-        // else
-        // {
-        // switch (t->subkind.decl)
-        // {
-        // case DeclKind::FuncK:
         if (!st->insert(t->attr.string, t))
         {
             printf("ERROR(%d): Symbol '%s' is already declared at line %d.\n", t->lineno, t->attr.string, tmp->lineno);
         };
-        //     break;
-
-        // case DeclKind::ParamK:
-        //     st->insert(t->attr.string, t);
-        //     break;
-
-        // case DeclKind::VarK:
-        //     st->insert(t->attr.string, t);
-        //     break;
-
-        // default:
-        //     break;
-        // }
-
         break;
     }
     case NodeKind::ExpK:
@@ -398,62 +409,39 @@ static void printAnalysis(SymbolTable *st, TreeNode *t)
         {
         case ExpKind::AssignK:
         {
-
-            OpTypeInfo tmpOp = opInfoMap[t->attr.op];
-            TreeNode *tmp;
-            string strl;
-            if (t->child[0] != NULL)
+            if (t->attr.op == '=' || t->attr.op == '[')
             {
-                // strl = t->child[0]->attr.string;
-                // tmp = (TreeNode *)st->lookup(t->child[0]->attr.string);
-                // if (tmp != NULL)
-                // t->child[0]->expType = tmp->expType;
+                t->expType = t->child[0]->expType;
             }
-            // string strr = t->child[1]->attr.string;
-            // if (t->child[1] != NULL)
-            // t->child[1]->expType = ((TreeNode *)st->lookup(strr))->expType;
-
-            // if (!tmpOp.passesEqualCheck(t))
-            // {
-            //     printf("!ERROR(%d) '%s' requires operands of the same type but lhs is %s and rhs is %s.\n", t->lineno, assignToString(t->attr.op),expToString(t->child[0]->expType), expToString(t->child[1]->expType));
-            // }
-            if (tmpOp.isUnary)
+            OpTypeInfo currentOp = opInfoMap[t->attr.op];
+            if (!currentOp.isUnary)
             {
-            }
-            else
-            {
-                if (!tmpOp.passesEqualCheck(st, t))
+                if (!currentOp.passesLeftCheck(t))
                 {
-                    // if (t->child[0] != NULL && t->child[1] != NULL)
-                    // {
-                    TreeNode *leftChild = t->child[0];
-                    TreeNode *rightChild = t->child[1];
-                    TreeNode *stLeftChild;
-                    TreeNode *stRightChild;
-                    if (leftChild != NULL && leftChild->nodeKind == NodeKind::ExpK && leftChild->subkind.exp == ExpKind::IdK)
-                        stLeftChild = (TreeNode *)st->lookup(leftChild->attr.string);
-                    // if (rightChild != NULL)
-                    // stRightChild = (TreeNode *)st->lookup(rightChild->attr.string);
-                    // if (rightChild->expType != ExpType::UndefinedType)
-                    // {}
-                    // printf("ERROR(%d) '%s' requires operands of the same type but lhs is %s and rhs is %s.\n", t->lineno, assignToString(t->attr.op), expToString(stLeftChild->expType), expToString(t->child[1]->expType));
-                    // printf("ERROR(%d) '%s' requires operands of the same type but lhs is %s and rhs is %s.\n", t->lineno, assignToString(t->attr.op), expToString(t->child[0]->expType), expToString(t->child[1]->expType));
-                    // }
+                    printf("ERROR(%d): '%s' requires operands of type %s but lhs is of type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[0]->expType));
+                    numAnalyzeErrors++;
+                }
+                if (!currentOp.passesRightCheck(t))
+                {
+                    printf("ERROR(%d): '%s' requires operands of type %s but rhs is of type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[1]->expType));
+                    numAnalyzeErrors++;
+                }
+                if (!currentOp.passesEqualCheck(t))
+                {
+                    printf("ERROR(%d): '%s' requires operands of the same type but lhs is type %s and rhs is type %s.\n", t->lineno, assignToString(t->attr.op), expToString(t->child[0]->expType), expToString(t->child[1]->expType));
+                    numAnalyzeErrors++;
+                }
+                if (!currentOp.isArrayAndWorks(t))
+                {
+                    printf("ERROR(%d): The operation '%s' does not work with arrays.\n", t->lineno, assignToString(t->attr.op));
+                    numAnalyzeErrors++;
+                }
+                if (!currentOp.onlyArrayAndWorks(t))
+                {
+                    printf("ERROR(%d): The operation '%s' only works with arrays.\n", t->lineno, assignToString(t->attr.op));
+                    numAnalyzeErrors++;
                 }
             }
-            // switch (t->attr.op)
-            // {
-            // case '=':
-            //     if(opInfoMap[(yytokentype) '='].passesEqualCheck(t))
-            //     {
-            //         printf("!ERROR(%d) You have the correct lhs and rhs\n", t->lineno);
-            //     }
-            //     else
-            //         printf("ERROR(%d) You have incorrect types for '='\n", t->lineno);
-            //     break;
-            // default:
-            //     break;
-            // }
             break;
         }
         case ExpKind::CallK:
@@ -500,7 +488,12 @@ static void printAnalysis(SymbolTable *st, TreeNode *t)
             }
             else
             {
-                t->expType = tmp->expType;
+                t->isDeclared = tmp->isDeclared;
+                t->isArray = tmp->isArray;
+                if (tmp->expType != ExpType::UndefinedType)
+                {
+                    t->expType = tmp->expType;
+                }
                 if (tmp->subkind.decl == DeclKind::FuncK)
                 {
                     printf("ERROR(%d): Cannot use function '%s' as a variable.\n", t->lineno, t->attr.string);
@@ -511,7 +504,8 @@ static void printAnalysis(SymbolTable *st, TreeNode *t)
                 if (tmp->isInit == false && tmp->subkind.decl == DeclKind::VarK)
                 {
                     // printf("%s is in initialization state: %d", tmp->isInit)
-                    printf("WARNING(%d): Variable \'%s\' %p may be uninitialized when used here.\n", t->lineno, t->attr.string, tmp);
+                    printf("WARNING(%d): Variable \'%s\' may be uninitialized when used here.\n", t->lineno, t->attr.string);
+                    // printf("WARNING(%d): Variable \'%s\' %p may be uninitialized when used here.\n", t->lineno, t->attr.string, tmp);
                     tmp->isInit = true;
                     // printf("Set %s to initialized\n", tmp->attr.string);
                     numAnalyzeWarnings++;
@@ -524,17 +518,15 @@ static void printAnalysis(SymbolTable *st, TreeNode *t)
             break;
 
         case ExpKind::OpK:
+        {
+
             switch (t->attr.op)
             {
             case OR:
-                t->expType = ExpType::Boolean;
                 break;
             case AND:
-                t->expType = ExpType::Boolean;
                 break;
             case NOT:
-                t->expType = ExpType::Boolean;
-                t->expType = ExpType::Boolean;
                 break;
             case '<':
                 break;
@@ -565,14 +557,64 @@ static void printAnalysis(SymbolTable *st, TreeNode *t)
             case SIZEOF:
                 break;
             case '[':
+                t->expType = t->child[0]->expType;
                 break;
             default:
                 // return (char *)"ERROR(opToString() in util.cpp)";
                 break;
             }
 
+            OpTypeInfo currentOp = opInfoMap[t->attr.op];
+            if (t->child[0]->isDeclared)
+            {
+                if (!currentOp.isUnary)
+                {
+                    if (!currentOp.passesLeftCheck(t))
+                    {
+                        printf("ERROR(%d): '%s' requires operands of type %s but lhs is of type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[0]->expType));
+                        numAnalyzeErrors++;
+                    }
+                    if (!currentOp.passesRightCheck(t))
+                    {
+                        printf("ERROR(%d): '%s' requires operands of type %s but rhs is of type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[1]->expType));
+                        numAnalyzeErrors++;
+                    }
+                    if (!currentOp.passesEqualCheck(t))
+                    {
+                        printf("ERROR(%d): '%s' requires operands of the same type but lhs is type %s and rhs is type %s.\n", t->lineno, opToString(t->attr.op), expToString(t->child[0]->expType), expToString(t->child[1]->expType));
+                        numAnalyzeErrors++;
+                    }
+                    if (!currentOp.isArrayAndWorks(t))
+                    {
+                        printf("ERROR(%d): The operation '%s' does not work with arrays.\n", t->lineno, opToString(t->attr.op));
+                        numAnalyzeErrors++;
+                    }
+                    if (!currentOp.onlyArrayAndWorks(t))
+                    {
+                        printf("ERROR(%d): The operation '%s' only works with arrays.\n", t->lineno, opToString(t->attr.op));
+                        numAnalyzeErrors++;
+                    }
+                }
+                else
+                {
+                    if (!currentOp.passesLeftCheck(t))
+                    {
+                        printf("ERROR(%d): Unary '%s' requires an operand of type %s but was given type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[0]->expType));
+                    }
+                    if (!currentOp.onlyArrayAndWorks(t))
+                    {
+                        printf("ERROR(%d): The operation '%s' only works with arrays.\n", t->lineno, opToString(t->attr.op));
+                        numAnalyzeErrors++;
+                    }
+                    if (!currentOp.isArrayAndWorks(t))
+                    {
+                        printf("ERROR(%d): The operation '%s' does not work with arrays.\n", t->lineno, opToString(t->attr.op));
+                        numAnalyzeErrors++;
+                    }
+                }
+            }
             break;
-
+        }
         default:
             break;
         }
@@ -583,15 +625,16 @@ static void printAnalysis(SymbolTable *st, TreeNode *t)
         case StmtKind::BreakK:
             break;
         case StmtKind::CompoundK:
-            // if(t->attr.string)
-            // symbolTable->enter((string) t->attr.string);
-            // st->enter((string) "Compound Statement");
-            // t->enteredScope = true;
-            // printf("MYDEBUG(SymbolTable) Entered Compound statement [Line %d]\n", t->lineno);
+            st->enter((string) "Compound Statement");
+            *enteredScope = true;
             break;
         case StmtKind::ForK:
+            st->enter((string) "For");
+            *enteredScope = true;
             break;
         case StmtKind::IfK:
+            st->enter((string) "If");
+            *enteredScope = true;
             break;
         case StmtKind::NullK:
             break;
@@ -600,6 +643,9 @@ static void printAnalysis(SymbolTable *st, TreeNode *t)
         case StmtKind::ReturnK:
             break;
         case StmtKind::WhileK:
+            st->enter((string) "While");
+            break;
+        default:
             break;
         }
         break;
@@ -621,10 +667,12 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root)
     numAnalyzeWarnings = 0;
     numAnalyzeErrors = 0;
     st->enter((string) "Global");
-    traverse(st, root, insertSymbols, nullProc);
-    traverse(st, root, nullProc, findTypes);
+    // traverse(st, root, insertSymbols, nullProc);
+    // traverse(st, root, nullProc, findTypes);
     // traverse(st, root, findTypes, findTypes);
-    traverse(st, root, printAnalysis, nullProc);
+    // traverse(st, root, nullProc, moveUpTypes);
+    traverse(st, root, nullProc, printAnalysis);
+    // traverse(st, root, printAnalysis, nullProc);
     // Do final check for main()
     TreeNode *mainPointer = (TreeNode *)st->lookup((string) "main");
     if ((mainPointer != NULL) && (mainPointer->nodeKind == NodeKind::DeclK) && (mainPointer->subkind.decl == DeclKind::FuncK))
