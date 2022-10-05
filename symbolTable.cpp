@@ -173,7 +173,7 @@ void pointerPrintNode(void* data)
         }
         // nodeCount++;
         // printf("%d\n", nodeCount);
-        printf(" [line: %d]\n", t->lineno);
+        printf(" [line: %d] || expType::%s\n", t->lineno, expToString(t->expType));
         // // printf(" [line: %d]\nexpType::%s\n", t->lineno, expToString(t->expType));
         // for (i = 0; i < MAXCHILDREN; i++)
         // {

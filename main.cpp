@@ -96,8 +96,8 @@ int main(int argc, char *argv[])
         SymbolTable* symbolTable = new SymbolTable();
         symbolTable->debug(symbTabDEBUG);
         semanticAnalysis(symbolTable, rootNode);
-        symbolTable->print(pointerPrintNode);
-            // printTree(rootNode, true);
+        // printTree(rootNode, true);
+        // symbolTable->print(pointerPrintNode);
         /* printf("Number of errors: %d\n", numErrors);   // ERR */
     }
 
