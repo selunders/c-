@@ -35,7 +35,7 @@ void InitOpTypeList()
     opInfoMap['+'] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false);
     opInfoMap[SUBTRACT] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false);
     opInfoMap[MULTIPLY] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false);
-    opInfoMap['\\'] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false);
+    opInfoMap['/'] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false);
     opInfoMap[MODULO] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false);
     opInfoMap['['] = OpTypeInfo(ExpType::Array, ExpType::Integer, ExpType::LHS, false, false, true, true);
     // Unary
@@ -453,12 +453,12 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             {
                 if (!currentOp.passesLeftCheck(t))
                 {
-                    printf("ERROR(%d): '%s' requires operands of type %s but lhs is of type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[0]->expType));
+                    printf("ERROR(%d): '%s' requires operands of type %s but lhs is of type %s.\n", t->lineno, assignToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[0]->expType));
                     numAnalyzeErrors++;
                 }
                 if (!currentOp.passesRightCheck(t))
                 {
-                    printf("ERROR(%d): '%s' requires operands of type %s but rhs is of type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[1]->expType));
+                    printf("ERROR(%d): '%s' requires operands of type %s but rhs is of type %s.\n", t->lineno, assignToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[1]->expType));
                     numAnalyzeErrors++;
                 }
                 if (!currentOp.passesEqualCheck(t))
@@ -598,58 +598,69 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 break;
             case '[':
                 t->expType = t->child[0]->expType;
+                if (t->child[0] != NULL && !t->child[0]->isArray)
+                {
+                    printf("ERROR(%d): Cannot index nonarray '%s'.\n", t->lineno, t->child[0]->attr.string);
+                }
+                else if (t->child[1] != NULL && t->child[1]->expType != ExpType::Integer)
+                {
+                    printf("ERROR(%d): Array '%s' should be indexed by type int but got type %s.\n", t->lineno, t->child[0]->attr.string, expToString(t->child[1]->expType));
+                }
                 break;
             default:
                 // return (char *)"ERROR(opToString() in util.cpp)";
                 break;
             }
-
-            OpTypeInfo currentOp = opInfoMap[t->attr.op];
-            // if (t->child[0]->isDeclared)
+            if (t->attr.op != '[')
             {
-                if (!currentOp.isUnary)
+
+                OpTypeInfo currentOp = opInfoMap[t->attr.op];
+                // if (t->child[0]->isDeclared)
                 {
-                    if (!currentOp.passesLeftCheck(t))
+                    if (!currentOp.isUnary)
                     {
-                        printf("ERROR(%d): '%s' requires operands of type %s but lhs is of type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[0]->expType));
-                        numAnalyzeErrors++;
+                        if (!currentOp.passesLeftCheck(t))
+                        {
+                            printf("ERROR(%d): '%s' requires operands of type %s but lhs is of type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[0]->expType));
+                            numAnalyzeErrors++;
+                        }
+                        if (!currentOp.passesRightCheck(t))
+                        {
+                            printf("ERROR(%d): '%s' requires operands of type %s but rhs is of type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[1]->expType));
+                            numAnalyzeErrors++;
+                        }
+                        if (!currentOp.passesEqualCheck(t))
+                        {
+                            printf("ERROR(%d): '%s' requires operands of the same type but lhs is type %s and rhs is type %s.\n", t->lineno, opToString(t->attr.op), expToString(t->child[0]->expType), expToString(t->child[1]->expType));
+                            numAnalyzeErrors++;
+                        }
+                        if (!currentOp.isArrayAndWorks(t))
+                        {
+                            printf("ERROR(%d): The operation '%s' does not work with arrays.\n", t->lineno, opToString(t->attr.op));
+                            numAnalyzeErrors++;
+                        }
+                        if (!currentOp.onlyArrayAndWorks(t))
+                        {
+                            printf("ERROR(%d): The operation '%s' only works with arrays.\n", t->lineno, opToString(t->attr.op));
+                            numAnalyzeErrors++;
+                        }
                     }
-                    if (!currentOp.passesRightCheck(t))
+                    else
                     {
-                        printf("ERROR(%d): '%s' requires operands of type %s but rhs is of type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[1]->expType));
-                        numAnalyzeErrors++;
-                    }
-                    if (!currentOp.passesEqualCheck(t))
-                    {
-                        printf("ERROR(%d): '%s' requires operands of the same type but lhs is type %s and rhs is type %s.\n", t->lineno, opToString(t->attr.op), expToString(t->child[0]->expType), expToString(t->child[1]->expType));
-                        numAnalyzeErrors++;
-                    }
-                    if (!currentOp.isArrayAndWorks(t))
-                    {
-                        printf("ERROR(%d): The operation '%s' does not work with arrays.\n", t->lineno, opToString(t->attr.op));
-                        numAnalyzeErrors++;
-                    }
-                    if (!currentOp.onlyArrayAndWorks(t))
-                    {
-                        printf("ERROR(%d): The operation '%s' only works with arrays.\n", t->lineno, opToString(t->attr.op));
-                        numAnalyzeErrors++;
-                    }
-                }
-                else
-                {
-                    if (!currentOp.passesLeftCheck(t) && t->attr.op != SIZEOF)
-                    {
-                        printf("ERROR(%d): Unary '%s' requires an operand of type %s but was given type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[0]->expType));
-                    }
-                    if (!currentOp.onlyArrayAndWorks(t))
-                    {
-                        printf("ERROR(%d): The operation '%s' only works with arrays.\n", t->lineno, opToString(t->attr.op));
-                        numAnalyzeErrors++;
-                    }
-                    if (!currentOp.isArrayAndWorks(t))
-                    {
-                        printf("ERROR(%d): The operation '%s' does not work with arrays.\n", t->lineno, opToString(t->attr.op));
-                        numAnalyzeErrors++;
+                        if (!currentOp.passesLeftCheck(t) && t->attr.op != SIZEOF)
+                        {
+                            printf("ERROR(%d): Unary '%s' requires an operand of type %s but was given type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[0]->expType));
+                        }
+                        if (!currentOp.onlyArrayAndWorks(t))
+                        {
+                            printf("ERROR(%d): The operation '%s' only works with arrays.\n", t->lineno, opToString(t->attr.op));
+                            numAnalyzeErrors++;
+                        }
+                        if (!currentOp.isArrayAndWorks(t))
+                        {
+                            printf("ERROR(%d): The operation '%s' does not work with arrays.\n", t->lineno, opToString(t->attr.op));
+                            numAnalyzeErrors++;
+                        }
                     }
                 }
             }
@@ -682,7 +693,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         case StmtKind::RangeK:
             break;
         case StmtKind::ReturnK:
-            if (t->child[0]->isArray)
+            if (t->child[0] != NULL && t->child[0]->isArray)
             {
                 printf("ERROR(%d): Cannot return an array.\n", t->lineno);
                 numAnalyzeErrors++;
