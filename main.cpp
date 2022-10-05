@@ -67,6 +67,13 @@ int main(int argc, char *argv[])
         if(!yyin)
         {
             printf("Could not open file\n");
+            // printf("Command: ");
+            // int i;
+            // for(i = 0; i < argc; i++)
+            // {
+            //     printf(" %s", argv[i]);
+            // }
+            // printf("\n");
             exit(1); 
         }
         // init variables a through z
