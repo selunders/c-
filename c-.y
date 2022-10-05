@@ -159,6 +159,7 @@ varDeclId
             // $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             // $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             $$->isArray = true;
+            $$->isIndexed = true;
             // printf("Found ID: %s\n\n", $1->tokenstr);
         }
     ;
@@ -656,6 +657,8 @@ mutable
         {
             TreeNode* tmp = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             tmp->attr.string = strdup($1->tokenstr);
+            tmp->isArray = true;
+            tmp->isIndexed = true;
             $$ = newExpNode(ExpKind::OpK, $2, tmp, $[e], NULL);
         }
     ;

@@ -444,7 +444,8 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         {
         case ExpKind::AssignK:
         {
-            if (t->attr.op == '=' || t->attr.op == '[')
+            if (t->attr.op == '=')
+            // if (t->attr.op == '=' || t->attr.op == '[')
             {
                 t->expType = t->child[0]->expType;
             }
@@ -605,6 +606,10 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 else if (t->child[1] != NULL && t->child[1]->expType != ExpType::Integer)
                 {
                     printf("ERROR(%d): Array '%s' should be indexed by type int but got type %s.\n", t->lineno, t->child[0]->attr.string, expToString(t->child[1]->expType));
+                }
+                if(t->child[1] != NULL && t->child[1]->isArray && !t->child[1]->isIndexed)
+                {
+                    printf("ERROR(%d): Array index is the unindexed array '%s'.\n", t->lineno, t->child[1]->attr.string);
                 }
                 break;
             default:

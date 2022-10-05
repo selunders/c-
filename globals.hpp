@@ -162,6 +162,7 @@ public:
     bool isUsed;
     bool finalCheckDone;
     bool alreadyTraversed;
+    bool isIndexed;
 
     // bool enteredScope;
     TreeNode()
@@ -183,6 +184,7 @@ public:
         alreadyTraversed = false;
         isDeclared = false;
         finalCheckDone = false;
+        isIndexed = false;
     }
 };
 
@@ -343,6 +345,17 @@ public:
             if (!leftIsArr || rightIsArr)
                 passesCheck = false;
         return passesCheck;
+    }
+
+    bool arrayIndexedCorrectly(TreeNode *t)
+    {
+        if(leftArray)
+            if(t->child[0]->isArray && t->child[1] != NULL)
+                if(t->child[1]->isArray)
+                    return t->child[1]->isIndexed;
+                else
+                    return true;
+                return (t->child[1]->isArray || t->child[1]->isIndexed);
     }
 
     bool returnTypeCheck(TreeNode *t)
