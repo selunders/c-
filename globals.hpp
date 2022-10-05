@@ -202,6 +202,8 @@ public:
     bool onlyWorksWithArrays;
     bool passesEqualCheck(TreeNode *t)
     {
+        if(t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType)
+            return true;
         if (equalTypes)
             return (t->child[0]->expType == t->child[1]->expType);
         else

@@ -18,10 +18,7 @@ while getopts 'AdDhmpPf:v' flag; do
         m) make_flag=true ;;
         p) print_flag=true ;;
         P) printTypes_flag=true ;;
-        f)
-            fileIn="${OPTARG}" 
-            echo "Setting fileIn to ${OPTARG}"
-            ;;
+        f) fileIn="${OPTARG}" ;;
         v) justView_flag=true ;;
     esac
 done

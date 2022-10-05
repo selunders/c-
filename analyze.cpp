@@ -435,6 +435,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         if (!st->insert(t->attr.string, t))
         {
             printf("ERROR(%d): Symbol '%s' is already declared at line %d.\n", t->lineno, t->attr.string, tmp->lineno);
+            numAnalyzeErrors++;
         };
         break;
     }
@@ -444,8 +445,8 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         {
         case ExpKind::AssignK:
         {
-            if (t->attr.op == '=')
-            // if (t->attr.op == '=' || t->attr.op == '[')
+            // if (t->attr.op == '=')
+            if (t->attr.op == '=' || t->attr.op == '[')
             {
                 t->expType = t->child[0]->expType;
             }
@@ -560,7 +561,10 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
 
         case ExpKind::OpK:
         {
-
+            if (t->attr.op == '=' || t->attr.op == '[')
+            {
+                t->expType = t->child[0]->expType;
+            }
             switch (t->attr.op)
             {
             case OR:
@@ -599,17 +603,22 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 break;
             case '[':
                 t->expType = t->child[0]->expType;
-                if (t->child[0] != NULL && !t->child[0]->isArray)
+                // printf("Checking index nonarray\n");
+                if (t->child[0] == NULL || !t->child[0]->isArray)
+                // if (t->child[0] != NULL && !t->child[0]->isArray)
                 {
                     printf("ERROR(%d): Cannot index nonarray '%s'.\n", t->lineno, t->child[0]->attr.string);
+                    numAnalyzeErrors++;
                 }
                 else if (t->child[1] != NULL && t->child[1]->expType != ExpType::Integer)
                 {
                     printf("ERROR(%d): Array '%s' should be indexed by type int but got type %s.\n", t->lineno, t->child[0]->attr.string, expToString(t->child[1]->expType));
+                    numAnalyzeErrors++;
                 }
                 if(t->child[1] != NULL && t->child[1]->isArray && !t->child[1]->isIndexed)
                 {
                     printf("ERROR(%d): Array index is the unindexed array '%s'.\n", t->lineno, t->child[1]->attr.string);
+                    numAnalyzeErrors++;
                 }
                 break;
             default:
@@ -655,6 +664,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                         if (!currentOp.passesLeftCheck(t) && t->attr.op != SIZEOF)
                         {
                             printf("ERROR(%d): Unary '%s' requires an operand of type %s but was given type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[0]->expType));
+                            numAnalyzeErrors++;
                         }
                         if (!currentOp.onlyArrayAndWorks(t))
                         {
