@@ -113,6 +113,11 @@ static void nullProc(SymbolTable *st, TreeNode *t, bool *enteredScope)
         return;
 }
 
+static void printProc(SymbolTable *st, TreeNode *t, bool *enteredScope)
+{
+    pointerPrintNode(t);
+}
+
 static void typeCheck(SymbolTable *st, TreeNode *t)
 {
     switch (t->nodeKind)
@@ -349,7 +354,7 @@ static void findTypes(SymbolTable *st, TreeNode *t)
     // return ExpType::UndefinedType;
 }
 
-static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *null = NULL)
+static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *null)
 {
     switch (t->nodeKind)
     {
@@ -359,12 +364,17 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *null = NULL)
         {
         case ExpKind::AssignK:
         {
-            if (t->attr.op == '=')
+            if (t->attr.op == '=' || t->attr.op == '[')
             {
                 t->expType = t->child[0]->expType;
             }
             break;
         }
+        case ExpKind::OpK:
+            if (t->attr.op == '=' || t->attr.op == '[')
+            {
+                t->expType = t->child[0]->expType;
+            }
         default:
             break;
         }
@@ -391,7 +401,7 @@ static void analyzeSiblings(SymbolTable *st, TreeNode *t)
 {
 }
 
-static void usageCheck(SymbolTable *st, TreeNode *t, bool *null = NULL)
+static void usageCheck(SymbolTable *st, TreeNode *t, bool *null)
 {
     switch (t->nodeKind)
     {
@@ -615,7 +625,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     printf("ERROR(%d): Array '%s' should be indexed by type int but got type %s.\n", t->lineno, t->child[0]->attr.string, expToString(t->child[1]->expType));
                     numAnalyzeErrors++;
                 }
-                if(t->child[1] != NULL && t->child[1]->isArray && !t->child[1]->isIndexed)
+                if (t->child[1] != NULL && t->child[1]->isArray && !t->child[1]->isIndexed)
                 {
                     printf("ERROR(%d): Array index is the unindexed array '%s'.\n", t->lineno, t->child[1]->attr.string);
                     numAnalyzeErrors++;
@@ -692,16 +702,16 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         case StmtKind::BreakK:
             break;
         case StmtKind::CompoundK:
-            st->enter((string) "Compound Statement");
-            *enteredScope = true;
+            // st->enter((string) "Compound Statement");
+            // *enteredScope = true;
             break;
         case StmtKind::ForK:
-            st->enter((string) "For");
-            *enteredScope = true;
+            // st->enter((string) "For");
+            // *enteredScope = true;
             break;
         case StmtKind::IfK:
-            st->enter((string) "If");
-            *enteredScope = true;
+            // st->enter((string) "If");
+            // *enteredScope = true;
             break;
         case StmtKind::NullK:
             break;
@@ -715,7 +725,8 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             }
             break;
         case StmtKind::WhileK:
-            st->enter((string) "While");
+            // st->enter((string) "While");
+            // *enteredScope = true;
             break;
         default:
             break;
@@ -731,6 +742,60 @@ static void analyzeTree(SymbolTable *st, TreeNode *t)
 {
 }
 
+static void checkScope(SymbolTable *st, TreeNode *t, bool* enteredScope)
+{
+    switch (t->nodeKind)
+    {
+    case NodeKind::DeclK:
+        switch(t->subkind.decl)
+        {
+            case DeclKind::FuncK:
+                st->enter(t->attr.string);
+                *enteredScope = true;
+            break;
+            case DeclKind::ParamK:
+            break;
+            case DeclKind::VarK:
+            break;
+        }
+    break;
+    case NodeKind::StmtK:
+        // printf("Aaaaaaaaaaaaaaaaaaaaaaaaahhhhhhhhhhhhhhhhhhhhhh\n");
+        switch (t->subkind.stmt)
+        {
+        case StmtKind::BreakK:
+            break;
+        case StmtKind::CompoundK:
+            // st->enter((string) "Compound Statement");
+            // *enteredScope = true;
+            break;
+        case StmtKind::ForK:
+            st->enter((string) "For");
+            *enteredScope = true;
+            break;
+        case StmtKind::IfK:
+            st->enter((string) "If");
+            *enteredScope = true;
+            break;
+        case StmtKind::NullK:
+            break;
+        case StmtKind::RangeK:
+            break;
+        case StmtKind::ReturnK:
+            break;
+        case StmtKind::WhileK:
+            st->enter((string) "While");
+            *enteredScope = true;
+            break;
+        default:
+            break;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
 void semanticAnalysis(SymbolTable *st, TreeNode *root)
 {
     // findTypes(st, root);
@@ -743,8 +808,13 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root)
     // traverse(st, root, nullProc, findTypes);
     // traverse(st, root, findTypes, findTypes);
     // traverse(st, root, nullProc, moveUpTypes);
-    traverse(st, root, nullProc, printAnalysis);
-    traverse(st, root, nullProc, usageCheck);
+    // traverse(st, root, checkScope, printAnalysis);
+    traverse(st, root, checkScope, printAnalysis);
+    traverse(st, root, nullProc, printProc);
+    printf("\n");
+    traverse(st, root, printProc, nullProc);
+    // traverse(st, root, checkScope, usageCheck);
+    // traverse(st, root, checkScope, usageCheck);
     // traverse(st, root, printAnalysis, nullProc);
     // Do final check for main()
     TreeNode *mainPointer = (TreeNode *)st->lookup((string) "main");

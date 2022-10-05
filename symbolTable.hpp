@@ -71,4 +71,6 @@ public:
     void applyToAllGlobal(void (*action)(std::string , void *));  // apply func to all symbol/data pairs in global scope
 };
 
+void pointerPrintNode(void * data);
+
 #endif

@@ -184,8 +184,12 @@ funDecl
     : typeSpec[type] ID[id] '(' parms[prms] ')' compoundStmt[cstmt]
         {
             $$ = newDeclNode(DeclKind::FuncK, $[type], $[id], $[prms], $[cstmt], NULL);
-            $[cstmt]->attr.string = $[id]->tokenstr;
+            
+            $$->attr.string = strdup($[id]->tokenstr);
+            // $[cstmt]->attr.string = strdup($[id]->tokenstr);
+            
             $$->isDefined = true;
+            // $$->attr.string = strdup($)
             setType($$, $[type], $$->isStatic);
             // $[cstmt]->attr.string = $[id]->tokenstr ? strdup($[id]->tokenstr) : (char*) "";
             // $$->attr.idIndex = $id->idIndex;
@@ -193,7 +197,7 @@ funDecl
     | ID[id] '(' parms[prms] ')' compoundStmt[cstmt]
         {
             $$ = newDeclNode(DeclKind::FuncK, ExpType::Void, $[id], $[prms], $[cstmt], NULL);
-            $[cstmt]->attr.string = $[id]->tokenstr;
+            $[cstmt]->attr.string = strdup($[id]->tokenstr);
         }
     ;
 parms

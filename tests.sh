@@ -7,9 +7,10 @@ make_flag=false
 print_flag=false
 printTypes_flag=false
 justView_flag=false
+valgrind_flag=false
 fileIn=''
 
-while getopts 'AdDhmpPf:v' flag; do
+while getopts 'AdDhmpPf:vV' flag; do
     case "${flag}" in
         A) allTests_flag=true ;;
         d) diff_flag=true ;;
@@ -20,6 +21,7 @@ while getopts 'AdDhmpPf:v' flag; do
         P) printTypes_flag=true ;;
         f) fileIn="${OPTARG}" ;;
         v) justView_flag=true ;;
+        V) valgrind_flag=true ;;
     esac
 done
 
@@ -59,6 +61,8 @@ elif [ "$allTests_flag" = true ]; then
         sdiff -l -s  myOutput/$y.out $file
         # rm myOutput/$y.out
     done
+elif [ "$valgrind_flag" = true ]; then
+    valgrind ./c- sampleOutput3/$fileIn.c- -p
 else
     if [ "$make_flag" = true ]; then
         echo 'make c-'

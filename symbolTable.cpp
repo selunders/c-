@@ -1,5 +1,6 @@
 #include "symbolTable.hpp"
-
+#include "globals.hpp"
+#include "util.hpp"
 // // // // // // // // // // // // // // // // // // // //
 //
 // Introduction
@@ -50,6 +51,153 @@ void pointerPrintLongInteger(void *data)
 void pointerPrintStr(void *data)
 {
     printf("%s ", (char *)(data));
+}
+
+void pointerPrintNode(void* data)
+{
+    TreeNode* t = (TreeNode*) data;
+    if (t != NULL)
+    {
+        switch (t->nodeKind)
+        {
+        case NodeKind::DeclK:
+            // printf("DeclK with subtype ");
+            switch (t->subkind.decl)
+            {
+            case DeclKind::VarK:
+                printf("Var: %s ", t->attr.string);
+                if (t->isArray)
+                    printf("is array ");
+                if (t->isStatic)
+                    // printf("of static type %s", expToString(t->expType));
+                    printf("of type %s", expToString(t->expType));
+                else
+                    printf("of type %s", expToString(t->expType));
+                break;
+            case DeclKind::FuncK:
+                // printf("Var: %s ", t->attr.string);
+                // printf("About to print\n");
+                printf("Func: %s ", t->attr.string);
+                printf("returns type %s", expToString(t->expType));
+                // printf("Func: %s", t->attr.string);
+                break;
+            case DeclKind::ParamK:
+                printf("Parm: %s ", t->attr.string);
+                if (t->isArray)
+                    printf("is array ");
+                printf("of type %s", expToString(t->expType));
+                break;
+            }
+            break;
+        case NodeKind::ExpK:
+            // printf("ExpK");
+            switch (t->subkind.exp)
+            {
+            case ExpKind::OpK:
+                printf("Op: %s", opToString(t->attr.op));
+                break;
+            case ExpKind::ConstantK:
+                switch (t->expType)
+                {
+                case ExpType::Boolean:
+                    if (t->attr.value == 0)
+                        printf("Const false");
+                    else
+                        printf("Const true");
+                    break;
+                case ExpType::Char:
+                    if (t->isArray)
+                        printf("Const %s", t->attr.string);
+                    else
+                        printf("Const \'%c\'", t->attr.cvalue);
+                    break;
+                case ExpType::Integer:
+                    printf("Const %d", t->attr.value);
+                    break;
+                default:
+                    printf("How'd you find this???\n\n\n");
+                    break;
+                }
+                break;
+            case ExpKind::IdK:
+                printf("Id: %s", t->attr.string);
+                break;
+            case ExpKind::AssignK:
+                printf("Assign: %s", assignToString(t->attr.op));
+                break;
+            case ExpKind::InitK:
+                break;
+            case ExpKind::CallK:
+                printf("Call: %s", t->attr.string);
+                break;
+            default:
+                break;
+            }
+            break;
+        case NodeKind::StmtK:
+            // printf("StmtK");
+            switch (t->subkind.stmt)
+            {
+            case StmtKind::NullK:
+                printf("Null");
+                break;
+            case StmtKind::IfK:
+                printf("If");
+                break;
+            case StmtKind::WhileK:
+                printf("While");
+                break;
+            case StmtKind::ForK:
+                printf("For");
+                break;
+            case StmtKind::CompoundK:
+                printf("Compound");
+                break;
+            case StmtKind::ReturnK:
+                printf("Return");
+                break;
+            case StmtKind::BreakK:
+                printf("Break");
+                break;
+            case StmtKind::RangeK:
+                printf("Range");
+                break;
+            default:
+                printf("... how'd you get here? (util.cpp ~380ish)\n\n");
+                break;
+            }
+            break;
+        default:
+            printf("Found unknown node???\n\n");
+            break;
+        }
+        // nodeCount++;
+        // printf("%d\n", nodeCount);
+        printf(" [line: %d]\n", t->lineno);
+        // // printf(" [line: %d]\nexpType::%s\n", t->lineno, expToString(t->expType));
+        // for (i = 0; i < MAXCHILDREN; i++)
+        // {
+        //     if (t->child[i] != NULL)
+        //     {
+        //         printBasict(t->child[i], NodeRelation::Child, i, layer + 1);
+        //         // printf("child %d is not NULL %p\n", i, t->child[i]);
+        //     }
+        //     // else
+        //     // printf("child %d is NULL\n", i);
+        // }
+        // UNINDENT;
+        // if (t->sibling != NULL)
+        // {
+        //     if (relation == NodeRelation::Sibling)
+        //         printBasict(t->sibling, NodeRelation::Sibling, id + 1, layer);
+        //     else
+        //         printBasict(t->sibling, NodeRelation::Sibling, 1, layer);
+        // }
+        // INDENT;
+        // t = NULL;
+        // t = t->sibling;
+    }
+    // UNINDENT;
 }
 
 // // // // // // // // // // // // // // // // // // // //

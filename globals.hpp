@@ -359,7 +359,7 @@ public:
                     return true;
                 return (t->child[1]->isArray || t->child[1]->isIndexed);
     }
-
+    
     bool returnTypeCheck(TreeNode *t)
     {
         ExpType retType = t->expType;
