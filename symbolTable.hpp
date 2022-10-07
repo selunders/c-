@@ -72,5 +72,6 @@ public:
 };
 
 void pointerPrintNode(void * data);
+void pointerPrintStr(void * data);
 
 #endif

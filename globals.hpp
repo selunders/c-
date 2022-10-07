@@ -163,6 +163,7 @@ public:
     bool finalCheckDone;
     bool alreadyTraversed;
     bool isIndexed;
+    bool canEnterThisScope;
 
     // bool enteredScope;
     TreeNode()
@@ -185,6 +186,7 @@ public:
         isDeclared = false;
         finalCheckDone = false;
         isIndexed = false;
+        canEnterThisScope = true;
     }
 };
 
@@ -202,7 +204,7 @@ public:
     bool onlyWorksWithArrays;
     bool passesEqualCheck(TreeNode *t)
     {
-        if(t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType)
+        if (t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType)
             return true;
         if (equalTypes)
             return (t->child[0]->expType == t->child[1]->expType);
@@ -227,7 +229,7 @@ public:
         }
         else if (lhs == ExpType::Array)
         {
-            if (t->child[0]->isArray)
+            if (t->child[0]->isArray && !t->child[0]->isIndexed)
                 return true;
         }
         else if (lhs == LEFT)
@@ -268,35 +270,70 @@ public:
         // }
         // else
         //     return true;
+        // if (t->attr.op == '[')
+        // printf("LeftChild %s\n", t->child[0]->attr.string);
+        // if (t->attr.op == '?')
+        // {
+        //     printf("Checking '?'\n");
+        //     if (t->child[0] != NULL && t->child[0]->isIndexed)
+        //         return true;
+        //     else
+        //         return false;
+        // }
+        bool leftIsArray = t->child[0]->isArray && !t->child[0]->isIndexed;
+        bool rightIsArray;
 
-        if (t->child[1] != NULL)
+        if (isUnary)
         {
-            if (t->child[0]->isArray || t->child[1]->isArray)
-            {
-                if (worksWithArrays)
-                {
-                    return true;
-                }
-                else
-                    return false;
-            }
-            else
+            if (leftIsArray && worksWithArrays)
                 return true;
-        }
-        else
-        {
-        if (t->child[0]->isArray)
-        {
-            if (worksWithArrays)
-            {
-                return true;
-            }
-            else
+            else if (onlyWorksWithArrays)
                 return false;
+            else
+                return true;
         }
         else
-            return true;
+        {
+            rightIsArray = t->child[1]->isArray && !t->child[1]->isIndexed;
+            if ((leftIsArray || rightIsArray) && worksWithArrays)
+                return true;
+            else if (onlyWorksWithArrays)
+                return false;
+            else
+                return true;
         }
+        // if (t->child[0]->isIndexed)
+        // {
+        //     printf("Is indexed\n");
+        // }
+        // if (t->child[1] != NULL)
+        // {
+        //     if (t->child[0]->isArray && !t->child[0]->isIndexed || t->child[1]->isArray && !t->child[1]->isIndexed)
+        //     {
+        //         if (worksWithArrays)
+        //         {
+        //             return true;
+        //         }
+        //         else
+        //             return false;
+        //     }
+        //     else
+        //         return true;
+        // }
+        // else
+        // {
+        //     if (t->child[0]->isArray && !t->child[0]->isIndexed)
+        //     {
+        //         if (worksWithArrays)
+        //         {
+        //             return true;
+        //         }
+        //         else
+        //             return false;
+        //     }
+        //     else
+        //         return true;
+        // }
 
         // if (worksWithArrays)
         //     if (t->child[0]->isArray)
@@ -323,7 +360,8 @@ public:
         // printf("%d %s array\n", t->child[0]->attr.op, t->child[0]->isArray ? (char*) "is" : (char*) "is not");
         if (onlyWorksWithArrays)
         {
-            if (t->child[0]->isArray || t->child[0]->expType == ExpType::UndefinedType)
+            // if (t->child[0]->isArray)
+            if (t->child[0]->isArray && !t->child[0]->isIndexed || t->child[0]->expType == ExpType::UndefinedType)
                 return true;
             else
                 return false;
@@ -334,8 +372,8 @@ public:
 
     bool arrayCheck(TreeNode *t)
     {
-        bool leftIsArr = t->child[0]->isArray;
-        bool rightIsArr = t->child[1]->isArray;
+        bool leftIsArr = (t->child[0]->isArray && !t->child[0]->isIndexed);
+        bool rightIsArr = (t->child[1]->isArray && !t->child[1]->isIndexed);
         bool passesCheck = true;
         if (bothArrays)
             if (!leftIsArr || !rightIsArr)
@@ -351,15 +389,15 @@ public:
 
     bool arrayIndexedCorrectly(TreeNode *t)
     {
-        if(leftArray)
-            if(t->child[0]->isArray && t->child[1] != NULL)
-                if(t->child[1]->isArray)
+        if (leftArray)
+            if (t->child[0]->isArray && t->child[1] != NULL)
+                if (t->child[1]->isArray)
                     return t->child[1]->isIndexed;
                 else
                     return true;
-                return (t->child[1]->isArray || t->child[1]->isIndexed);
+        return (t->child[1]->isArray || t->child[1]->isIndexed);
     }
-    
+
     bool returnTypeCheck(TreeNode *t)
     {
         ExpType retType = t->expType;
