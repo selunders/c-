@@ -161,7 +161,7 @@ varDeclId
             // $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             // $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             $$->isArray = true;
-            $$->isIndexed = true;
+            // $$->isIndexed = true;
             // $$->isInit = true;
             // printf("Found ID: %s\n\n", $1->tokenstr);
         }
@@ -364,6 +364,8 @@ open_iterStmt
     | FOR ID[id] '=' iterRange[itrrng] DO open_stmt[opnstmt]
         {
             TreeNode* tmp = newDeclNode(DeclKind::VarK, ExpType::Integer, $[id], NULL, NULL, NULL);
+            tmp->isInit = true;
+            tmp->isUsed = true;
             // TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
             $$ = newStmtNode(StmtKind::ForK, $1, tmp, $[itrrng], $[opnstmt]);
         }
@@ -376,6 +378,8 @@ closed_iterStmt
     | FOR ID[id] '=' iterRange[itrrng] DO closed_stmt[clsdstmt]
         {
             TreeNode* tmp = newDeclNode(DeclKind::VarK, ExpType::Integer, $[id], NULL, NULL, NULL);
+            tmp->isInit = true;
+            tmp->isUsed = true;
             // TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
             $$ = newStmtNode(StmtKind::ForK, $1, tmp, $[itrrng], $[clsdstmt]);
         }
@@ -413,36 +417,14 @@ exp
             $[m]->isUsed = true;
             $[m]->isInit = true;
             $$->child[1] = $[e];
-            // $[e]->isUsed = true;
-            // if($[m] != NULL)
-            // {
-                // printf("initializing node at %p\n", $[m]);
-                // $[m]->isInit = true;
-                // $[e]->isInit = true;
-                // $[aop]->expType = $[m]->expType;
-            // }
-            // if($[aop]->expType == ExpType::UndefinedType)
-            // {
-                // $$->expType = $[m]->expType;
-            // }
-            
-            //     printf("Set %s to initialized\n", $[m]->attr.string);
-            // printf("Initializing %s\n\n", $[m]->attr.string);
-            // $$ = newExpNode(ExpKind::OpK, $[aop], $[m], $[e], NULL);
         }
     | mutable[m] INC[inc]
         {
-            // $$ = newExpNode(ExpKind::OpK, $[inc], NULL, NULL, NULL;
-            // $$->child[0] = $[m];
             $$ = newExpNode(ExpKind::AssignK, $[inc], $[m], NULL, NULL);
-            $$->expType = ExpType::Integer;
         }
     | mutable[m] DEC[dec]
         {
-            // $$ = $[dec];
-            // $$->child[0] = $[m];
             $$ = newExpNode(ExpKind::AssignK, $[dec], $[m], NULL, NULL);
-            $$->expType = ExpType::Integer;
         }
     | simpleExp
         {
@@ -453,34 +435,34 @@ assignop
     : '='
         {
             $$ = newExpNode(ExpKind::AssignK, $1, NULL, NULL, NULL);
-            $$->expType = ExpType::UndefinedType;
+            // $$->expType = ExpType::UndefinedType;
         }
     | ADDASS
         {
             $$ = newExpNode(ExpKind::AssignK, $1, NULL, NULL, NULL);
-            $$->expType = ExpType::Integer;
+            // $$->expType = ExpType::Integer;
         }
     | SUBASS
         {
             $$ = newExpNode(ExpKind::AssignK, $1, NULL, NULL, NULL);
-            $$->expType = ExpType::Integer;
+            // $$->expType = ExpType::Integer;
         }
     | MULASS
         {
             $$ = newExpNode(ExpKind::AssignK, $1, NULL, NULL, NULL);
-            $$->expType = ExpType::Integer;
+            // $$->expType = ExpType::Integer;
         }
     | DIVASS
         {
             $$ = newExpNode(ExpKind::AssignK, $1, NULL, NULL, NULL);
-            $$->expType = ExpType::Integer;
+            // $$->expType = ExpType::Integer;
         }
     ;
 simpleExp
     : simpleExp[sexp] OR[or] andExp[aexp]
         {
             $$ = newExpNode(ExpKind::OpK, $[or], $[sexp], $[aexp], NULL);
-            $$->expType = ExpType::Boolean;
+            // $$->expType = ExpType::Boolean;
         }
     | andExp
         {
@@ -491,7 +473,7 @@ andExp
     : andExp[aexp] AND[and] unaryRelExp[urexp]
         {
             $$ = newExpNode(ExpKind::OpK, $[and], $[aexp], $[urexp], NULL);
-            $$->expType = ExpType::Boolean;
+            // $$->expType = ExpType::Boolean;
         }
     | unaryRelExp
         {
@@ -502,7 +484,7 @@ unaryRelExp
     : NOT unaryRelExp
         {
             $$ = newExpNode(ExpKind::OpK, $1, $2, NULL, NULL);
-            $$->expType == ExpType::Boolean;
+            // $$->expType == ExpType::Boolean;
         }
     | relExp
         {
@@ -517,7 +499,7 @@ relExp
             // $[sexp]->isUsed = true;
             $$->child[1] = $[sexp2];
             // $[sexp2]->isUsed = true;
-            $$->expType = ExpType::Boolean;
+            // $$->expType = ExpType::Boolean;
         }
     | sumExp
         {
@@ -558,7 +540,7 @@ sumExp
             // $[sexp]->isUsed = true;
             $$->child[1] = $[mexp];
             // $[mexp]->isUsed = true;
-            $$->expType = ExpType::Integer;
+            // $$->expType = ExpType::Integer;
         }
     | mulExp
         {
@@ -588,7 +570,7 @@ mulExp
             // $[mexp]->isUsed = true;
             $$->child[1] = $[uexp];
             // $[uexp]->isUsed = true;
-            $$->expType = ExpType::Integer;
+            // $$->expType = ExpType::Integer;
         }
     | unaryExp
         {
@@ -619,7 +601,7 @@ unaryExp
         {
             $$ = $[uop];
             $$->child[0] = $[uexp];
-            $$->expType = ExpType::Integer;
+            // $$->expType = ExpType::Integer;
         }
     | factor
         {
@@ -672,10 +654,10 @@ mutable
         {
             TreeNode* tmp = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             tmp->attr.string = strdup($1->tokenstr);
-            tmp->isArray = true;
+            // tmp->isArray = true;
             tmp->isIndexed = true;
             // $$->isUsed = true;
-            tmp->isInit = true;
+            // tmp->isInit = true;
             $$ = newExpNode(ExpKind::OpK, $2, tmp, $[e], NULL);
             // $[e]->isInit = true;
         }

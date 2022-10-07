@@ -280,7 +280,7 @@ public:
         //     else
         //         return false;
         // }
-        bool leftIsArray = t->child[0]->isArray && !t->child[0]->isIndexed;
+        bool leftIsArray = (t->child[0]->isArray && !t->child[0]->isIndexed);
         bool rightIsArray;
 
         if (isUnary)
@@ -294,7 +294,9 @@ public:
         }
         else
         {
-            rightIsArray = t->child[1]->isArray && !t->child[1]->isIndexed;
+            rightIsArray = (t->child[1]->isArray && !t->child[1]->isIndexed);
+            // printf("Left is array: '%d' Right is array: '%d'\n", leftIsArray, rightIsArray);
+            // printf("Left is type: '%d' Right is type: '%d'\n", t->child[0]->subkind.stmt, t->child[1]->subkind.stmt);
             if ((leftIsArray || rightIsArray) && worksWithArrays)
                 return true;
             else if (onlyWorksWithArrays)

@@ -53,6 +53,11 @@ void pointerPrintStr(void *data)
     printf("%s ", (char *)(data));
 }
 
+char* boolToStr(bool b)
+{
+    return b ? (char*) "true" : (char*) "false";
+}
+    
 void pointerPrintNode(void* data)
 {
     TreeNode* t = (TreeNode*) data;
@@ -173,7 +178,7 @@ void pointerPrintNode(void* data)
         }
         // nodeCount++;
         // printf("%d\n", nodeCount);
-        printf(" [line: %d] || expType::%s\n", t->lineno, expToString(t->expType));
+        printf(" [line: %d] || etype:%s isInit: %s isArray: %s\n", t->lineno, expToString(t->expType), boolToStr(t->isInit), boolToStr(t->isArray));
         // // printf(" [line: %d]\nexpType::%s\n", t->lineno, expToString(t->expType));
         // for (i = 0; i < MAXCHILDREN; i++)
         // {
