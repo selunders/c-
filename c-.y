@@ -196,12 +196,18 @@ funDecl
             setType($$, $[type], $$->isStatic);
             // $[cstmt]->attr.string = $[id]->tokenstr ? strdup($[id]->tokenstr) : (char*) "";
             // $$->attr.idIndex = $id->idIndex;
+            $$->isInit = true;
+            $$->isUsed = true;
+            $[cstmt]->canEnterThisScope = false;
         }
     | ID[id] '(' parms[prms] ')' compoundStmt[cstmt]
         {
             $$ = newDeclNode(DeclKind::FuncK, ExpType::Void, $[id], $[prms], $[cstmt], NULL);
             $[cstmt]->attr.string = strdup($[id]->tokenstr);
             $$->isDefined = true;
+            $$->isInit = true;
+            $$->isUsed = true;
+            $[cstmt]->canEnterThisScope = false;
         }
     ;
 parms
@@ -366,6 +372,7 @@ open_iterStmt
             TreeNode* tmp = newDeclNode(DeclKind::VarK, ExpType::Integer, $[id], NULL, NULL, NULL);
             tmp->isInit = true;
             tmp->isUsed = true;
+            tmp->isDeclared = true;
             // TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
             $$ = newStmtNode(StmtKind::ForK, $1, tmp, $[itrrng], $[opnstmt]);
         }
@@ -380,6 +387,7 @@ closed_iterStmt
             TreeNode* tmp = newDeclNode(DeclKind::VarK, ExpType::Integer, $[id], NULL, NULL, NULL);
             tmp->isInit = true;
             tmp->isUsed = true;
+            tmp->isDeclared = true;
             // TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
             $$ = newStmtNode(StmtKind::ForK, $1, tmp, $[itrrng], $[clsdstmt]);
         }
@@ -499,7 +507,7 @@ relExp
             // $[sexp]->isUsed = true;
             $$->child[1] = $[sexp2];
             // $[sexp2]->isUsed = true;
-            // $$->expType = ExpType::Boolean;
+            $$->expType = ExpType::Boolean;
         }
     | sumExp
         {

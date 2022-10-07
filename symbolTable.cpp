@@ -511,6 +511,7 @@ bool SymbolTable::test()
     st.insert("charlie", (char *)"cow");
     st.enter((std::string) "Second");
     st.insert("delta", (char *)"dog");
+    st.insert("delta", (char *)"cow");
     st.insertGlobal("echo", (char *)"elk");
 
     printf("Print symbol table.\n");

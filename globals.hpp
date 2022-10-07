@@ -285,24 +285,22 @@ public:
 
         if (isUnary)
         {
-            if (leftIsArray && worksWithArrays)
+            if ((leftIsArray && worksWithArrays) || !leftIsArray)
                 return true;
-            else if (onlyWorksWithArrays)
-                return false;
             else
-                return true;
+                return false;
         }
-        else
+        else // is binary
         {
             rightIsArray = (t->child[1]->isArray && !t->child[1]->isIndexed);
             // printf("Left is array: '%d' Right is array: '%d'\n", leftIsArray, rightIsArray);
             // printf("Left is type: '%d' Right is type: '%d'\n", t->child[0]->subkind.stmt, t->child[1]->subkind.stmt);
-            if ((leftIsArray || rightIsArray) && worksWithArrays)
+            if (((leftIsArray || rightIsArray) && worksWithArrays) || (!leftIsArray && !rightIsArray))
                 return true;
-            else if (onlyWorksWithArrays)
-                return false;
+            // else if (onlyWorksWithArrays)
+            //     return false;
             else
-                return true;
+                return false;
         }
         // if (t->child[0]->isIndexed)
         // {

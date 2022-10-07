@@ -68,7 +68,7 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             case DeclKind::FuncK:
                 st->enter(t->attr.string);
                 enteredScope = true;
-                t->child[1]->canEnterThisScope = false;
+                // t->child[1]->canEnterThisScope = false;
                 // enteredFunction = true;
                 break;
             case DeclKind::ParamK:
@@ -84,9 +84,10 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             case StmtKind::BreakK:
                 break;
             case StmtKind::CompoundK:
-                if (!t->canEnterThisScope && enteredScope == true)
+                if (t->canEnterThisScope)
                 {
-                    st->leave();
+                    // if (st->depth() > 2)
+                    // st->leave();
                     st->enter((string) "Compound Statement");
                     enteredScope = true;
                 }
@@ -94,13 +95,13 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             case StmtKind::ForK:
                 st->enter((string) "For");
                 enteredScope = true;
-                // t->child[1]->canEnterThisScope = false;
+                t->child[1]->canEnterThisScope = false;
                 break;
             case StmtKind::IfK:
                 // t->expType = ExpType::Boolean;
                 st->enter((string) "If");
                 enteredScope = true;
-                // t->child[1]->canEnterThisScope = false;
+                t->child[1]->canEnterThisScope = false;
                 break;
             case StmtKind::NullK:
                 break;
@@ -111,7 +112,7 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             case StmtKind::WhileK:
                 st->enter((string) "While");
                 enteredScope = true;
-                // t->child[1]->canEnterThisScope = false;
+                t->child[1]->canEnterThisScope = false;
                 break;
             default:
                 break;
@@ -137,6 +138,7 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             enteredScope = false;
         }
         traverse(st, t->sibling, preProc, postProc);
+        // st->print(pointerPrintNode);
     }
 }
 
@@ -573,11 +575,14 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 if (t->child[0] != NULL)
                 {
                     TreeNode *tmp = (TreeNode *)st->lookup(t->child[0]->attr.string);
-                    if (t->child[0]->isInit)
-                        tmp->isInit = true;
-                    t->expType = getType(st, t);
-                    t->isArray = tmp->isArray;
-                    t->isInit = tmp->isInit;
+                    if (tmp != NULL)
+                    {
+                        if (t->child[0]->isInit)
+                            tmp->isInit = true;
+                        t->expType = getType(st, t);
+                        t->isArray = tmp->isArray;
+                        t->isInit = tmp->isInit;
+                    }
                 }
             }
             if (t->attr.op == NOT)
@@ -745,15 +750,23 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
             if (tmp == NULL)
             {
+                st->insert(t->attr.string, t);
                 printf("ERROR(%d): Symbol '%s' is not declared.\n", t->lineno, t->attr.string);
                 numAnalyzeErrors++;
                 t->isUsed = true;
+                if (!t->isInit)
+                {
+                    t->isUsed = true;
+                    printf("WARNING(%d): Variable \'%s\' may be uninitialized when used here.\n", t->lineno, t->attr.string);
+                    // tmp->isInit = true;
+                    numAnalyzeWarnings++;
+                }
+                // tmp->isInit = true;
+                // numAnalyzeWarnings++;
             }
             else
             {
-                // swapped these
                 tmp->expType = getType(st, t);
-                ;
                 // tmp->isArray = t->isArray;
                 if (tmp->isArray)
                     t->isArray;
@@ -781,6 +794,12 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     printf("WARNING(%d): Variable \'%s\' may be uninitialized when used here.\n", t->lineno, t->attr.string);
                     // tmp->isInit = true;
                     numAnalyzeWarnings++;
+                }
+                if (!t->isDeclared)
+                {
+                    printf("ERROR(%d): Symbol '%s' is not declared.\n", t->lineno, t->attr.string);
+                    numAnalyzeErrors++;
+                    t->isUsed = true;
                 }
             }
         }
@@ -1046,6 +1065,7 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root)
     // traverse(st, root, printProc, nullProc);
     // traverse(st, root, moveUpTypes, moveUpTypes);
     // printf("\n");
+    // traverse(st, root, printAnalysis, nullProc);
     traverse(st, root, printAnalysis, nullProc);
     // traverse(st, root, usageCheck, nullProc);
     traverse(st, root, printProc, nullProc);
