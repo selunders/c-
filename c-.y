@@ -143,7 +143,7 @@ varDeclInit
         {
             $$ = $[vdeclid];
             $$->child[0] = $[simpleexp];
-            $$->isUsed = true;
+            // $$->isUsed = true;
             $$->isInit = true;
         }
     ;
@@ -373,7 +373,7 @@ open_iterStmt
         {
             TreeNode* tmp = newDeclNode(DeclKind::VarK, ExpType::Integer, $[id], NULL, NULL, NULL);
             tmp->isInit = true;
-            tmp->isUsed = true;
+            // tmp->isUsed = true;
             tmp->isDeclared = true;
             // TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
             $$ = newStmtNode(StmtKind::ForK, $1, tmp, $[itrrng], $[opnstmt]);
@@ -388,7 +388,7 @@ closed_iterStmt
         {
             TreeNode* tmp = newDeclNode(DeclKind::VarK, ExpType::Integer, $[id], NULL, NULL, NULL);
             tmp->isInit = true;
-            tmp->isUsed = true;
+            // tmp->isUsed = true;
             tmp->isDeclared = true;
             // TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
             $$ = newStmtNode(StmtKind::ForK, $1, tmp, $[itrrng], $[clsdstmt]);
@@ -425,7 +425,7 @@ exp
             $$ = $[aop];
             $$->child[0] = $[m];
             $[m]->isUsed = true;
-            $[m]->isInit = true;
+            // $[m]->isInit = true;
             $$->child[1] = $[e];
             $[e]->needsInitCheck = true;
         }
@@ -709,7 +709,10 @@ call
             // TreeNode* tmp = newExpNode(ExpKind::IdK)
             $$ = newExpNode(ExpKind::CallK, $1, $[arguments], NULL, NULL);
             $$->attr.string = strdup($1->tokenstr);
-            $[arguments]->needsInitCheck = true;
+            if($[arguments] != NULL)
+            {
+                $[arguments]->needsInitCheck = true;
+            }
         }
     ;
 args

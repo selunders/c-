@@ -1,6 +1,7 @@
 #include "symbolTable.hpp"
 #include "globals.hpp"
 #include "util.hpp"
+#include "colorPrint.hh"
 // // // // // // // // // // // // // // // // // // // //
 //
 // Introduction
@@ -53,14 +54,14 @@ void pointerPrintStr(void *data)
     printf("%s ", (char *)(data));
 }
 
-char* boolToStr(bool b)
+char *boolToStr(bool b)
 {
-    return b ? (char*) "true" : (char*) "false";
+    return b ? (char *)"true" : (char *)"false";
 }
-    
-void pointerPrintNode(void* data)
+
+void pointerPrintNode(void *data)
 {
-    TreeNode* t = (TreeNode*) data;
+    TreeNode *t = (TreeNode *)data;
     if (t != NULL)
     {
         switch (t->nodeKind)
@@ -178,7 +179,7 @@ void pointerPrintNode(void* data)
         }
         // nodeCount++;
         // printf("%d\n", nodeCount);
-        printf(" [line: %d] || etype:%s isInit: %s isArray: %s\n", t->lineno, expToString(t->expType), boolToStr(t->isInit), boolToStr(t->isArray));
+        printf(" [line: %d] || etype:%s isInit: %s needsInitCheck: %s isArray: %s\n", t->lineno, expToString(t->expType), boolToStr(t->isInit), boolToStr(t->needsInitCheck), boolToStr(t->isArray));
         // // printf(" [line: %d]\nexpType::%s\n", t->lineno, expToString(t->expType));
         // for (i = 0; i < MAXCHILDREN; i++)
         // {
@@ -281,9 +282,13 @@ bool SymbolTable::Scope::insert(std::string sym, void *ptr)
     if (symbols.find(sym) == symbols.end())
     {
         if (debugFlg)
+        {
+            setPrintColor(PRINTCOLOR::GREEN);
             printf("DEBUG(Scope): insert in \"%s\" the symbol \"%s\".\n",
                    name.c_str(),
                    sym.c_str());
+            resetPrintColor();
+        }
         if (ptr == NULL)
         {
             printf("ERROR(SymbolTable): Attempting to save a NULL pointer for the symbol '%s'.\n",
@@ -295,7 +300,11 @@ bool SymbolTable::Scope::insert(std::string sym, void *ptr)
     else
     {
         if (debugFlg)
+        {
+            setPrintColor(PRINTCOLOR::GREEN);
             printf("DEBUG(Scope): insert in \"%s\" the symbol \"%s\" but symbol already there!\n", name.c_str(), sym.c_str());
+            resetPrintColor();
+        }
         return false;
     }
 }
@@ -305,13 +314,21 @@ void *SymbolTable::Scope::lookup(std::string sym)
     if (symbols.find(sym) != symbols.end())
     {
         if (debugFlg)
+        {
+            setPrintColor(PRINTCOLOR::GREEN);
             printf("DEBUG(Scope): lookup in \"%s\" for the symbol \"%s\" and found it.\n", name.c_str(), sym.c_str());
+            resetPrintColor();
+        }
         return symbols[sym];
     }
     else
     {
         if (debugFlg)
+        {
+            setPrintColor(PRINTCOLOR::GREEN);
             printf("DEBUG(Scope): lookup in \"%s\" for the symbol \"%s\" and did NOT find it.\n", name.c_str(), sym.c_str());
+            resetPrintColor();
+        }
         return NULL;
     }
 }
@@ -357,7 +374,11 @@ void SymbolTable::print(void (*printData)(void *))
 void SymbolTable::enter(std::string name)
 {
     if (debugFlg)
+    {
+        setPrintColor(PRINTCOLOR::GREEN);
         printf("DEBUG(SymbolTable): enter scope \"%s\".\n", name.c_str());
+        resetPrintColor();
+    }
     stack.push_back(new Scope(name));
 }
 
@@ -365,7 +386,11 @@ void SymbolTable::enter(std::string name)
 void SymbolTable::leave()
 {
     if (debugFlg)
+    {
+        setPrintColor(PRINTCOLOR::GREEN);
         printf("DEBUG(SymbolTable): leave scope \"%s\".\n", (stack.back()->scopeName()).c_str());
+        resetPrintColor();
+    }
     if (stack.size() > 1)
     {
         delete stack.back();
@@ -395,11 +420,13 @@ void *SymbolTable::lookup(std::string sym)
 
     if (debugFlg)
     {
+        setPrintColor(PRINTCOLOR::GREEN);
         printf("DEBUG(SymbolTable): lookup the symbol \"%s\" and ", sym.c_str());
         if (data)
             printf("found it in the scope named \"%s\".\n", name.c_str());
         else
             printf("did NOT find it!\n");
+        resetPrintColor();
     }
 
     return data;
@@ -413,8 +440,11 @@ void *SymbolTable::lookupGlobal(std::string sym)
 
     data = stack[0]->lookup(sym);
     if (debugFlg)
-        printf("DEBUG(SymbolTable): lookup the symbol \"%s\" in the Globals and %s.\n", sym.c_str(),
-               (data ? "found it" : "did NOT find it"));
+    {
+        setPrintColor(PRINTCOLOR::GREEN);
+        printf("DEBUG(SymbolTable): lookup the symbol \"%s\" in the Globals and %s.\n", sym.c_str(), (data ? "found it" : "did NOT find it"));
+        resetPrintColor();
+    }
 
     return data;
 }
@@ -425,11 +455,13 @@ bool SymbolTable::insert(std::string sym, void *ptr)
 {
     if (debugFlg)
     {
+        setPrintColor(PRINTCOLOR::GREEN);
         printf("DEBUG(symbolTable): insert in scope \"%s\" the symbol \"%s\"",
                (stack.back()->scopeName()).c_str(), sym.c_str());
         if (ptr == NULL)
             printf(" WARNING: The inserted pointer is NULL!!");
         printf("\n");
+        resetPrintColor();
     }
 
     return (stack.back())->insert(sym, ptr);
@@ -441,10 +473,12 @@ bool SymbolTable::insertGlobal(std::string sym, void *ptr)
 {
     if (debugFlg)
     {
+        setPrintColor(PRINTCOLOR::GREEN);
         printf("DEBUG(Scope): insert the global symbol \"%s\"", sym.c_str());
         if (ptr == NULL)
             printf(" WARNING: The inserted pointer is NULL!!");
         printf("\n");
+        resetPrintColor();
     }
 
     return stack[0]->insert(sym, ptr);

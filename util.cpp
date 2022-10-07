@@ -185,11 +185,11 @@ void setType(TreeNode *t, ExpType type, bool isStatic)
         // {
         if (t->nodeKind != NodeKind::ExpK || t->subkind.exp != ExpKind::ConstantK)
         {
-
             t->expType = type;
         }
         // }
         t->isStatic = isStatic;
+        t->needsInitCheck = true;
         t->isDeclared = true;
         t = t->sibling;
     }
