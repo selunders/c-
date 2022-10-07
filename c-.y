@@ -198,6 +198,7 @@ funDecl
             // $$->attr.idIndex = $id->idIndex;
             $$->isInit = true;
             $$->isUsed = true;
+            $$->isDeclared = true;
             $[cstmt]->canEnterThisScope = false;
         }
     | ID[id] '(' parms[prms] ')' compoundStmt[cstmt]
@@ -207,6 +208,7 @@ funDecl
             $$->isDefined = true;
             $$->isInit = true;
             $$->isUsed = true;
+            $$->isDeclared = true;
             $[cstmt]->canEnterThisScope = false;
         }
     ;
@@ -425,14 +427,17 @@ exp
             $[m]->isUsed = true;
             $[m]->isInit = true;
             $$->child[1] = $[e];
+            $[e]->needsInitCheck = true;
         }
     | mutable[m] INC[inc]
         {
             $$ = newExpNode(ExpKind::AssignK, $[inc], $[m], NULL, NULL);
+            $[m]->needsInitCheck = true;
         }
     | mutable[m] DEC[dec]
         {
             $$ = newExpNode(ExpKind::AssignK, $[dec], $[m], NULL, NULL);
+            $[m]->needsInitCheck = true;
         }
     | simpleExp
         {
@@ -470,6 +475,8 @@ simpleExp
     : simpleExp[sexp] OR[or] andExp[aexp]
         {
             $$ = newExpNode(ExpKind::OpK, $[or], $[sexp], $[aexp], NULL);
+            // $[sexp]->needsInitCheck = true;
+            // $[aexp]->needsInitCheck = true;
             // $$->expType = ExpType::Boolean;
         }
     | andExp
@@ -481,6 +488,8 @@ andExp
     : andExp[aexp] AND[and] unaryRelExp[urexp]
         {
             $$ = newExpNode(ExpKind::OpK, $[and], $[aexp], $[urexp], NULL);
+            // $[aexp]->needsInitCheck = true;
+            // $[urexp]->needsInitCheck = true;
             // $$->expType = ExpType::Boolean;
         }
     | unaryRelExp
@@ -489,9 +498,10 @@ andExp
         }
     ;
 unaryRelExp
-    : NOT unaryRelExp
+    : NOT unaryRelExp[urexp]
         {
             $$ = newExpNode(ExpKind::OpK, $1, $2, NULL, NULL);
+            $[urexp]->needsInitCheck = true;
             // $$->expType == ExpType::Boolean;
         }
     | relExp
@@ -508,6 +518,8 @@ relExp
             $$->child[1] = $[sexp2];
             // $[sexp2]->isUsed = true;
             $$->expType = ExpType::Boolean;
+            $[sexp]->needsInitCheck = true;
+            $[sexp2]->needsInitCheck = true;
         }
     | sumExp
         {
@@ -547,6 +559,8 @@ sumExp
             $$->child[0] = $[sexp];
             // $[sexp]->isUsed = true;
             $$->child[1] = $[mexp];
+            $[sexp]->needsInitCheck = true;
+            $[mexp]->needsInitCheck = true;
             // $[mexp]->isUsed = true;
             // $$->expType = ExpType::Integer;
         }
@@ -577,6 +591,8 @@ mulExp
             $$->child[0] = $[mexp];
             // $[mexp]->isUsed = true;
             $$->child[1] = $[uexp];
+            $[mexp]->needsInitCheck = true;
+            $[uexp]->needsInitCheck = true;
             // $[uexp]->isUsed = true;
             // $$->expType = ExpType::Integer;
         }
@@ -609,6 +625,8 @@ unaryExp
         {
             $$ = $[uop];
             $$->child[0] = $[uexp];
+            $[uexp]->needsInitCheck = true;
+            
             // $$->expType = ExpType::Integer;
         }
     | factor
@@ -668,6 +686,7 @@ mutable
             // tmp->isInit = true;
             $$ = newExpNode(ExpKind::OpK, $2, tmp, $[e], NULL);
             // $[e]->isInit = true;
+            $[e]->needsInitCheck = true;
         }
     ;
 immutable
@@ -690,6 +709,7 @@ call
             // TreeNode* tmp = newExpNode(ExpKind::IdK)
             $$ = newExpNode(ExpKind::CallK, $1, $[arguments], NULL, NULL);
             $$->attr.string = strdup($1->tokenstr);
+            $[arguments]->needsInitCheck = true;
         }
     ;
 args

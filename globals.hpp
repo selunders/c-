@@ -164,6 +164,7 @@ public:
     bool alreadyTraversed;
     bool isIndexed;
     bool canEnterThisScope;
+    bool needsInitCheck;
 
     // bool enteredScope;
     TreeNode()
@@ -178,6 +179,7 @@ public:
         isArray = false;
         isStatic = false;
         isInit = false;
+        needsInitCheck = false;
         seenInit = false;
         isUsed = false;
         isDefined = false;

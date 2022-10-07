@@ -51,15 +51,26 @@ void InitOpTypeList()
 
 static void checkUse(string, void *);
 
+TreeNode * getSTNode(SymbolTable* st, TreeNode* t)
+{
+    return (TreeNode*) st->lookup(t->attr.string);
+}
+
+
 static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *, TreeNode *, bool *), void (*postProc)(SymbolTable *, TreeNode *, bool *))
 {
+    TreeNode* tmp;
     bool enteredScope = false;
     bool enteredFunction = false;
     if (t != NULL)
     {
         if (t->nodeKind == NodeKind::DeclK)
-            if (st->lookup(t->attr.string) == NULL)
-                st->insert(t->attr.string, t);
+        {
+            // tmp = getSTNode(st, t); 
+            st->insert(t->attr.string, t);
+
+                // printf("ERROR(%d): '%s' is already declared at line %d.\n", t->lineno, t->attr.string, tmp->lineno);
+        }
         switch (t->nodeKind)
         {
         case NodeKind::DeclK:
@@ -132,7 +143,7 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
         postProc(st, t, &enteredScope);
         if (enteredScope)
         {
-            st->applyToAll(checkUse);
+            // st->applyToAll(checkUse);
             st->leave();
             // printf("Left scope\n");
             enteredScope = false;
@@ -723,6 +734,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
             if (tmp != NULL)
             {
+                // if()
                 if (tmp->nodeKind == NodeKind::DeclK)
                 {
                     if (tmp->subkind.decl != DeclKind::FuncK)
@@ -754,10 +766,10 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 printf("ERROR(%d): Symbol '%s' is not declared.\n", t->lineno, t->attr.string);
                 numAnalyzeErrors++;
                 t->isUsed = true;
-                if (!t->isInit)
+                if (t->needsInitCheck && t->isDeclared && !t->isInit)
                 {
-                    t->isUsed = true;
                     printf("WARNING(%d): Variable \'%s\' may be uninitialized when used here.\n", t->lineno, t->attr.string);
+                    t->isUsed = true;
                     // tmp->isInit = true;
                     numAnalyzeWarnings++;
                 }
@@ -786,11 +798,8 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 }
                 if (t->isInit)
                     tmp->isInit = true;
-                // else if(tmp->isInit)
-                // t->isInit = true;
-                if (!tmp->isInit)
+                if (t->needsInitCheck && t->isDeclared && !tmp->isInit)
                 {
-                    tmp->isUsed = true;
                     printf("WARNING(%d): Variable \'%s\' may be uninitialized when used here.\n", t->lineno, t->attr.string);
                     // tmp->isInit = true;
                     numAnalyzeWarnings++;
@@ -1066,9 +1075,9 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root)
     // traverse(st, root, moveUpTypes, moveUpTypes);
     // printf("\n");
     // traverse(st, root, printAnalysis, nullProc);
-    traverse(st, root, printAnalysis, nullProc);
+    traverse(st, root, printAnalysis, usageCheck);
     // traverse(st, root, usageCheck, nullProc);
-    traverse(st, root, printProc, nullProc);
+    // traverse(st, root, printProc, nullProc);
 
     // Do final check for main()
     TreeNode *mainPointer = (TreeNode *)st->lookup((string) "main");
