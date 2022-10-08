@@ -687,7 +687,7 @@ mutable
         {
             TreeNode* tmp = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             tmp->attr.string = strdup($1->tokenstr);
-            // tmp->isArray = true;
+            tmp->isArray = false;
             tmp->isIndexed = true;
             // $$->isUsed = true;
             // tmp->isInit = true;

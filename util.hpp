@@ -30,6 +30,7 @@ void setType(TreeNode* t, ExpType type, bool isStatic, bool needsInitCheck);
 char* assignToString(OpKind op);
 char* expToString(ExpType type);
 char* opToString(OpKind op);
+TreeNode *getSTNode(SymbolTable *st, TreeNode *t);
 static void printSpaces(int layer);
 void printTree(TreeNode* tree, bool printTypeTree);
  

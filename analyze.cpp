@@ -597,8 +597,9 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 }
                 if (currentOp.equalTypes)
                 {
-                    if (currentOp.bothArrsOrNot(t))
+                    if (!currentOp.bothArrsOrNot(st, t))
                     {
+                        // printf("BotharrsOrNot: %d\n", currentOp.bothArrsOrNot(st, t));
                         // printf("Assign EqTypes: %d LIsArr: %d RisArr %d LIsInd: %d RIsInd %d\n", currentOp.equalTypes, t->child[0]->isArray, t->child[1]->isArray, t->child[0]->isIndexed, t->child[1]->isIndexed);
                         printf("ERROR(%d): '%s' requires both operands be arrays or not but lhs is %san array and rhs is %san array.\n", t->lineno, assignToString(t->attr.op), t->child[0]->isArray && !t->child[0]->isIndexed ? "" : "not ", t->child[1]->isArray && !t->child[1]->isIndexed ? "" : "not ");
                         numAnalyzeErrors++;
@@ -808,7 +809,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                         }
                         if (currentOp.equalTypes)
                         {
-                            if (currentOp.bothArrsOrNot(t))
+                            if (!currentOp.bothArrsOrNot(st, t))
                             {
                                 // printf("Op EqTypes: %d LIsArr: %d RisArr %d LIsInd: %d RIsInd %d\n", currentOp.equalTypes, t->child[0]->isArray, t->child[1]->isArray, t->child[0]->isIndexed, t->child[1]->isIndexed);
                                 printf("ERROR(%d): '%s' requires both operands be arrays or not but lhs is %san array and rhs is %san array.\n", t->lineno, opToString(t->attr.op), t->child[0]->isArray && !t->child[0]->isIndexed ? "" : "not ", t->child[1]->isArray && !t->child[1]->isIndexed ? "" : "not ");

@@ -362,15 +362,30 @@ public:
         return false;
     }
 
-    bool bothArrsOrNot(TreeNode *t)
+    bool bothArrsOrNot(SymbolTable *st, TreeNode *t)
     {
-        TreeNode *tl = t->child[0];
-        TreeNode *tr = t->child[1];
-        bool leftIsArray = (tl->isArray && !tl->isIndexed);
-        bool rightIsArray = (tr->isArray && !tr->isIndexed);
-        if (leftIsArray && rightIsArray)
-            return true;
-        else if (!leftIsArray && !rightIsArray)
+        TreeNode *tl = ((t->child[0]->nodeKind == NodeKind::ExpK) && (t->child[0]->subkind.exp == ExpKind::IdK)) ? (TreeNode *)st->lookup(t->child[0]->attr.string) : t->child[0];
+        TreeNode *tr = ((t->child[1]->nodeKind == NodeKind::ExpK) && (t->child[1]->subkind.exp == ExpKind::IdK)) ? (TreeNode *)st->lookup(t->child[1]->attr.string) : t->child[1];
+        bool leftIsArray;
+        if (tl != NULL && tl->isArray)
+            if (tl->isIndexed)
+                leftIsArray = false;
+            else
+                leftIsArray = true;
+        else
+            leftIsArray = false;
+
+        bool rightIsArray;
+        if (tr != NULL && tr->isArray)
+            if (tr->isIndexed)
+                rightIsArray = false;
+            else
+                rightIsArray = true;
+        else
+            rightIsArray = false;
+        // bool rightIsArray = (!tr->isArray || (tr->isArray && !tr->isIndexed));
+        // printf("LeftIsArr: %s RightIsArr: %s\n", leftIsArray ? "true" : "false", rightIsArray ? "true" : "false");
+        if (leftIsArray == rightIsArray)
             return true;
         else
             return false;
