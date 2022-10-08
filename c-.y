@@ -102,7 +102,7 @@ varDecl
         {
             // $$ = newDeclNode(DeclKind::VarK, $[type], $3, $[vdecllist], NULL, NULL);
             $$ = $[vdecllist];
-            setType($$, $[type], false);
+            setType($$, $[type], false, false);
         }
     ;
 scopedVarDecl
@@ -110,7 +110,7 @@ scopedVarDecl
         {
             // $$ = newDeclNode(DeclKind::VarK, $[type], $1, $[vdecllist], NULL, NULL);
             $$ = $[vdecllist];
-            setType($$, $[type], true);
+            setType($$, $[type], true, false);
             // Might need to actually do this:
             // setType($$->child[0], ... )
         }
@@ -118,7 +118,7 @@ scopedVarDecl
         {
             // $$ = newDeclNode(DeclKind::VarK, $[type], $3, $[vdecllist], NULL, NULL);
             $$ = $[vdecllist];
-            setType($$, $[type], false);
+            setType($$, $[type], false, false);
             // Might need to actually do this:
             // setType($$->child[0], ... )
         }
@@ -193,11 +193,11 @@ funDecl
             
             $$->isDefined = true;
             // $$->attr.string = strdup($)
-            setType($$, $[type], $$->isStatic);
+            setType($$, $[type], $$->isStatic, false);
             // $[cstmt]->attr.string = $[id]->tokenstr ? strdup($[id]->tokenstr) : (char*) "";
             // $$->attr.idIndex = $id->idIndex;
             $$->isInit = true;
-            $$->isUsed = true;
+            // $$->isUsed = true;
             $$->isDeclared = true;
             $[cstmt]->canEnterThisScope = false;
         }
@@ -207,7 +207,7 @@ funDecl
             $[cstmt]->attr.string = strdup($[id]->tokenstr);
             $$->isDefined = true;
             $$->isInit = true;
-            $$->isUsed = true;
+            // $$->isUsed = true;
             $$->isDeclared = true;
             $[cstmt]->canEnterThisScope = false;
         }
@@ -238,7 +238,7 @@ parmTypeList
         {
             $$ = $[prmidlist];
             // printf("Found a list of parameters\n");
-            setType($$, $[type], $$->isStatic);
+            setType($$, $[type], $$->isStatic, false);
         }
     ;
 parmIdList
@@ -257,6 +257,7 @@ parmId
             $$ = newDeclNode(DeclKind::ParamK, ExpType::UndefinedType,  $1, NULL, NULL, NULL);
             // $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             $$->isArray = false;
+            // $$->needsInitCheck = false;
             // printf("Found ID: %s\n\n", $1->tokenstr);
         }
     | ID '['']'
@@ -264,6 +265,7 @@ parmId
             $$ = newDeclNode(DeclKind::ParamK, ExpType::UndefinedType, $1, NULL, NULL, NULL);
             // $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             $$->isArray = true;
+            // $$->needsInitCheck = false; 
             // printf("Found ID array: %s\n\n", $1->tokenstr);
         }
 stmt
@@ -424,20 +426,20 @@ exp
         {
             $$ = $[aop];
             $$->child[0] = $[m];
-            $[m]->isUsed = true;
+            // $[m]->isUsed = true;
             // $[m]->isInit = true;
             $$->child[1] = $[e];
-            $[e]->needsInitCheck = true;
+            // $[e]->needsInitCheck = true;
         }
     | mutable[m] INC[inc]
         {
             $$ = newExpNode(ExpKind::AssignK, $[inc], $[m], NULL, NULL);
-            $[m]->needsInitCheck = true;
+            // $[m]->needsInitCheck = true;
         }
     | mutable[m] DEC[dec]
         {
             $$ = newExpNode(ExpKind::AssignK, $[dec], $[m], NULL, NULL);
-            $[m]->needsInitCheck = true;
+            // $[m]->needsInitCheck = true;
         }
     | simpleExp
         {
@@ -475,8 +477,13 @@ simpleExp
     : simpleExp[sexp] OR[or] andExp[aexp]
         {
             $$ = newExpNode(ExpKind::OpK, $[or], $[sexp], $[aexp], NULL);
-            // $[sexp]->needsInitCheck = true;
-            // $[aexp]->needsInitCheck = true;
+            
+            ///************************************************///
+            // Pretty sure these should be true (same with AND) //
+            ///************************************************/// 
+            
+            $[sexp]->needsInitCheck = false;
+            $[aexp]->needsInitCheck = false;
             // $$->expType = ExpType::Boolean;
         }
     | andExp
@@ -488,8 +495,8 @@ andExp
     : andExp[aexp] AND[and] unaryRelExp[urexp]
         {
             $$ = newExpNode(ExpKind::OpK, $[and], $[aexp], $[urexp], NULL);
-            // $[aexp]->needsInitCheck = true;
-            // $[urexp]->needsInitCheck = true;
+            $[aexp]->needsInitCheck = false;
+            $[urexp]->needsInitCheck = false;
             // $$->expType = ExpType::Boolean;
         }
     | unaryRelExp
@@ -501,7 +508,7 @@ unaryRelExp
     : NOT unaryRelExp[urexp]
         {
             $$ = newExpNode(ExpKind::OpK, $1, $2, NULL, NULL);
-            $[urexp]->needsInitCheck = true;
+            // $[urexp]->needsInitCheck = true;
             // $$->expType == ExpType::Boolean;
         }
     | relExp
@@ -518,8 +525,8 @@ relExp
             $$->child[1] = $[sexp2];
             // $[sexp2]->isUsed = true;
             $$->expType = ExpType::Boolean;
-            $[sexp]->needsInitCheck = true;
-            $[sexp2]->needsInitCheck = true;
+            // $[sexp]->needsInitCheck = true;
+            // $[sexp2]->needsInitCheck = true;
         }
     | sumExp
         {
@@ -559,8 +566,8 @@ sumExp
             $$->child[0] = $[sexp];
             // $[sexp]->isUsed = true;
             $$->child[1] = $[mexp];
-            $[sexp]->needsInitCheck = true;
-            $[mexp]->needsInitCheck = true;
+            // $[sexp]->needsInitCheck = true;
+            // $[mexp]->needsInitCheck = true;
             // $[mexp]->isUsed = true;
             // $$->expType = ExpType::Integer;
         }
@@ -591,8 +598,8 @@ mulExp
             $$->child[0] = $[mexp];
             // $[mexp]->isUsed = true;
             $$->child[1] = $[uexp];
-            $[mexp]->needsInitCheck = true;
-            $[uexp]->needsInitCheck = true;
+            // $[mexp]->needsInitCheck = true;
+            // $[uexp]->needsInitCheck = true;
             // $[uexp]->isUsed = true;
             // $$->expType = ExpType::Integer;
         }
@@ -625,7 +632,7 @@ unaryExp
         {
             $$ = $[uop];
             $$->child[0] = $[uexp];
-            $[uexp]->needsInitCheck = true;
+            // $[uexp]->needsInitCheck = true;
             
             // $$->expType = ExpType::Integer;
         }
@@ -662,12 +669,12 @@ factor
     : mutable
         {
             $$ = $1;
-            $$->isUsed = true;
+            // $$->isUsed = true;
         }
     | immutable
         {
             $$ = $1;
-            $$->isUsed = true;
+            // $$->isUsed = true;
         }
     ;
 mutable
@@ -686,7 +693,7 @@ mutable
             // tmp->isInit = true;
             $$ = newExpNode(ExpKind::OpK, $2, tmp, $[e], NULL);
             // $[e]->isInit = true;
-            $[e]->needsInitCheck = true;
+            // $[e]->needsInitCheck = true;
         }
     ;
 immutable
@@ -711,7 +718,7 @@ call
             $$->attr.string = strdup($1->tokenstr);
             if($[arguments] != NULL)
             {
-                $[arguments]->needsInitCheck = true;
+                // $[arguments]->needsInitCheck = true;
             }
         }
     ;

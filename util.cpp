@@ -176,7 +176,7 @@ TreeNode *addSibling(TreeNode *addToThis, TreeNode *nodeBeingAdded)
     return nodeBeingAdded;
 }
 
-void setType(TreeNode *t, ExpType type, bool isStatic)
+void setType(TreeNode *t, ExpType type, bool isStatic, bool needsInitChecked)
 {
     while (t != NULL)
     {
@@ -189,7 +189,7 @@ void setType(TreeNode *t, ExpType type, bool isStatic)
         }
         // }
         t->isStatic = isStatic;
-        t->needsInitCheck = true;
+        t->needsInitCheck = needsInitChecked;
         t->isDeclared = true;
         t = t->sibling;
     }
@@ -227,7 +227,7 @@ char *expToString(ExpType type)
         return (char *)"Array";
         break;
     case ExpType::LHS:
-        return (char*)"LHS";
+        return (char *)"LHS";
         break;
     default:
         printf("\n\n Error with expToString in util.cpp\n\n");
@@ -664,7 +664,10 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer)
             switch (tree->subkind.exp)
             {
             case ExpKind::OpK:
-                printf("Op: %s", opToString(tree->attr.op));
+                if (tree->expType == ExpType::UndefinedType)
+                    printf("Op: %s of undefined type", opToString(tree->attr.op));
+                else
+                    printf("Op: %s of type %s", opToString(tree->attr.op), expToString(tree->expType));
                 break;
             case ExpKind::ConstantK:
                 switch (tree->expType)
@@ -674,15 +677,18 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer)
                         printf("Const false");
                     else
                         printf("Const true");
+                    printf(" of type bool");
                     break;
                 case ExpType::Char:
                     if (tree->isArray)
                         printf("Const %s", tree->attr.string);
                     else
                         printf("Const \'%c\'", tree->attr.cvalue);
+                    printf(" of type char");
                     break;
                 case ExpType::Integer:
                     printf("Const %d", tree->attr.value);
+                    printf(" of type int");
                     break;
                 default:
                     printf("How'd you find this???\n\n\n");
@@ -690,15 +696,21 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer)
                 }
                 break;
             case ExpKind::IdK:
-                printf("Id: %s", tree->attr.string);
+
+                if (tree->expType == ExpType::UndefinedType)
+                    printf("Id: %s of undefined type", tree->attr.string);
+                else
+                    printf("Id: %s of type %s", tree->attr.string, expToString(tree->expType));
                 break;
             case ExpKind::AssignK:
-                printf("Assign: %s", assignToString(tree->attr.op));
+
+                printf("Assign: %s of type %s", assignToString(tree->attr.op), expToString(tree->expType));
                 break;
             case ExpKind::InitK:
                 break;
             case ExpKind::CallK:
-                printf("Call: %s", tree->attr.string);
+
+                printf("Call: %s of type %s", tree->attr.string, expToString(tree->expType));
                 break;
             default:
                 break;
@@ -743,7 +755,7 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer)
         }
         // nodeCount++;
         // printf("%d\n", nodeCount);
-        printf(" [line: %d] || expType::%s\n", tree->lineno, expToString(tree->expType));
+        printf(" [line: %d]\n", tree->lineno);
         for (i = 0; i < MAXCHILDREN; i++)
         {
             if (tree->child[i] != NULL)

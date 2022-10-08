@@ -54,6 +54,7 @@ private:
 public:
     SymbolTable();
     void debug(bool state);                          // sets the debug flags
+    bool getDebugState();
     bool test();                                     // runs tests to validate the SymbolTable class
     int depth();                                     // what is the depth of the scope stack?
     void print(void (*printData)(void *));           // print all scopes using data printing function

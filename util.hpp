@@ -25,7 +25,7 @@ TreeNode* newExpNode(   ExpKind kind,
                         TreeNode* c2=NULL);
 
 TreeNode* addSibling(TreeNode* addToThis, TreeNode* nodeBeingAdded);
-void setType(TreeNode* t, ExpType type, bool isStatic);
+void setType(TreeNode* t, ExpType type, bool isStatic, bool needsInitCheck);
 
 char* assignToString(OpKind op);
 char* expToString(ExpType type);

@@ -56,19 +56,27 @@ TreeNode *getSTNode(SymbolTable *st, TreeNode *t)
     return (TreeNode *)st->lookup(t->attr.string);
 }
 
-static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *, TreeNode *, bool *), void (*postProc)(SymbolTable *, TreeNode *, bool *), bool doUsageCheck)
+static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *, TreeNode *, bool *), void (*postProc)(SymbolTable *, TreeNode *, bool *), bool doErrorChecking)
 {
     TreeNode *tmp;
     bool enteredScope = false;
     bool enteredFunction = false;
     if (t != NULL)
     {
+        TreeNode *tmp;
         if (t->nodeKind == NodeKind::DeclK)
         {
-            // tmp = getSTNode(st, t);
-            st->insert(t->attr.string, t);
-
-            // printf("ERROR(%d): '%s' is already declared at line %d.\n", t->lineno, t->attr.string, tmp->lineno);
+            t->declDepth = st->depth();
+            if (!st->insert(t->attr.string, t) && doErrorChecking)
+            {
+                tmp = getSTNode(st, t);
+                // if (!tmp->declChecked)
+                // {
+                // tmp->declChecked = true;
+                printf("ERROR(%d): Symbol '%s' is already declared at line %d.\n", t->lineno, t->attr.string, tmp->lineno);
+                numAnalyzeErrors++;
+                // }
+            }
         }
         switch (t->nodeKind)
         {
@@ -108,9 +116,9 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             case StmtKind::ForK:
                 st->enter((string) "For");
                 enteredScope = true;
-                if (t->child[1] != NULL)
+                if (t->child[2] != NULL)
                 {
-                    t->child[1]->canEnterThisScope = false;
+                    t->child[2]->canEnterThisScope = false;
                 }
                 break;
             case StmtKind::IfK:
@@ -148,19 +156,19 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             int i;
             for (i = 0; i < MAXCHILDREN; i++)
             {
-                traverse(st, t->child[i], preProc, postProc, doUsageCheck);
+                traverse(st, t->child[i], preProc, postProc, doErrorChecking);
             }
         }
         postProc(st, t, &enteredScope);
         if (enteredScope)
         {
-            if (doUsageCheck)
+            if (doErrorChecking)
                 st->applyToAll(checkUse);
             st->leave();
             // printf("Left scope\n");
             enteredScope = false;
         }
-        traverse(st, t->sibling, preProc, postProc, doUsageCheck);
+        traverse(st, t->sibling, preProc, postProc, doErrorChecking);
         // st->print(pointerPrintNode);
     }
 }
@@ -250,13 +258,15 @@ static ExpType getType(SymbolTable *st, TreeNode *t)
             if (t->attr.op == '=')
             {
                 t->expType = getType(st, t->child[0]);
-                t->isInit = t->child[0]->isInit;
+                // t->child[0]->isInit = true;
+                // t->isInit = true;
+                // t->isInit = t->child[0]->isInit;
                 t->isArray = t->child[0]->isArray;
                 return getType(st, t->child[0]);
             }
             else
             {
-                t->isInit = t->child[0]->isInit;
+                // t->isInit = t->child[0]->isInit;
                 t->isArray = t->child[0]->isArray;
                 return ExpType::Integer;
             }
@@ -280,6 +290,7 @@ static ExpType getType(SymbolTable *st, TreeNode *t)
             TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
             if (tmp != NULL)
             {
+                t->isArray = tmp->isArray;
                 if (t->isInit)
                     tmp->isInit = true;
                 else if (tmp->isInit)
@@ -306,6 +317,7 @@ static ExpType getType(SymbolTable *st, TreeNode *t)
                     t->child[0]->isInit = true;
                 }
                 OpTypeInfo currentOp = opInfoMap[t->attr.op];
+                t->expType = currentOp.returnType;
                 return currentOp.returnType;
             }
             break;
@@ -320,6 +332,27 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
 {
     switch (t->nodeKind)
     {
+    case NodeKind::DeclK:
+        switch (t->subkind.decl)
+        {
+        case DeclKind::FuncK:
+            break;
+        case DeclKind::VarK:
+        {
+            // printf("%s Init depth: %d\n", t->attr.string, st->depth());
+            TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
+            if (tmp != NULL && (st->depth() > 1))
+            {
+                tmp->needsInitCheck = true;
+                t->needsInitCheck = true;
+            }
+            break;
+        }
+        case DeclKind::ParamK:
+            t->isInit = true;
+            break;
+        }
+        break;
     case NodeKind::ExpK:
         switch (t->subkind.exp)
         {
@@ -336,27 +369,49 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
         {
             TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
             t->expType = getType(st, t);
-            t->isUsed = true;
-            if (tmp != NULL)
-                tmp->isUsed = true;
+            // t->isUsed = true;
+            // if (t->child[0] != NULL)
+            // t->child[0]->needsInitCheck = true;
+            // if (tmp != NULL)
+            // tmp->isUsed = true;
         }
         case ExpKind::IdK:
         {
             TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
+            TreeNode *tmp_g = (TreeNode *)st->lookupGlobal(t->attr.string);
             if (tmp != NULL)
             {
-                tmp->isUsed = true;
+                // tmp->isUsed = true;
                 t->isArray = tmp->isArray;
                 t->isStatic = tmp->isStatic;
-                t->needsInitCheck = tmp->needsInitCheck;
+                if (tmp->isInit)
+                {
+                    t->isInit = true;
+                }
+                else if (t->isInit)
+                {
+                    tmp->isInit = true;
+                }
+                if (tmp->needsInitCheck = true)
+
+                    t->needsInitCheck = tmp->needsInitCheck;
             }
             t->expType = getType(st, t);
-            t->isUsed = true;
+            // t->isUsed = true;
+            if (tmp != NULL && (tmp == tmp_g))
+            {
+                // tmp->needsInitCheck = false;
+                // tmp_g->needsInitCheck = false;
+                // t->needsInitCheck = false;
+                tmp->isInit = true;
+                tmp_g->isInit = true;
+                t->isInit = true;
+            }
 
             break;
         }
         case ExpKind::OpK:
-            if(t->attr.op == '=' && t->child[0] != NULL)
+            if (t->attr.op == '=' && t->child[0] != NULL)
                 t->child[0]->isInit = true;
             if (t->attr.op == '=' || t->attr.op == '[')
             {
@@ -370,13 +425,22 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                         t->expType = getType(st, t);
                         t->isArray = tmp->isArray;
                         t->isInit = tmp->isInit;
-                        t->needsInitCheck = tmp->needsInitCheck;
+                        // t->needsInitCheck = tmp->needsInitCheck;
                     }
                 }
+                if (t->child[1] != NULL)
+                    t->isIndexed = true;
             }
             if (t->attr.op == NOT)
             {
                 t->expType = ExpType::Boolean;
+            }
+            switch (t->attr.op)
+            {
+            case OR:
+                // t->child[0]->needsInitCheck = false;
+                // t->child[1]->needsInitCheck = false;
+                break;
             }
         default:
             break;
@@ -440,27 +504,53 @@ static void usageCheck(SymbolTable *st, TreeNode *t, bool *null)
 
 static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
 {
+    TreeNode *tmp;
+    TreeNode *tLeft = t->child[0];
+    TreeNode *tRight = t->child[1];
     switch (t->nodeKind)
     {
     case NodeKind::DeclK:
     {
         // printf("Aaaaaahhhhhh\n");
-        TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
-        if (tmp != NULL && tmp->alreadyTraversed)
-        // if (!st->insert(t->attr.string, t))
-        {
-            printf("ERROR(%d): Symbol '%s' is already declared at line %d.\n", t->lineno, t->attr.string, tmp->lineno);
-            numAnalyzeErrors++;
-        }
-        else if (tmp != NULL)
-            tmp->alreadyTraversed = true;
+        tmp = (TreeNode *)st->lookup(t->attr.string);
+        // if (tmp != NULL)
+        // {
+        // printf("ERROR(%d): Symbol '%s' is already declared at line %d.\n", t->lineno, t->attr.string, tmp->lineno);
+        // numAnalyzeErrors++;
+        // }
         switch (t->subkind.decl)
         {
         case DeclKind::FuncK:
             break;
         case DeclKind::ParamK:
+        {
+            if (tmp != NULL)
+            {
+                tmp->needsInitCheck = false;
+            }
             break;
+        }
         case DeclKind::VarK:
+            if (tLeft && tLeft->nodeKind == NodeKind::ExpK)
+                switch (tLeft->subkind.exp)
+                {
+                case ExpKind::AssignK:
+                    break;
+                case ExpKind::CallK:
+                    break;
+                case ExpKind::ConstantK:
+                    break;
+                case ExpKind::IdK:
+                    tmp = getSTNode(st, tLeft);
+                    tmp->isInit = true;
+                    break;
+                case ExpKind::InitK:
+                    break;
+                case ExpKind::OpK:
+                    // if(st->depth() == 1)
+                    // t->isInit = true;
+                    break;
+                }
             break;
         }
         break;
@@ -471,7 +561,8 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         {
         case ExpKind::AssignK:
         {
-            // if (t->attr.op == '=')
+            if (t->attr.op == '=')
+                t->child[0]->isInit = true;
             if (t->attr.op == '=' || t->attr.op == '[')
             {
                 t->expType = getType(st, t);
@@ -504,6 +595,15 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     printf("ERROR(%d): The operation '%s' only works with arrays.\n", t->lineno, assignToString(t->attr.op));
                     numAnalyzeErrors++;
                 }
+                if (currentOp.equalTypes)
+                {
+                    if (currentOp.bothArrsOrNot(t))
+                    {
+                        // printf("Assign EqTypes: %d LIsArr: %d RisArr %d LIsInd: %d RIsInd %d\n", currentOp.equalTypes, t->child[0]->isArray, t->child[1]->isArray, t->child[0]->isIndexed, t->child[1]->isIndexed);
+                        printf("ERROR(%d): '%s' requires both operands be arrays or not but lhs is %san array and rhs is %san array.\n", t->lineno, assignToString(t->attr.op), t->child[0]->isArray && !t->child[0]->isIndexed ? "" : "not ", t->child[1]->isArray && !t->child[1]->isIndexed ? "" : "not ");
+                        numAnalyzeErrors++;
+                    }
+                }
             }
             break;
         }
@@ -521,15 +621,15 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                         printf("ERROR(%d): '%s' is a simple variable and cannot be called.\n", t->lineno, tmp->attr.string);
                         numAnalyzeErrors++;
                     }
+                    else
+                        tmp->isUsed = true;
                 }
-                tmp->isUsed = true;
             }
             else
             {
                 printf("ERROR(%d): Symbol '%s' is not declared.\n", t->lineno, t->attr.string);
                 numAnalyzeErrors++;
             }
-
             break;
         }
         case ExpKind::ConstantK:
@@ -541,17 +641,17 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
             if (tmp == NULL)
             {
-                st->insert(t->attr.string, t);
+                // st->insert(t->attr.string, t);
                 printf("ERROR(%d): Symbol '%s' is not declared.\n", t->lineno, t->attr.string);
                 numAnalyzeErrors++;
-                t->isUsed = true;
-                if (t->needsInitCheck && t->isDeclared && !t->isInit)
+                // t->isUsed = true;
+                if ((st->depth() > 1) && t->needsInitCheck && t->isDeclared && !t->isInit)
                 {
                     printf("WARNING(%d): Variable \'%s\' may be uninitialized when used here.\n", t->lineno, t->attr.string);
-                    t->isUsed = true;
+                    // t->isUsed = true;
                     // tmp->isInit = true;
                     numAnalyzeWarnings++;
-                    t->needsInitCheck = false;
+                    // t->needsInitCheck = false;
                 }
                 // tmp->isInit = true;
                 // numAnalyzeWarnings++;
@@ -565,8 +665,16 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 t->isArray = tmp->isArray;
                 t->isDeclared = tmp->isDeclared;
                 tmp->isStatic = t->isStatic;
-                tmp->isUsed = true;
-                t->needsInitCheck = tmp->needsInitCheck;
+                if (t->isStatic)
+                    t->needsInitCheck = false;
+                // tmp->isUsed = true;
+                // if(tmp->needsInitCheck)
+                // if(t->isInit)
+                // {
+                // tmp->needsInitCheck = false;
+                // t->needsInitCheck = false;
+                // }
+                // t->needsInitCheck = tmp->needsInitCheck;
                 // else if (tmp->isUsed)
                 // if (tmp->expType != ExpType::UndefinedType)
                 // {
@@ -577,23 +685,28 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     printf("ERROR(%d): Cannot use function '%s' as a variable.\n", t->lineno, t->attr.string);
                     numAnalyzeErrors++;
                 }
+                else
+                {
+                    tmp->isUsed = true;
+                }
                 if (t->isInit)
                 {
                     tmp->isInit = true;
                     tmp->needsInitCheck = false;
-                    t->needsInitCheck = false;
+                    // t->needsInitCheck = false;
                 }
+                // printf("Maybe this'll help: '%s' init: %d needsinit: %d\n", t->attr.string, t->isInit, t->needsInitCheck);
                 if (t->isDeclared)
                 {
                     if (t->needsInitCheck)
                     {
                         // printf("Needs init\n");
-                        if (!tmp->isInit)
+                        if ((st->depth() > 1) && !tmp->isInit)
                         {
                             printf("WARNING(%d): Variable \'%s\' may be uninitialized when used here.\n", t->lineno, t->attr.string);
-                            // tmp->isInit = true;
+                            tmp->isInit = true;
                             numAnalyzeWarnings++;
-                            tmp->needsInitCheck = false;
+                            // tmp->needsInitCheck = false;
                         }
                     }
                     // else
@@ -603,7 +716,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 {
                     printf("ERROR(%d): Symbol '%s' is not declared.\n", t->lineno, t->attr.string);
                     numAnalyzeErrors++;
-                    t->isUsed = true;
+                    // t->isUsed = true;
                 }
             }
         }
@@ -617,44 +730,9 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             if (t->attr.op == '=' || t->attr.op == '[')
             {
                 t->expType = getType(st, t);
-                ;
             }
             switch (t->attr.op)
             {
-            case OR:
-                break;
-            case AND:
-                break;
-            case NOT:
-                break;
-            case '<':
-                break;
-            case LEQ:
-                break;
-            case '>':
-                break;
-            case GEQ:
-                break;
-            case EQ:
-                break;
-            case NEQ:
-                break;
-            case '+':
-                break;
-            case SUBTRACT:
-                break;
-            case MULTIPLY:
-                break;
-            case '/':
-                break;
-            case MODULO:
-                break;
-            case NEGATIVE:
-                break;
-            case '?':
-                break;
-            case SIZEOF:
-                break;
             case '[':
                 t->expType = getType(st, t);
                 ;
@@ -684,6 +762,13 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     }
                 }
                 break;
+            case OR:
+                t->child[0]->needsInitCheck = true;
+                t->child[1]->needsInitCheck = true;
+                break;
+            case AND:
+                t->child[0]->needsInitCheck = true;
+                t->child[1]->needsInitCheck = true;
             default:
                 // return (char *)"ERROR(opToString() in util.cpp)";
                 break;
@@ -691,6 +776,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             if (t->attr.op != '[')
             {
                 OpTypeInfo currentOp = opInfoMap[t->attr.op];
+                t->expType = currentOp.returnType;
                 // if (t->child[0]->isDeclared)
                 {
                     if (!currentOp.isUnary)
@@ -719,6 +805,15 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                         {
                             printf("ERROR(%d): The operation '%s' only works with arrays.\n", t->lineno, opToString(t->attr.op));
                             numAnalyzeErrors++;
+                        }
+                        if (currentOp.equalTypes)
+                        {
+                            if (currentOp.bothArrsOrNot(t))
+                            {
+                                // printf("Op EqTypes: %d LIsArr: %d RisArr %d LIsInd: %d RIsInd %d\n", currentOp.equalTypes, t->child[0]->isArray, t->child[1]->isArray, t->child[0]->isIndexed, t->child[1]->isIndexed);
+                                printf("ERROR(%d): '%s' requires both operands be arrays or not but lhs is %san array and rhs is %san array.\n", t->lineno, opToString(t->attr.op), t->child[0]->isArray && !t->child[0]->isIndexed ? "" : "not ", t->child[1]->isArray && !t->child[1]->isIndexed ? "" : "not ");
+                                numAnalyzeErrors++;
+                            }
                         }
                     }
                     else
@@ -758,6 +853,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             // *enteredScope = true;
             break;
         case StmtKind::ForK:
+
             // st->enter((string) "For");
             // *enteredScope = true;
             // // st->applyToAll(checkUse);
@@ -772,7 +868,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         case StmtKind::RangeK:
             break;
         case StmtKind::ReturnK:
-            if (t->child[0] != NULL && t->child[0]->isArray)
+            if (t->child[0] != NULL && t->child[0]->isArray && !t->child[0]->isIndexed)
             {
                 printf("ERROR(%d): Cannot return an array.\n", t->lineno);
                 numAnalyzeErrors++;
@@ -809,6 +905,7 @@ static void checkScope(SymbolTable *st, TreeNode *t, bool *enteredScope)
             // *enteredScope = true;
             break;
         case DeclKind::ParamK:
+
             break;
         case DeclKind::VarK:
             break;
@@ -863,12 +960,20 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root)
     // traverse(st, root, printProc, nullProc);
     // printf("\n");
     traverse(st, root, nullProc, moveUpTypes, false);
+
+    // Clear ST when types are dispersed
+    bool debugState = st->getDebugState();
+    delete st;
+    st = new SymbolTable();
+    st->debug(debugState);
+    // st->enter("Global");
     // traverse(st, root, insertSymbols, moveUpTypes);
     // printf("\n");
     // traverse(st, root, moveUpTypes, moveUpTypes);
     // printf("\n");
     traverse(st, root, printAnalysis, nullProc, true);
-    // traverse(st, root, printProc, nullProc);
+
+    // traverse(st, root, printProc, nullProc, false);
     // traverse(st, root, printAnalysis, usageCheck);
     // traverse(st, root, usageCheck, nullProc);
     // traverse(st, root, printProc, nullProc);

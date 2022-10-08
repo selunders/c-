@@ -81,15 +81,10 @@ int main(int argc, char *argv[])
 
         // do the parsing
         yyparse();
-        if(printTreeFlag)
+        if(printTreeFlag && !printTypeInfo)
         {
             // printf("Not printing type info\n");
             printTree(rootNode, false);
-        }
-        else if(printTypeInfo)
-        {
-            // printf("Printing type info\n");
-            printTree(rootNode, true);
         }
         
 
@@ -101,6 +96,11 @@ int main(int argc, char *argv[])
         // symbolTable->print(pointerPrintStr);
         // symbolTable->applyToAll();
 
+        if(printTypeInfo)
+        {
+            // printf("Printing type info\n");
+            printTree(rootNode, true);
+        }
         
         // printTree(rootNode, true);
         /* printf("Number of errors: %d\n", numErrors);   // ERR */
