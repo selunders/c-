@@ -474,7 +474,7 @@ void printBasicTree(TreeNode *tree, NodeRelation relation, int id, int layer)
                     break;
                 case ExpType::Char:
                     if (tree->isArray)
-                        printf("Const %s", tree->attr.string);
+                        printf("Const is array %s", tree->attr.string);
                     else
                         printf("Const \'%c\'", tree->attr.cvalue);
                     break;

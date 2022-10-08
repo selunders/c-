@@ -91,16 +91,16 @@ int main(int argc, char *argv[])
         SymbolTable* symbolTable = new SymbolTable();
         // symbolTable->test();
         symbolTable->debug(symbTabDEBUG);
-        semanticAnalysis(symbolTable, rootNode);
+        semanticAnalysis(symbolTable, rootNode, printTypeInfo);
         // symbolTable->print(pointerPrintNode);
         // symbolTable->print(pointerPrintStr);
         // symbolTable->applyToAll();
 
-        if(printTypeInfo)
-        {
-            // printf("Printing type info\n");
-            printTree(rootNode, true);
-        }
+        // if(printTypeInfo)
+        // {
+        //     // printf("Printing type info\n");
+        //     printTree(rootNode, true);
+        // }
         
         // printTree(rootNode, true);
         /* printf("Number of errors: %d\n", numErrors);   // ERR */

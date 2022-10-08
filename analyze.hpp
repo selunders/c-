@@ -3,7 +3,7 @@
 
 #include "globals.hpp"
 
-void semanticAnalysis(SymbolTable*, TreeNode*);
+void semanticAnalysis(SymbolTable*, TreeNode*, bool);
 
 void buildSymTab(TreeNode * );
 

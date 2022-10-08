@@ -949,7 +949,7 @@ static void checkScope(SymbolTable *st, TreeNode *t, bool *enteredScope)
     }
 }
 
-void semanticAnalysis(SymbolTable *st, TreeNode *root)
+void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
 {
     // findTypes(st, root);
     InitOpTypeList();
@@ -990,6 +990,8 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root)
         printf("ERROR(LINKER): A function named 'main()' must be defined.\n");
         numAnalyzeErrors++;
     }
+    if (printTypedTree)
+        printTree(root, true);
     printf("Number of warnings: %d\n", numAnalyzeWarnings);
     printf("Number of errors: %d\n", numAnalyzeErrors);
 
