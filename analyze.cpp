@@ -13,6 +13,7 @@ using namespace std;
 
 int numAnalyzeWarnings;
 int numAnalyzeErrors;
+int loopDepth = 0;
 map<OpKind, OpTypeInfo> opInfoMap;
 static int location = 0;
 static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope);
@@ -61,6 +62,7 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
     TreeNode *tmp;
     bool enteredScope = false;
     bool enteredFunction = false;
+    bool enteredLoop = false;
     if (t != NULL)
     {
         TreeNode *tmp;
@@ -120,6 +122,9 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
                 {
                     t->child[2]->canEnterThisScope = false;
                 }
+                
+                enteredLoop = true;
+                loopDepth++;
                 break;
             case StmtKind::IfK:
                 // t->expType = ExpType::Boolean;
@@ -143,6 +148,10 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
                 {
                     t->child[1]->canEnterThisScope = false;
                 }
+
+                loopDepth++;
+                enteredLoop = true;
+
                 break;
             default:
                 break;
@@ -168,6 +177,8 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             // printf("Left scope\n");
             enteredScope = false;
         }
+        if(enteredLoop)
+            loopDepth--;
         traverse(st, t->sibling, preProc, postProc, doErrorChecking);
         // st->print(pointerPrintNode);
     }
@@ -188,28 +199,6 @@ static void printProc(SymbolTable *st, TreeNode *t, bool *enteredScope)
     // pointerPrintAddr(t);
 }
 
-static void typeCheck(SymbolTable *st, TreeNode *t)
-{
-    switch (t->nodeKind)
-    {
-    case NodeKind::DeclK:
-        break;
-    case NodeKind::ExpK:
-        switch (t->subkind.exp)
-        case ExpKind::OpK:
-            switch (t->attr.op)
-            case '=':
-                t->expType = t->child[0]->expType;
-        break;
-    default:
-        break;
-        break;
-        break;
-    case NodeKind::StmtK:
-        break;
-    }
-}
-
 static void checkUse(string str, void *t)
 {
     TreeNode *tmp = (TreeNode *)t;
@@ -218,13 +207,6 @@ static void checkUse(string str, void *t)
         printf("WARNING(%d): The variable '%s' seems not to be used.\n", tmp->lineno, tmp->attr.string);
         numAnalyzeWarnings++;
     }
-}
-
-static void insertSymbols(SymbolTable *st, TreeNode *t, bool *enteredScope)
-{
-    if (t->nodeKind == NodeKind::DeclK)
-        if (st->lookup(t->attr.string) == NULL)
-            st->insert(t->attr.string, t);
 }
 
 static ExpType getType(SymbolTable *st, TreeNode *t)
@@ -247,9 +229,6 @@ static ExpType getType(SymbolTable *st, TreeNode *t)
         break;
     case NodeKind::StmtK:
         return ExpType::UndefinedType;
-        // switch(t->subkind.stmt)
-        // {
-        // }
         break;
     case NodeKind::ExpK:
         switch (t->subkind.exp)
@@ -818,6 +797,11 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         switch (t->subkind.stmt)
         {
         case StmtKind::BreakK:
+            if (loopDepth <= 0)
+            {
+                printf("ERROR(%d): Cannot have a break statement outside of loop.\n", t->lineno);
+                numAnalyzeErrors++;
+            }
             break;
         case StmtKind::CompoundK:
             break;
