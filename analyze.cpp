@@ -369,11 +369,6 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
         {
             TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
             t->expType = getType(st, t);
-            // t->isUsed = true;
-            // if (t->child[0] != NULL)
-            // t->child[0]->needsInitCheck = true;
-            // if (tmp != NULL)
-            // tmp->isUsed = true;
         }
         case ExpKind::IdK:
         {
@@ -381,7 +376,6 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             TreeNode *tmp_g = (TreeNode *)st->lookupGlobal(t->attr.string);
             if (tmp != NULL)
             {
-                // tmp->isUsed = true;
                 t->isArray = tmp->isArray;
                 t->isStatic = tmp->isStatic;
                 if (tmp->isInit)
@@ -397,7 +391,6 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     t->needsInitCheck = tmp->needsInitCheck;
             }
             t->expType = getType(st, t);
-            // t->isUsed = true;
             if (tmp != NULL && (tmp == tmp_g))
             {
                 // tmp->needsInitCheck = false;
@@ -561,13 +554,15 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         {
         case ExpKind::AssignK:
         {
+            OpTypeInfo currentOp = opInfoMap[t->attr.op];
             if (t->attr.op == '=')
                 t->child[0]->isInit = true;
             if (t->attr.op == '=' || t->attr.op == '[')
             {
                 t->expType = getType(st, t);
             }
-            OpTypeInfo currentOp = opInfoMap[t->attr.op];
+            else
+                t->expType = currentOp.returnType;
             if (!currentOp.isUnary)
             {
                 if (!currentOp.passesLeftCheck(t))
@@ -645,11 +640,9 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 // st->insert(t->attr.string, t);
                 printf("ERROR(%d): Symbol '%s' is not declared.\n", t->lineno, t->attr.string);
                 numAnalyzeErrors++;
-                // t->isUsed = true;
                 if ((st->depth() > 1) && t->needsInitCheck && t->isDeclared && !t->isInit)
                 {
                     printf("WARNING(%d): Variable \'%s\' may be uninitialized when used here.\n", t->lineno, t->attr.string);
-                    // t->isUsed = true;
                     // tmp->isInit = true;
                     numAnalyzeWarnings++;
                     // t->needsInitCheck = false;
@@ -660,7 +653,6 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             else
             {
                 tmp->expType = getType(st, t);
-                // tmp->isArray = t->isArray;
                 if (tmp->isArray)
                     t->isArray;
                 t->isArray = tmp->isArray;
@@ -668,18 +660,6 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 tmp->isStatic = t->isStatic;
                 if (t->isStatic)
                     t->needsInitCheck = false;
-                // tmp->isUsed = true;
-                // if(tmp->needsInitCheck)
-                // if(t->isInit)
-                // {
-                // tmp->needsInitCheck = false;
-                // t->needsInitCheck = false;
-                // }
-                // t->needsInitCheck = tmp->needsInitCheck;
-                // else if (tmp->isUsed)
-                // if (tmp->expType != ExpType::UndefinedType)
-                // {
-                // }
                 if (tmp->subkind.decl == DeclKind::FuncK)
                 {
 
@@ -717,7 +697,6 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 {
                     printf("ERROR(%d): Symbol '%s' is not declared.\n", t->lineno, t->attr.string);
                     numAnalyzeErrors++;
-                    // t->isUsed = true;
                 }
             }
         }
@@ -736,10 +715,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             {
             case '[':
                 t->expType = getType(st, t);
-                ;
-                // printf("Checking index nonarray\n");
                 if ((st->lookup(t->child[0]->attr.string) != NULL) && (t->child[0] == NULL || !t->child[0]->isArray && !t->child[0]->isIndexed || !t->isArray))
-                // if (t->child[0] != NULL && !t->child[0]->isArray)
                 {
                     printf("ERROR(%d): Cannot index nonarray '%s'.\n", t->lineno, t->child[0]->attr.string);
                     numAnalyzeErrors++;
@@ -778,62 +754,59 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             {
                 OpTypeInfo currentOp = opInfoMap[t->attr.op];
                 t->expType = currentOp.returnType;
-                // if (t->child[0]->isDeclared)
+                if (!currentOp.isUnary)
                 {
-                    if (!currentOp.isUnary)
+                    if (!currentOp.passesLeftCheck(t))
                     {
-                        if (!currentOp.passesLeftCheck(t))
+                        printf("ERROR(%d): '%s' requires operands of type %s but lhs is of type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(getType(st, t->child[0])));
+                        numAnalyzeErrors++;
+                    }
+                    if (!currentOp.passesRightCheck(t))
+                    {
+                        printf("ERROR(%d): '%s' requires operands of type %s but rhs is of type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(getType(st, t->child[1])));
+                        numAnalyzeErrors++;
+                    }
+                    if (!currentOp.passesEqualCheck(t))
+                    {
+                        printf("ERROR(%d): '%s' requires operands of the same type but lhs is type %s and rhs is type %s.\n", t->lineno, opToString(t->attr.op), expToString(getType(st, t->child[0])), expToString(getType(st, t->child[1])));
+                        numAnalyzeErrors++;
+                    }
+                    if (!currentOp.isArrayAndWorks(t))
+                    {
+                        printf("ERROR(%d): The operation '%s' does not work with arrays.\n", t->lineno, opToString(t->attr.op));
+                        numAnalyzeErrors++;
+                    }
+                    if (!currentOp.onlyArrayAndWorks(t))
+                    {
+                        printf("ERROR(%d): The operation '%s' only works with arrays.\n", t->lineno, opToString(t->attr.op));
+                        numAnalyzeErrors++;
+                    }
+                    if (currentOp.equalTypes)
+                    {
+                        if (!currentOp.bothArrsOrNot(st, t))
                         {
-                            printf("ERROR(%d): '%s' requires operands of type %s but lhs is of type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(getType(st, t->child[0])));
+                            // printf("Op EqTypes: %d LIsArr: %d RisArr %d LIsInd: %d RIsInd %d\n", currentOp.equalTypes, t->child[0]->isArray, t->child[1]->isArray, t->child[0]->isIndexed, t->child[1]->isIndexed);
+                            printf("ERROR(%d): '%s' requires both operands be arrays or not but lhs is %san array and rhs is %san array.\n", t->lineno, opToString(t->attr.op), t->child[0]->isArray && !t->child[0]->isIndexed ? "" : "not ", t->child[1]->isArray && !t->child[1]->isIndexed ? "" : "not ");
                             numAnalyzeErrors++;
-                        }
-                        if (!currentOp.passesRightCheck(t))
-                        {
-                            printf("ERROR(%d): '%s' requires operands of type %s but rhs is of type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(getType(st, t->child[1])));
-                            numAnalyzeErrors++;
-                        }
-                        if (!currentOp.passesEqualCheck(t))
-                        {
-                            printf("ERROR(%d): '%s' requires operands of the same type but lhs is type %s and rhs is type %s.\n", t->lineno, opToString(t->attr.op), expToString(getType(st, t->child[0])), expToString(getType(st, t->child[1])));
-                            numAnalyzeErrors++;
-                        }
-                        if (!currentOp.isArrayAndWorks(t))
-                        {
-                            printf("ERROR(%d): The operation '%s' does not work with arrays.\n", t->lineno, opToString(t->attr.op));
-                            numAnalyzeErrors++;
-                        }
-                        if (!currentOp.onlyArrayAndWorks(t))
-                        {
-                            printf("ERROR(%d): The operation '%s' only works with arrays.\n", t->lineno, opToString(t->attr.op));
-                            numAnalyzeErrors++;
-                        }
-                        if (currentOp.equalTypes)
-                        {
-                            if (!currentOp.bothArrsOrNot(st, t))
-                            {
-                                // printf("Op EqTypes: %d LIsArr: %d RisArr %d LIsInd: %d RIsInd %d\n", currentOp.equalTypes, t->child[0]->isArray, t->child[1]->isArray, t->child[0]->isIndexed, t->child[1]->isIndexed);
-                                printf("ERROR(%d): '%s' requires both operands be arrays or not but lhs is %san array and rhs is %san array.\n", t->lineno, opToString(t->attr.op), t->child[0]->isArray && !t->child[0]->isIndexed ? "" : "not ", t->child[1]->isArray && !t->child[1]->isIndexed ? "" : "not ");
-                                numAnalyzeErrors++;
-                            }
                         }
                     }
-                    else
+                }
+                else
+                {
+                    if (!currentOp.passesLeftCheck(t) && t->attr.op != SIZEOF)
                     {
-                        if (!currentOp.passesLeftCheck(t) && t->attr.op != SIZEOF)
-                        {
-                            printf("ERROR(%d): Unary '%s' requires an operand of type %s but was given type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(getType(st, t->child[0])));
-                            numAnalyzeErrors++;
-                        }
-                        if (!currentOp.onlyArrayAndWorks(t))
-                        {
-                            printf("ERROR(%d): The operation '%s' only works with arrays.\n", t->lineno, opToString(t->attr.op));
-                            numAnalyzeErrors++;
-                        }
-                        if (!currentOp.isArrayAndWorks(t))
-                        {
-                            printf("ERROR(%d): The operation '%s' does not work with arrays.\n", t->lineno, opToString(t->attr.op));
-                            numAnalyzeErrors++;
-                        }
+                        printf("ERROR(%d): Unary '%s' requires an operand of type %s but was given type %s.\n", t->lineno, opToString(t->attr.op), expToString(currentOp.lhs), expToString(getType(st, t->child[0])));
+                        numAnalyzeErrors++;
+                    }
+                    if (!currentOp.onlyArrayAndWorks(t))
+                    {
+                        printf("ERROR(%d): The operation '%s' only works with arrays.\n", t->lineno, opToString(t->attr.op));
+                        numAnalyzeErrors++;
+                    }
+                    if (!currentOp.isArrayAndWorks(t))
+                    {
+                        printf("ERROR(%d): The operation '%s' does not work with arrays.\n", t->lineno, opToString(t->attr.op));
+                        numAnalyzeErrors++;
                     }
                 }
             }
@@ -850,19 +823,10 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         case StmtKind::BreakK:
             break;
         case StmtKind::CompoundK:
-            // st->enter((string) "Compound Statement");
-            // *enteredScope = true;
             break;
         case StmtKind::ForK:
-
-            // st->enter((string) "For");
-            // *enteredScope = true;
-            // // st->applyToAll(checkUse);
             break;
         case StmtKind::IfK:
-            // st->enter((string) "If");
-            // *enteredScope = true;
-            // // st->applyToAll(checkUse);
             break;
         case StmtKind::NullK:
             break;
@@ -973,7 +937,7 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
     // traverse(st, root, moveUpTypes, moveUpTypes);
     // printf("\n");
     traverse(st, root, printAnalysis, nullProc, true);
-
+    // st->applyToAllGlobal(checkUse);
     // traverse(st, root, printProc, nullProc, false);
     // traverse(st, root, printAnalysis, usageCheck);
     // traverse(st, root, usageCheck, nullProc);
@@ -990,7 +954,7 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
         printf("ERROR(LINKER): A function named 'main()' must be defined.\n");
         numAnalyzeErrors++;
     }
-    if (printTypedTree)
+    if (printTypedTree && numAnalyzeErrors == 0)
         printTree(root, true);
     printf("Number of warnings: %d\n", numAnalyzeWarnings);
     printf("Number of errors: %d\n", numAnalyzeErrors);
