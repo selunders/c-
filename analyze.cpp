@@ -393,9 +393,6 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             t->expType = getType(st, t);
             if (tmp != NULL && (tmp == tmp_g))
             {
-                // tmp->needsInitCheck = false;
-                // tmp_g->needsInitCheck = false;
-                // t->needsInitCheck = false;
                 tmp->isInit = true;
                 tmp_g->isInit = true;
                 t->isInit = true;
@@ -854,76 +851,11 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
     }
 }
 
-static void analyzeTree(SymbolTable *st, TreeNode *t)
-{
-}
-
-static void checkScope(SymbolTable *st, TreeNode *t, bool *enteredScope)
-{
-    switch (t->nodeKind)
-    {
-    case NodeKind::DeclK:
-        switch (t->subkind.decl)
-        {
-        case DeclKind::FuncK:
-            // st->enter(t->attr.string);
-            // *enteredScope = true;
-            break;
-        case DeclKind::ParamK:
-
-            break;
-        case DeclKind::VarK:
-            break;
-        }
-        break;
-    case NodeKind::StmtK:
-        // printf("Aaaaaaaaaaaaaaaaaaaaaaaaahhhhhhhhhhhhhhhhhhhhhh\n");
-        switch (t->subkind.stmt)
-        {
-        case StmtKind::BreakK:
-            break;
-        case StmtKind::CompoundK:
-            // st->enter((string) "Compound Statement");
-            // *enteredScope = true;
-            break;
-        case StmtKind::ForK:
-            // st->enter((string) "For");
-            // *enteredScope = true;
-            break;
-        case StmtKind::IfK:
-            // st->enter((string) "If");
-            // *enteredScope = true;
-            break;
-        case StmtKind::NullK:
-            break;
-        case StmtKind::RangeK:
-            break;
-        case StmtKind::ReturnK:
-            break;
-        case StmtKind::WhileK:
-            // st->enter((string) "While");
-            // *enteredScope = true;
-            break;
-        default:
-            break;
-        }
-        break;
-    default:
-        break;
-    }
-}
-
 void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
 {
-    // findTypes(st, root);
     InitOpTypeList();
-    // cout << opInfoMap[AND].arrayCheck(false, true) << endl;
     numAnalyzeWarnings = 0;
     numAnalyzeErrors = 0;
-    // Seems to start in global //
-    // traverse(st, root, nullProc, usageCheck);
-    // traverse(st, root, printProc, nullProc);
-    // printf("\n");
     traverse(st, root, nullProc, moveUpTypes, false);
 
     // Clear ST when types are dispersed
@@ -931,17 +863,9 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
     delete st;
     st = new SymbolTable();
     st->debug(debugState);
-    // st->enter("Global");
-    // traverse(st, root, insertSymbols, moveUpTypes);
-    // printf("\n");
-    // traverse(st, root, moveUpTypes, moveUpTypes);
-    // printf("\n");
     traverse(st, root, printAnalysis, nullProc, true);
     // st->applyToAllGlobal(checkUse);
     // traverse(st, root, printProc, nullProc, false);
-    // traverse(st, root, printAnalysis, usageCheck);
-    // traverse(st, root, usageCheck, nullProc);
-    // traverse(st, root, printProc, nullProc);
 
     // Do final check for main()
     TreeNode *mainPointer = (TreeNode *)st->lookup((string) "main");
