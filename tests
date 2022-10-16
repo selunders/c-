@@ -10,6 +10,8 @@ justView_flag=false
 valgrind_flag=false
 fileIn=''
 
+sampleDirectory='sample/assign4/'
+
 while getopts 'AdDhmpPf:vV' flag; do
     case "${flag}" in
         A) allTests_flag=true ;;
@@ -40,20 +42,20 @@ elif [ "$allTests_flag" = true ]; then
         echo 'make c-'
         make clean; make;
     fi
-    echo 'Running ./c- on all the files in sampleOutput3'
+    echo 'Running ./c- on all the files in sample/assign4/'
     # for file in samplePrograms2/*.c-
-    for file in sampleOutput3/*.c-
+    for file in sample/assign4/*.c-
     do
         x=${file%.c-}
         y=${x##*/}
         # echo "./c- $file > myOutput/$y.out" 
-        ./c- $file -p > myOutput/$y.out
+        ./c- $file -P > myOutput/$y.out
     done
 
     echo -e "Complete. Files stored in myOutput/\n"
 
     echo 'Diffing outputs'
-    for file in sampleOutput3/*.out
+    for file in sample/assign4/*.out
     do
         x=${file%.out}
         y=${x##*/}
@@ -62,32 +64,32 @@ elif [ "$allTests_flag" = true ]; then
         # rm myOutput/$y.out
     done
 elif [ "$valgrind_flag" = true ]; then
-    valgrind ./c- sampleOutput3/$fileIn.c- -p
+    valgrind ./c- sample/assign4/$fileIn.c- -P
 else
     if [ "$make_flag" = true ]; then
         echo 'make c-'
         make clean; make;
     fi
     if [ "$justView_flag" = true ]; then
-        cat -n sampleOutput3/$fileIn.c-
+        cat -n sample/assign4/$fileIn.c-
     elif [ "$debug_flag" = true ]; then
         if [ "$printTypes_flag" = true ]; then
-            ./c- sampleOutput3/$fileIn.c- -D -P
+            ./c- sample/assign4/$fileIn.c- -D -P
         elif [ "$print_flag" = true ]; then
-            ./c- sampleOutput3/$fileIn.c- -D -p
+            ./c- sample/assign4/$fileIn.c- -D -p
         else
-            ./c- sampleOutput3/$fileIn.c- -D
+            ./c- sample/assign4/$fileIn.c- -D
         fi
     elif [ "$diff_flag" = true ]; then
-        ./c- sampleOutput3/$fileIn.c- -p > myOutput/$fileIn.out
-        sdiff myOutput/$fileIn.out sampleOutput3/$fileIn.out
+        ./c- sample/assign4/$fileIn.c- -P > myOutput/$fileIn.out
+        sdiff myOutput/$fileIn.out sample/assign4/$fileIn.out
     else
         if [ "$printTypes_flag" = true ]; then
-            ./c- sampleOutput3/$fileIn.c- -P
+            ./c- sample/assign4/$fileIn.c- -P
         elif [ "$print_flag" = true ]; then
-            ./c- sampleOutput3/$fileIn.c- -p
+            ./c- sample/assign4/$fileIn.c- -p
         else
-            ./c- sampleOutput3/$fileIn.c-
+            ./c- sample/assign4/$fileIn.c-
         fi
     fi
 fi
@@ -98,7 +100,7 @@ fi
 #     make clean; make;
 #     echo 'Running ./c- on all the files in sampleOutput3'
 #     # for file in samplePrograms2/*.c-
-#     for file in sampleOutput3/*.c-
+#     for file in sample/assign4/*.c-
 #     do
 #         x=${file%.c-}
 #         y=${x##*/}
@@ -109,7 +111,7 @@ fi
 #     echo -e "Complete. Files stored in myOutput/\n"
 
 #     echo 'Diffing outputs'
-#     for file in sampleOutput3/*.out
+#     for file in sample/assign4/*.out
 #     do
 #         x=${file%.out}
 #         y=${x##*/}
@@ -121,7 +123,7 @@ fi
 #     case $2 in
 #     "-l")
 #     make clean; make;
-#     ./c- sampleOutput3/$1.c- -p > myOutput/$1.out
-#     echo "sdiff myOutput/$1.out sampleOutput3/$1.out"
-#     sdiff myOutput/$1.out sampleOutput3/$1.out
+#     ./c- sample/assign4/$1.c- -p > myOutput/$1.out
+#     echo "sdiff myOutput/$1.out sample/assign4/$1.out"
+#     sdiff myOutput/$1.out sample/assign4/$1.out
 # fi
