@@ -59,6 +59,7 @@ TreeNode *getSTNode(SymbolTable *st, TreeNode *t)
 
 static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *, TreeNode *, bool *), void (*postProc)(SymbolTable *, TreeNode *, bool *), bool doErrorChecking)
 {
+    // printf("Starting with %d errors, %d warnings.\n", numAnalyzeErrors, numAnalyzeWarnings);
     TreeNode *tmp;
     bool enteredScope = false;
     bool enteredFunction = false;
@@ -122,7 +123,7 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
                 {
                     t->child[2]->canEnterThisScope = false;
                 }
-                
+
                 enteredLoop = true;
                 loopDepth++;
                 break;
@@ -177,11 +178,12 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             // printf("Left scope\n");
             enteredScope = false;
         }
-        if(enteredLoop)
+        if (enteredLoop)
             loopDepth--;
         traverse(st, t->sibling, preProc, postProc, doErrorChecking);
         // st->print(pointerPrintNode);
     }
+    // printf("Ending with %d errors, %d warnings.\n", numAnalyzeErrors, numAnalyzeWarnings);
 }
 
 static void nullProc(SymbolTable *st, TreeNode *t, bool *enteredScope)
@@ -204,7 +206,7 @@ static void checkUse(string str, void *t)
     TreeNode *tmp = (TreeNode *)t;
     if (!tmp->isUsed)
     {
-        printf("WARNING(%d): The variable '%s' seems not to be used.\n", tmp->lineno, tmp->attr.string);
+        printf("WARNING(%d): The %s '%s' seems not to be used.\n", tmp->lineno, tmp->subkind.decl == DeclKind::ParamK ? "parameter" : "variable", tmp->attr.string);
         numAnalyzeWarnings++;
     }
 }
@@ -270,6 +272,7 @@ static ExpType getType(SymbolTable *st, TreeNode *t)
             if (tmp != NULL)
             {
                 t->isArray = tmp->isArray;
+                // tmp->isArray = t->isArray;
                 if (t->isInit)
                     tmp->isInit = true;
                 else if (tmp->isInit)
@@ -369,6 +372,22 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
 
                     t->needsInitCheck = tmp->needsInitCheck;
             }
+            else if (tmp_g != NULL)
+            {
+                t->isArray = tmp->isArray;
+                t->isStatic = tmp->isStatic;
+                if (tmp->isInit)
+                {
+                    t->isInit = true;
+                }
+                else if (t->isInit)
+                {
+                    tmp->isInit = true;
+                }
+                if (tmp->needsInitCheck = true)
+
+                    t->needsInitCheck = tmp->needsInitCheck;
+            }
             t->expType = getType(st, t);
             if (tmp != NULL && (tmp == tmp_g))
             {
@@ -381,7 +400,11 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
         }
         case ExpKind::OpK:
             if (t->attr.op == '=' && t->child[0] != NULL)
+            {
                 t->child[0]->isInit = true;
+                // if(!isUnindexedArray(t->child[0]))
+                // t->child[0]->isArray = false;
+            }
             if (t->attr.op == '=' || t->attr.op == '[')
             {
                 if (t->child[0] != NULL)
@@ -582,7 +605,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         case ExpKind::CallK:
         {
             TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
-            // printf("Looking for %s, %s\n", t->attr.string, tmp ? "found it" : "did not find it.");
+            // printf("Looking for %s, %s\n", t->attr.string, tmp ? "found it" : "did not find it.\n");
             if (tmp != NULL)
             {
                 // if()
@@ -596,6 +619,25 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     else
                         tmp->isUsed = true;
                 }
+                TreeNode *paramNode = tmp->child[0];
+                TreeNode *callNode = t->child[0];
+                int paramCount = countSiblingListLength(paramNode);
+                int callCount = countSiblingListLength(callNode);
+
+                // else
+                // printf("Starting with %d errors, %d warnings.\n", numAnalyzeErrors, numAnalyzeWarnings);
+                checkParamTypes(&numAnalyzeErrors, &numAnalyzeWarnings, t, tmp, paramNode, callNode);
+                // printf("Ending with %d errors, %d warnings.\n", numAnalyzeErrors, numAnalyzeWarnings);
+                if (paramCount != callCount)
+                {
+                    printf("ERROR(%d): Too %s parameters passed for function '%s' declared on line %d.\n", t->lineno, callCount < paramCount ? "few" : "many", tmp->attr.string, tmp->lineno);
+                    numAnalyzeErrors++;
+                }
+                // printf("SUCCESS(%d) Seems to be correct # of args: param %d call %d\n", t->lineno, paramCount, callCount);
+                // while(paramNode != NULL && callNode != NULL)
+                // {
+
+                // }
             }
             else
             {
@@ -862,6 +904,7 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
         printf("ERROR(LINKER): A function named 'main()' must be defined.\n");
         numAnalyzeErrors++;
     }
+    // if (printTypedTree)
     if (printTypedTree && numAnalyzeErrors == 0)
         printTree(root, true);
     printf("Number of warnings: %d\n", numAnalyzeWarnings);

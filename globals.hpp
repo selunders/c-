@@ -211,7 +211,7 @@ public:
     bool passesEqualCheck(TreeNode *t)
     {
         if (t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType)
-        // if (t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType || t->child[0]->expType == ExpType::Void || t->child[1]->expType == ExpType::Void)
+            // if (t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType || t->child[0]->expType == ExpType::Void || t->child[1]->expType == ExpType::Void)
             return true;
         if (equalTypes)
             return (t->child[0]->expType == t->child[1]->expType);
@@ -421,3 +421,32 @@ public:
 };
 
 #endif
+// class ParentInfo
+// {
+// public:
+//     TreeNode *parentNode;
+    
+//     bool enteredScope;
+//     bool enteredFunction;
+//     bool enteredLoop;
+    
+//     ParentInfo()
+//     {
+//         enteredScope = false;
+//         enteredFunction = false;
+//         enteredLoop = false;
+//     }
+
+//     ~ParentInfo()
+//     {
+//         parentNode = NULL;
+//     }
+// };
+
+
+
+/*
+
+
+
+*/

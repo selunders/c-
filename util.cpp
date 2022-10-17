@@ -5,43 +5,21 @@
 using namespace std;
 
 static int nodeCount = 0;
+
 /*
-enum class NodeKind { DeclK, StmtK, ExpK };
-enum class DeclKind { VarK, FuncK, ParamK };
-enum class StmtKind { NullK, IfK, WhileK, ForK, CompoundK, ReturnK, BreakK, RangeK };
-enum class ExpKind  { OpK, ConstantK, IdK, AssignK, InitK, CallK };
-enum class ExpType  { Void, Integer, Boolean, Char, CharInt, Equal, UndefinedType };
-enum class VarKind  { None, Local, Global, Parameter, LocalStatic };
+For reference:
+    enum class NodeKind { DeclK, StmtK, ExpK };
+    enum class DeclKind { VarK, FuncK, ParamK };
+    enum class StmtKind { NullK, IfK, WhileK, ForK, CompoundK, ReturnK, BreakK, RangeK };
+    enum class ExpKind  { OpK, ConstantK, IdK, AssignK, InitK, CallK };
+    enum class ExpType  { Void, Integer, Boolean, Char, CharInt, Equal, UndefinedType };
+    enum class VarKind  { None, Local, Global, Parameter, LocalStatic };
 */
 
 TreeNode *newDeclNode(DeclKind kind, ExpType type, TokenData *token, TreeNode *c0, TreeNode *c1, TreeNode *c2)
 {
-    // nodeCount++;
-    // printf("Nodecount: %d\n", nodeCount);
-    // printf("Creating a new decl node with children at:\n");
-    // printf("%p\n", c0);
-    // printf("%p\n", c1);
-    // printf("%p\n", c2);
     TreeNode *t = new TreeNode();
-    // printf("New tree node created at %p ", t);
-    // printf("of type: ");
     t->attr.string = strdup(token->tokenstr);
-    // switch (kind)
-    // {
-    //     case DeclKind::VarK:
-    //         t->attr.string = strdup(token->tokenstr);
-    //         // printf("VarK\n");
-    //         break;
-    //     case DeclKind::FuncK:
-    //         // printf("Setting function name to %s\n\n", strdup(token->tokenstr));
-    //         t->attr.string = strdup(token->tokenstr);
-    //         // printf("FuncK\n");
-    //         break;
-    //     case DeclKind::ParamK:
-    //         t->attr.string = strdup(token->tokenstr);
-    //         // printf("DeclK\n");j
-    //         break;
-    // }
 
     t->child[0] = c0;
     t->child[1] = c1;
@@ -51,24 +29,6 @@ TreeNode *newDeclNode(DeclKind kind, ExpType type, TokenData *token, TreeNode *c
     t->subkind.decl = kind;
     t->expType = type;
     t->lineno = token->linenum;
-
-    // switch (type)
-    // {
-    // case ExpType::Integer:
-    //     t->attr.value = token->numValue;
-    //     break;
-    // case ExpType::Boolean:
-    //     t->attr.value = token->boolValue;
-    //     break;
-    // case ExpType::Char:
-    //     t->attr.cvalue = token->charValue;
-    //     break;
-    // // case ExpType::CharInt: // I think this is probably incorrect
-    // // t->attr.cvalue = token->charValue;
-    // // break;
-    // default:
-    //     break;
-    // }
 
     return t;
 }
@@ -788,5 +748,65 @@ void printTree(TreeNode *tree, bool printTypeInfo)
     else
         printBasicTree(tree, NodeRelation::Parent, 0, 0);
 }
+
+int countSiblingListLength(TreeNode *t)
+{
+    if (t == NULL)
+        return 0;
+    else
+        return (1 + countSiblingListLength(t->sibling));
+}
+
+bool isUnindexedArray(TreeNode *t)
+{
+    if(t->nodeKind == NodeKind::ExpK && t->subkind.exp == ExpKind::AssignK && t->attr.op == '=')
+    {
+        return isUnindexedArray(t->child[0]);
+    }
+    if (t->isArray)
+    {
+        if (t->isIndexed)
+            return false;
+        else
+            return true;
+    }
+    else
+        return false;
+}
+
+void checkParamTypes(int *errorCount, int *warningCount, TreeNode *callNode, TreeNode *defNode, TreeNode *expectedList, TreeNode *callList)
+{
+    // printf("Starting with %d errors\n", *errorCount);
+    int parameterIndex = 1;
+    // This function should only be called when the lengths of the input lists are equal
+    while (expectedList != NULL && callList != NULL)
+    {
+        // printf("lineno %d : index %d : Param is type %s, Call is type %s\n", callNode->lineno, parameterIndex, expToString(expectedList->expType), expToString(callList->expType));
+        // printf("call %d is array %s, is indexed %s\n", parameterIndex, callList->isArray ? "true":"false", callList->isIndexed ? "true":"false");
+        // printf("index %d: param %s array, call %s array.\n", parameterIndex, isUnindexedArray(expectedList) ? "is" : "is not", isUnindexedArray(callList) ? "is" : "is not");
+        if (expectedList->isArray && !callList->isArray)
+        {
+        }
+        else if (!expectedList->isArray && isUnindexedArray(callList))
+        {
+            printf("ERROR(%d): Not expecting array in parameter %d of call to '%s' declared on line %d.\n", callNode->lineno, parameterIndex, defNode->attr.string, defNode->lineno);
+            *errorCount = *errorCount + 1;
+            // *errorCount++;
+        }
+        if(expectedList->expType != callList->expType && expectedList->expType != ExpType::UndefinedType && callList->expType != ExpType::UndefinedType)
+        {
+            printf("ERROR(%d): Expecting type %s in parameter %d of call to '%s' declared on line %d but got type %s.\n", callNode->lineno, expToString(expectedList->expType), parameterIndex,defNode->attr.string, defNode->lineno, expToString(callList->expType));
+            // expectedList = NULL;
+            // callList = NULL;
+            *errorCount = *errorCount + 1;
+            // break;
+        }
+        // printf()
+        expectedList = expectedList->sibling;
+        callList = callList->sibling;
+        parameterIndex++;
+    }
+}
+
 //
 //////////////////////

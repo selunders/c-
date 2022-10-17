@@ -34,5 +34,8 @@ TreeNode *getSTNode(SymbolTable *st, TreeNode *t);
 static void printSpaces(int layer);
 void printTree(TreeNode* tree, bool printTypeTree);
  
+int countSiblingListLength(TreeNode *t);
+void checkParamTypes(int* errors, int* warnings, TreeNode* t, TreeNode* tmp, TreeNode* expectedList, TreeNode* callList);
+bool isUnindexedArray(TreeNode *t);
 
 #endif

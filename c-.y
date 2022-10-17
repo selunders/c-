@@ -256,7 +256,7 @@ parmId
         {
             $$ = newDeclNode(DeclKind::ParamK, ExpType::UndefinedType,  $1, NULL, NULL, NULL);
             // $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
-            $$->isArray = false;
+            // $$->isArray = false;
             // $$->needsInitCheck = false;
             // printf("Found ID: %s\n\n", $1->tokenstr);
         }
@@ -484,7 +484,7 @@ simpleExp
             
             $[sexp]->needsInitCheck = false;
             $[aexp]->needsInitCheck = false;
-            // $$->expType = ExpType::Boolean;
+            $$->expType = ExpType::Boolean;
         }
     | andExp
         {
@@ -497,7 +497,7 @@ andExp
             $$ = newExpNode(ExpKind::OpK, $[and], $[aexp], $[urexp], NULL);
             $[aexp]->needsInitCheck = false;
             $[urexp]->needsInitCheck = false;
-            // $$->expType = ExpType::Boolean;
+            $$->expType = ExpType::Boolean;
         }
     | unaryRelExp
         {
@@ -613,6 +613,7 @@ mulop
         {
             $1->tokenclass = MULTIPLY;
             $$ = newExpNode(ExpKind::OpK, $1, NULL, NULL, NULL);
+            $$->expType = ExpType::Integer;
         }
     | '/'
         {
@@ -688,6 +689,7 @@ mutable
             TreeNode* tmp = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             tmp->attr.string = strdup($1->tokenstr);
             tmp->isArray = false;
+            // tmp->isArray = true;
             tmp->isIndexed = true;
             // $$->isUsed = true;
             // tmp->isInit = true;
