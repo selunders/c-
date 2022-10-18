@@ -19,6 +19,7 @@
 
 typedef int OpKind;
 
+
 enum class TokenType
 {
     ID,
@@ -196,6 +197,26 @@ public:
     }
 };
 
+// #ifndef UNINDEXED_ARRAY
+// #define UNINDEXED_ARRAY
+static bool isUnindexedArray(TreeNode *t)
+{
+    if(t->nodeKind == NodeKind::ExpK && t->subkind.exp == ExpKind::AssignK && t->attr.op == '=')
+    {
+        return isUnindexedArray(t->child[0]);
+    }
+    if (t->isArray)
+    {
+        if (t->isIndexed)
+            return false;
+        else
+            return true;
+    }
+    else
+        return false;
+}
+// #endif
+
 class OpTypeInfo
 {
 public:
@@ -367,25 +388,28 @@ public:
 
     bool bothArrsOrNot(SymbolTable *st, TreeNode *t)
     {
-        TreeNode *tl = ((t->child[0]->nodeKind == NodeKind::ExpK) && (t->child[0]->subkind.exp == ExpKind::IdK)) ? (TreeNode *)st->lookup(t->child[0]->attr.string) : t->child[0];
-        TreeNode *tr = ((t->child[1]->nodeKind == NodeKind::ExpK) && (t->child[1]->subkind.exp == ExpKind::IdK)) ? (TreeNode *)st->lookup(t->child[1]->attr.string) : t->child[1];
-        bool leftIsArray;
-        if (tl != NULL && tl->isArray)
-            if (tl->isIndexed)
-                leftIsArray = false;
-            else
-                leftIsArray = true;
-        else
-            leftIsArray = false;
+        // TreeNode *tl = ((t->child[0]->nodeKind == NodeKind::ExpK) && (t->child[0]->subkind.exp == ExpKind::IdK)) ? (TreeNode *)st->lookup(t->child[0]->attr.string) : t->child[0];
+        // TreeNode *tr = ((t->child[1]->nodeKind == NodeKind::ExpK) && (t->child[1]->subkind.exp == ExpKind::IdK)) ? (TreeNode *)st->lookup(t->child[1]->attr.string) : t->child[1];
+        TreeNode *tl = t->child[0];
+        TreeNode *tr = t->child[1];
+        
+        bool leftIsArray = isUnindexedArray(tl);
+        // if (tl != NULL && tl->isArray)
+        //     if (tl->isIndexed)
+        //         leftIsArray = false;
+        //     else
+        //         leftIsArray = true;
+        // else
+        //     leftIsArray = false;
 
-        bool rightIsArray;
-        if (tr != NULL && tr->isArray)
-            if (tr->isIndexed)
-                rightIsArray = false;
-            else
-                rightIsArray = true;
-        else
-            rightIsArray = false;
+        bool rightIsArray = isUnindexedArray(tr);
+        // if (tr != NULL && tr->isArray)
+        //     if (tr->isIndexed)
+        //         rightIsArray = false;
+        //     else
+        //         rightIsArray = true;
+        // else
+        //     rightIsArray = false;
         // bool rightIsArray = (!tr->isArray || (tr->isArray && !tr->isIndexed));
         // printf("LeftIsArr: %s RightIsArr: %s\n", leftIsArray ? "true" : "false", rightIsArray ? "true" : "false");
         if (leftIsArray == rightIsArray)

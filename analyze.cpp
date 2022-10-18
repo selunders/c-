@@ -901,7 +901,7 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
     }
     else
     {
-        printf("ERROR(LINKER): A function named 'main()' must be defined.\n");
+        printf("ERROR(LINKER): A function named 'main' with no parameters must be defined.\n");
         numAnalyzeErrors++;
     }
     // if (printTypedTree)

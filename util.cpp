@@ -757,22 +757,22 @@ int countSiblingListLength(TreeNode *t)
         return (1 + countSiblingListLength(t->sibling));
 }
 
-bool isUnindexedArray(TreeNode *t)
-{
-    if(t->nodeKind == NodeKind::ExpK && t->subkind.exp == ExpKind::AssignK && t->attr.op == '=')
-    {
-        return isUnindexedArray(t->child[0]);
-    }
-    if (t->isArray)
-    {
-        if (t->isIndexed)
-            return false;
-        else
-            return true;
-    }
-    else
-        return false;
-}
+// bool isUnindexedArray(TreeNode *t)
+// {
+//     if(t->nodeKind == NodeKind::ExpK && t->subkind.exp == ExpKind::AssignK && t->attr.op == '=')
+//     {
+//         return isUnindexedArray(t->child[0]);
+//     }
+//     if (t->isArray)
+//     {
+//         if (t->isIndexed)
+//             return false;
+//         else
+//             return true;
+//     }
+//     else
+//         return false;
+// }
 
 void checkParamTypes(int *errorCount, int *warningCount, TreeNode *callNode, TreeNode *defNode, TreeNode *expectedList, TreeNode *callList)
 {
