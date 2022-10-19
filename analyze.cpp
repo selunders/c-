@@ -743,17 +743,20 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     printf("ERROR(%d): Cannot index nonarray '%s'.\n", t->lineno, t->child[0]->attr.string);
                     numAnalyzeErrors++;
                 }
-                if (t->child[1] != NULL && getType(st, t->child[1]) != ExpType::Integer)
+                else
                 {
-                    printf("ERROR(%d): Array '%s' should be indexed by type int but got type %s.\n", t->lineno, t->child[0]->attr.string, expToString(getType(st, t->child[1])));
-                    numAnalyzeErrors++;
-                }
-                if (t->child[1] != NULL && t->child[1]->isArray && !t->child[1]->isIndexed)
-                {
-                    if (t->child[1]->nodeKind == NodeKind::ExpK && t->child[1]->subkind.exp == ExpKind::IdK)
+                    if (t->child[1] != NULL && getType(st, t->child[1]) != ExpType::Integer)
                     {
-                        printf("ERROR(%d): Array index is the unindexed array '%s'.\n", t->lineno, t->child[1]->attr.string);
+                        printf("ERROR(%d): Array '%s' should be indexed by type int but got type %s.\n", t->lineno, t->child[0]->attr.string, expToString(getType(st, t->child[1])));
                         numAnalyzeErrors++;
+                    }
+                    if (t->child[1] != NULL && t->child[1]->isArray && !t->child[1]->isIndexed)
+                    {
+                        if (t->child[1]->nodeKind == NodeKind::ExpK && t->child[1]->subkind.exp == ExpKind::IdK)
+                        {
+                            printf("ERROR(%d): Array index is the unindexed array '%s'.\n", t->lineno, t->child[1]->attr.string);
+                            numAnalyzeErrors++;
+                        }
                     }
                 }
                 break;
@@ -850,6 +853,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         case StmtKind::ForK:
             break;
         case StmtKind::IfK:
+            
             break;
         case StmtKind::NullK:
             break;
@@ -906,7 +910,12 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
     }
     // if (printTypedTree)
     if (printTypedTree && numAnalyzeErrors == 0)
+    {
         printTree(root, true);
+        // printf("\n\n");
+        // printf("MyWarning: Printing even though there may be errors!\n");
+        // printf("\n\n");
+    }
     printf("Number of warnings: %d\n", numAnalyzeWarnings);
     printf("Number of errors: %d\n", numAnalyzeErrors);
 

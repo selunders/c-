@@ -791,7 +791,7 @@ void checkParamTypes(int *errorCount, int *warningCount, TreeNode *callNode, Tre
         {
             printf("ERROR(%d): Not expecting array in parameter %d of call to '%s' declared on line %d.\n", callNode->lineno, parameterIndex, defNode->attr.string, defNode->lineno);
             *errorCount = *errorCount + 1;
-            // *errorCount++;
+            // *errorCount++; // haha learned about order of operations here
         }
         if(expectedList->expType != callList->expType && expectedList->expType != ExpType::UndefinedType && callList->expType != ExpType::UndefinedType)
         {
