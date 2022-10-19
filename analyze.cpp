@@ -853,7 +853,16 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         case StmtKind::ForK:
             break;
         case StmtKind::IfK:
-            
+            if(t->child[0]->expType != ExpType::Boolean)
+            {
+                printf("ERROR(%d): Expecting Boolean test condition in if statement but got type %s.\n", t->lineno, expToString(t->child[0]->expType));
+                numAnalyzeErrors++;
+            }
+            if(isUnindexedArray(t->child[0]))
+            {
+                printf("ERROR(%d): Cannot use array as test condition in if statement.\n", t->lineno);
+                numAnalyzeErrors++;
+            }
             break;
         case StmtKind::NullK:
             break;
@@ -867,9 +876,16 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             }
             break;
         case StmtKind::WhileK:
-            // st->enter((string) "While");
-            // *enteredScope = true;
-            // // st->applyToAll(checkUse);
+            if(t->child[0]->expType != ExpType::Boolean)
+            {
+                printf("ERROR(%d): Expecting Boolean test condition in while statement but got type %s.\n", t->lineno, expToString(t->child[0]->expType));
+                numAnalyzeErrors++;
+            }
+            if(isUnindexedArray(t->child[0]))
+            {
+                printf("ERROR(%d): Cannot use array as test condition in while statement.\n", t->lineno);
+                numAnalyzeErrors++;
+            }
             break;
         default:
             break;
@@ -908,8 +924,8 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
         printf("ERROR(LINKER): A function named 'main' with no parameters must be defined.\n");
         numAnalyzeErrors++;
     }
-    // if (printTypedTree)
-    if (printTypedTree && numAnalyzeErrors == 0)
+    if (printTypedTree)
+    // if (printTypedTree && numAnalyzeErrors == 0)
     {
         printTree(root, true);
         // printf("\n\n");
