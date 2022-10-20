@@ -1,6 +1,7 @@
 // #include "globals.hpp"
 #include "util.hpp"
 #include "c-.tab.h"
+#include "analyze.hpp"
 
 using namespace std;
 
@@ -190,7 +191,7 @@ char *expToString(ExpType type)
         return (char *)"LHS";
         break;
     default:
-        printf("\n\n Error with expToString in util.cpp\n\n");
+        // printf("\n\n Error with expToString in util.cpp\n\n");
         return (char *)"ERROR IN GLOBALS.HPP EXPTOSTRING";
         break;
     }
@@ -669,7 +670,6 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer)
             case ExpKind::InitK:
                 break;
             case ExpKind::CallK:
-
                 printf("Call: %s of type %s", tree->attr.string, expToString(tree->expType));
                 break;
             default:
@@ -696,7 +696,10 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer)
                 printf("Compound");
                 break;
             case StmtKind::ReturnK:
-                printf("Return");
+                printf("\033[1;33m");
+                printf("Return type %s", expToString(tree->expType));
+                // printf("Return");
+                printf("\033[0m");
                 break;
             case StmtKind::BreakK:
                 printf("Break");
@@ -795,9 +798,9 @@ void checkParamTypes(int *errorCount, int *warningCount, TreeNode *callNode, Tre
             *errorCount = *errorCount + 1;
             // *errorCount++; // haha learned about order of operations here
         }
-        if(expectedList->expType != callList->expType && expectedList->expType != ExpType::UndefinedType && callList->expType != ExpType::UndefinedType)
+        if (expectedList->expType != callList->expType && expectedList->expType != ExpType::UndefinedType && callList->expType != ExpType::UndefinedType)
         {
-            printf("ERROR(%d): Expecting type %s in parameter %d of call to '%s' declared on line %d but got type %s.\n", callNode->lineno, expToString(expectedList->expType), parameterIndex,defNode->attr.string, defNode->lineno, expToString(callList->expType));
+            printf("ERROR(%d): Expecting type %s in parameter %d of call to '%s' declared on line %d but got type %s.\n", callNode->lineno, expToString(expectedList->expType), parameterIndex, defNode->attr.string, defNode->lineno, expToString(callList->expType));
             // expectedList = NULL;
             // callList = NULL;
             *errorCount = *errorCount + 1;
@@ -810,5 +813,66 @@ void checkParamTypes(int *errorCount, int *warningCount, TreeNode *callNode, Tre
     }
 }
 
+void returnTypeCheck(int *errorCount, int *warningCount, SymbolTable *st, TreeNode *t, TreeNode *defNode, bool *doesReturnSomething)
+{
+    int childIndex = 0;
+    TreeNode *tmp;
+
+    // Reached the end of branch
+    if (t == NULL)
+        return;
+
+    // printf("Checking children\n\n");
+    // Check children
+    while (childIndex < MAXCHILDREN)
+    {
+        tmp = t->child[childIndex];
+        // printf("Checking child %d\n", childIndex);
+        returnTypeCheck(errorCount, warningCount, st, tmp, defNode, doesReturnSomething);
+        childIndex++;
+    }
+
+    // Check self
+    if (t->nodeKind == NodeKind::StmtK && t->subkind.stmt == StmtKind::ReturnK)
+    {
+        // t->expType = getType(st, t);
+        // printf("\nChecking Return Type\n");
+        // if (t->expType != ExpType::Void)
+        // {
+        *doesReturnSomething = true;
+            // printf("setting does return something to true\n\n");
+        // }
+        if (defNode->expType == ExpType::Void && t->expType != ExpType::Void)
+        {
+            // IMPORTANT -- Still need to check inverse of this, uses doesReturnSomething in parent doReturnTypeCheck  function.
+            printf("ERROR(%d): Function '%s' at line %d is expecting no return value, but return has a value.\n", t->lineno, defNode->attr.string, defNode->lineno, expToString(t->expType));
+            *errorCount = *errorCount + 1;
+        }
+        else if (defNode->expType != ExpType::Void && t->expType == ExpType::Void)
+        {
+            printf("ERROR(%d): Function '%s' at line %d is expecting to return type %s but return has no value.\n", t->lineno, defNode->attr.string, defNode->lineno, expToString(defNode->expType));
+            *errorCount = *errorCount + 1;
+        }
+        else if (t->expType != defNode->expType)
+        {
+            printf("ERROR(%d): Function '%s' at line %d is expecting to return type %s but returns type %s.\n", t->lineno, defNode->attr.string, defNode->lineno, expToString(defNode->expType), expToString(t->expType));
+            *errorCount = *errorCount + 1;
+        }
+    }
+    // printf("MyDebug(%d): Stmt %s StmtK and subkind is%sreturn.\n", t->lineno, t->nodeKind == NodeKind::StmtK ? "is" : "is not", t->subkind.stmt == StmtKind::ReturnK ? " " : " not ");
+}
+
+void doReturnTypeCheck(int *errorCount, int *warningCount, SymbolTable *st, TreeNode *t, TreeNode *defNode)
+{
+    bool doesReturnSomething = false;
+    returnTypeCheck(errorCount, warningCount, st, t, defNode, &doesReturnSomething);
+    if (defNode->expType != ExpType::Void && (!doesReturnSomething))
+    {
+        printf("WARNING(%d): Expecting to return type %s but function '%s' has no return statement.\n", t->lineno, expToString(defNode->expType), defNode->attr.string);
+        *warningCount = *warningCount + 1;
+        // printf("ERROR(%d): Function '%s' at line %d is expecting to return %s, but return has no value.\n", t->lineno, defNode->attr.string, defNode->lineno, expToString(defNode->expType));
+        // *errorCount = *errorCount + 1;
+    }
+}
 //
 //////////////////////

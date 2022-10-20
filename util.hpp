@@ -36,6 +36,8 @@ void printTree(TreeNode* tree, bool printTypeTree);
  
 int countSiblingListLength(TreeNode *t);
 void checkParamTypes(int* errors, int* warnings, TreeNode* t, TreeNode* tmp, TreeNode* expectedList, TreeNode* callList);
+void doReturnTypeCheck(int *errorCount, int *warningCount, SymbolTable* st, TreeNode * t, TreeNode* defNode);
 bool isUnindexedArray(TreeNode *t);
+
 
 #endif

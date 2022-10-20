@@ -9,4 +9,7 @@ void buildSymTab(TreeNode * );
 
 void typeCheck(TreeNode * );
 
+ExpType getType(SymbolTable*, TreeNode*);
+
+
 #endif

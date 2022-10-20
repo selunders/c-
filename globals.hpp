@@ -19,7 +19,6 @@
 
 typedef int OpKind;
 
-
 enum class TokenType
 {
     ID,
@@ -201,7 +200,7 @@ public:
 // #define UNINDEXED_ARRAY
 static bool isUnindexedArray(TreeNode *t)
 {
-    if(t->nodeKind == NodeKind::ExpK && t->subkind.exp == ExpKind::AssignK && t->attr.op == '=')
+    if (t->nodeKind == NodeKind::ExpK && t->subkind.exp == ExpKind::AssignK && t->attr.op == '=')
     {
         return isUnindexedArray(t->child[0]);
     }
@@ -271,7 +270,6 @@ public:
     {
         ExpType RIGHT = t->child[1]->expType;
         if (rhs == ExpType::UndefinedType || RIGHT == ExpType::UndefinedType)
-        // if (rhs == ExpType::UndefinedType || RIGHT == ExpType::UndefinedType || RIGHT == ExpType::Void)
         {
             return true;
         }
@@ -392,7 +390,7 @@ public:
         // TreeNode *tr = ((t->child[1]->nodeKind == NodeKind::ExpK) && (t->child[1]->subkind.exp == ExpKind::IdK)) ? (TreeNode *)st->lookup(t->child[1]->attr.string) : t->child[1];
         TreeNode *tl = t->child[0];
         TreeNode *tr = t->child[1];
-        
+
         bool leftIsArray = isUnindexedArray(tl);
         // if (tl != NULL && tl->isArray)
         //     if (tl->isIndexed)
@@ -449,11 +447,11 @@ public:
 // {
 // public:
 //     TreeNode *parentNode;
-    
+
 //     bool enteredScope;
 //     bool enteredFunction;
 //     bool enteredLoop;
-    
+
 //     ParentInfo()
 //     {
 //         enteredScope = false;
@@ -466,8 +464,6 @@ public:
 //         parentNode = NULL;
 //     }
 // };
-
-
 
 /*
 

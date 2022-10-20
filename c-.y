@@ -193,7 +193,7 @@ funDecl
             
             $$->isDefined = true;
             // $$->attr.string = strdup($)
-            setType($$, $[type], $$->isStatic, false);
+            // setType($$, $[type], $$->isStatic, false);
             // $[cstmt]->attr.string = $[id]->tokenstr ? strdup($[id]->tokenstr) : (char*) "";
             // $$->attr.idIndex = $id->idIndex;
             $$->isInit = true;
@@ -206,6 +206,7 @@ funDecl
             $$ = newDeclNode(DeclKind::FuncK, ExpType::Void, $[id], $[prms], $[cstmt], NULL);
             $[cstmt]->attr.string = strdup($[id]->tokenstr);
             $$->isDefined = true;
+            // setType($$, ExpType::Void, $$->isStatic, false);
             $$->isInit = true;
             // $$->isUsed = true;
             $$->isDeclared = true;
@@ -427,7 +428,7 @@ exp
             $$ = $[aop];
             $$->child[0] = $[m];
             // $[m]->isUsed = true;
-            // $[m]->isInit = true;
+            $[m]->isInit = true;
             $$->child[1] = $[e];
             // $[e]->needsInitCheck = true;
         }
@@ -717,6 +718,7 @@ call
         {
             // TreeNode* tmp = newExpNode(ExpKind::IdK)
             $$ = newExpNode(ExpKind::CallK, $1, $[arguments], NULL, NULL);
+            $$->expType = ExpType::UndefinedType;
             $$->attr.string = strdup($1->tokenstr);
             if($[arguments] != NULL)
             {

@@ -75,4 +75,6 @@ public:
 void pointerPrintNode(void * data);
 void pointerPrintStr(void * data);
 
+// ExpType getExpType(SymbolTable* st, TreeNode* t);
+
 #endif
