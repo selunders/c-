@@ -786,6 +786,8 @@ void checkParamTypes(int *errorCount, int *warningCount, TreeNode *callNode, Tre
         // printf("index %d: param %s array, call %s array.\n", parameterIndex, isUnindexedArray(expectedList) ? "is" : "is not", isUnindexedArray(callList) ? "is" : "is not");
         if (expectedList->isArray && !callList->isArray)
         {
+            printf("ERROR(%d): Expecting array in parameter %d of call to '%s' declared on line %d.\n", callNode->lineno, parameterIndex, defNode->attr.string, defNode->lineno);
+            *errorCount = *errorCount + 1;
         }
         else if (!expectedList->isArray && isUnindexedArray(callList))
         {

@@ -617,27 +617,26 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                         numAnalyzeErrors++;
                     }
                     else
+                    {
+
                         tmp->isUsed = true;
-                }
-                TreeNode *paramNode = tmp->child[0];
-                TreeNode *callNode = t->child[0];
-                int paramCount = countSiblingListLength(paramNode);
-                int callCount = countSiblingListLength(callNode);
+                        TreeNode *paramNode = tmp->child[0];
+                        TreeNode *callNode = t->child[0];
+                        int paramCount = countSiblingListLength(paramNode);
+                        int callCount = countSiblingListLength(callNode);
 
-                // else
-                // printf("Starting with %d errors, %d warnings.\n", numAnalyzeErrors, numAnalyzeWarnings);
-                checkParamTypes(&numAnalyzeErrors, &numAnalyzeWarnings, t, tmp, paramNode, callNode);
-                // printf("Ending with %d errors, %d warnings.\n", numAnalyzeErrors, numAnalyzeWarnings);
-                if (paramCount != callCount)
-                {
-                    printf("ERROR(%d): Too %s parameters passed for function '%s' declared on line %d.\n", t->lineno, callCount < paramCount ? "few" : "many", tmp->attr.string, tmp->lineno);
-                    numAnalyzeErrors++;
+                        // else
+                        // printf("Starting with %d errors, %d warnings.\n", numAnalyzeErrors, numAnalyzeWarnings);
+                        checkParamTypes(&numAnalyzeErrors, &numAnalyzeWarnings, t, tmp, paramNode, callNode);
+                        // printf("Ending with %d errors, %d warnings.\n", numAnalyzeErrors, numAnalyzeWarnings);
+                        if (paramCount != callCount)
+                        {
+                            printf("ERROR(%d): Too %s parameters passed for function '%s' declared on line %d.\n", t->lineno, callCount < paramCount ? "few" : "many", tmp->attr.string, tmp->lineno);
+                            numAnalyzeErrors++;
+                        }
+                        // printf("SUCCESS(%d) Seems to be correct # of args: param %d call %d\n", t->lineno, paramCount, callCount);}
+                    }
                 }
-                // printf("SUCCESS(%d) Seems to be correct # of args: param %d call %d\n", t->lineno, paramCount, callCount);
-                // while(paramNode != NULL && callNode != NULL)
-                // {
-
-                // }
             }
             else
             {
@@ -853,12 +852,12 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         case StmtKind::ForK:
             break;
         case StmtKind::IfK:
-            if(t->child[0]->expType != ExpType::Boolean)
+            if (t->child[0]->expType != ExpType::Boolean)
             {
                 printf("ERROR(%d): Expecting Boolean test condition in if statement but got type %s.\n", t->lineno, expToString(t->child[0]->expType));
                 numAnalyzeErrors++;
             }
-            if(isUnindexedArray(t->child[0]))
+            if (isUnindexedArray(t->child[0]))
             {
                 printf("ERROR(%d): Cannot use array as test condition in if statement.\n", t->lineno);
                 numAnalyzeErrors++;
@@ -876,12 +875,12 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             }
             break;
         case StmtKind::WhileK:
-            if(t->child[0]->expType != ExpType::Boolean)
+            if (t->child[0]->expType != ExpType::Boolean)
             {
                 printf("ERROR(%d): Expecting Boolean test condition in while statement but got type %s.\n", t->lineno, expToString(t->child[0]->expType));
                 numAnalyzeErrors++;
             }
-            if(isUnindexedArray(t->child[0]))
+            if (isUnindexedArray(t->child[0]))
             {
                 printf("ERROR(%d): Cannot use array as test condition in while statement.\n", t->lineno);
                 numAnalyzeErrors++;
@@ -924,13 +923,13 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
         printf("ERROR(LINKER): A function named 'main' with no parameters must be defined.\n");
         numAnalyzeErrors++;
     }
-    if (printTypedTree)
-    // if (printTypedTree && numAnalyzeErrors == 0)
+    // if (printTypedTree)
+    if (printTypedTree && numAnalyzeErrors == 0)
     {
         printTree(root, true);
-        // printf("\n\n");
-        // printf("MyWarning: Printing even though there may be errors!\n");
-        // printf("\n\n");
+        // printf("\033[0;33m");
+        // printf("MyWarning: Printing Typed Tree even though there may be errors!\n");
+        // printf("\033[0m");
     }
     printf("Number of warnings: %d\n", numAnalyzeWarnings);
     printf("Number of errors: %d\n", numAnalyzeErrors);
