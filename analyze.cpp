@@ -267,8 +267,8 @@ ExpType getType(SymbolTable *st, TreeNode *t)
             {
                 return tmp_g->expType;
             }
-            // else
-                // return ExpType::UndefinedType;
+            else
+                return ExpType::UndefinedType;
         }
         break;
         case ExpKind::ConstantK:
@@ -771,17 +771,25 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             switch (t->attr.op)
             {
             case '[':
+            {
+                TreeNode* tmp = (TreeNode*) st->lookup(t->child[0]->attr.string);
                 t->expType = getType(st, t);
-                if ((st->lookup(t->child[0]->attr.string) != NULL) && (t->child[0] == NULL || !t->child[0]->isArray && !t->child[0]->isIndexed || !t->isArray))
+                
+                if(t->child[0] != NULL)
+                    t->isIndexed = true;
+                // LHS is defined AND (Has no child, or is not an indexed array, or is not an array)
+                // if ((st->lookup(t->child[0]->attr.string) != NULL) && (t->child[0] == NULL || !t->child[0]->isArray && !t->child[0]->isIndexed || !t->isArray))
+                // if(!isUnindexedArray(t))
+                if(tmp != NULL && !tmp->isArray)
                 {
                     printf("ERROR(%d): Cannot index nonarray '%s'.\n", t->lineno, t->child[0]->attr.string);
                     numAnalyzeErrors++;
                 }
-                else if ((st->lookup(t->child[0]->attr.string) == NULL) && (t->child[0] != NULL || !t->child[0]->isArray && !t->child[0]->isIndexed || !t->isArray))
-                {
-                    printf("ERROR(%d): Cannot index nonarray '%s'.\n", t->lineno, t->child[0]->attr.string);
-                    numAnalyzeErrors++;
-                }
+                // else if ((st->lookup(t->child[0]->attr.string) == NULL) && (t->child[0] != NULL || !t->child[0]->isArray && !t->child[0]->isIndexed || !t->isArray))
+                // {
+                //     printf("ERROR(%d): Cannot index nonarray '%s'.\n", t->lineno, t->child[0]->attr.string);
+                //     numAnalyzeErrors++;
+                // }
                 else
                 {
                     if (t->child[1] != NULL && getType(st, t->child[1]) != ExpType::Integer)
@@ -799,6 +807,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     }
                 }
                 break;
+            }
             case OR:
                 t->child[0]->needsInitCheck = true;
                 t->child[1]->needsInitCheck = true;
@@ -945,10 +954,10 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
     // traverse(st, root, nullProc, moveUpTypes, false);
     // traverse(st, root, nullProc, moveUpTypes, false);
     // Clear ST when types are dispersed
-    bool debugState = st->getDebugState();
-    delete st;
-    st = new SymbolTable();
-    st->debug(debugState);
+    // bool debugState = st->getDebugState();
+    // delete st;
+    // st = new SymbolTable();
+    // st->debug(debugState);
     traverse(st, root, moveUpTypes, printAnalysis, true);
     // traverse(st, root, printAnalysis, nullProc, true);
     // st->applyToAllGlobal(checkUse);
@@ -965,13 +974,13 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
         printf("ERROR(LINKER): A function named 'main' with no parameters must be defined.\n");
         numAnalyzeErrors++;
     }
-    if (printTypedTree)
-    // if (printTypedTree && numAnalyzeErrors == 0)
+    // if (printTypedTree)
+    if (printTypedTree && numAnalyzeErrors == 0)
     {
         printTree(root, true);
-        printf("\033[0;33m");
-        printf("MyWarning: Printing Typed Tree even though there may be errors!\n");
-        printf("\033[0m");
+        // printf("\033[0;33m");
+        // printf("MyWarning: Printing Typed Tree even though there may be errors!\n");
+        // printf("\033[0m");
     }
     printf("Number of warnings: %d\n", numAnalyzeWarnings);
     printf("Number of errors: %d\n", numAnalyzeErrors);

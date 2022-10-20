@@ -161,7 +161,7 @@ varDeclId
             // $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             // $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             $$->isArray = true;
-            // $$->isIndexed = true;
+            $$->isIndexed = false;
             // $$->isInit = true;
             // printf("Found ID: %s\n\n", $1->tokenstr);
         }

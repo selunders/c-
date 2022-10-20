@@ -816,7 +816,8 @@ void checkParamTypes(int *errorCount, int *warningCount, TreeNode *callNode, Tre
 void returnTypeCheck(int *errorCount, int *warningCount, SymbolTable *st, TreeNode *t, TreeNode *defNode, bool *doesReturnSomething)
 {
     int childIndex = 0;
-    TreeNode *tmp;
+    TreeNode *childTmp;
+    TreeNode *siblingTmp;
 
     // Reached the end of branch
     if (t == NULL)
@@ -826,9 +827,19 @@ void returnTypeCheck(int *errorCount, int *warningCount, SymbolTable *st, TreeNo
     // Check children
     while (childIndex < MAXCHILDREN)
     {
-        tmp = t->child[childIndex];
+        childTmp = t->child[childIndex];
         // printf("Checking child %d\n", childIndex);
-        returnTypeCheck(errorCount, warningCount, st, tmp, defNode, doesReturnSomething);
+        returnTypeCheck(errorCount, warningCount, st, childTmp, defNode, doesReturnSomething);
+        if (childTmp != NULL)
+            siblingTmp = childTmp->sibling;
+        else
+            siblingTmp = NULL;
+        while (siblingTmp != NULL)
+        {
+            returnTypeCheck(errorCount, warningCount, st, siblingTmp, defNode, doesReturnSomething);
+            siblingTmp = siblingTmp->sibling;
+        }
+
         childIndex++;
     }
 
@@ -840,11 +851,11 @@ void returnTypeCheck(int *errorCount, int *warningCount, SymbolTable *st, TreeNo
         // if (t->expType != ExpType::Void)
         // {
         *doesReturnSomething = true;
-            // printf("setting does return something to true\n\n");
+        // printf("setting does return something to true\n\n");
         // }
         if (defNode->expType == ExpType::Void && t->expType != ExpType::Void)
         {
-            // IMPORTANT -- Still need to check inverse of this, uses doesReturnSomething in parent doReturnTypeCheck  function.
+            // IMPORTANT ---- Nevermind ------- Still need to check inverse of this, uses doesReturnSomething in parent doReturnTypeCheck function.
             printf("ERROR(%d): Function '%s' at line %d is expecting no return value, but return has a value.\n", t->lineno, defNode->attr.string, defNode->lineno, expToString(t->expType));
             *errorCount = *errorCount + 1;
         }
@@ -858,6 +869,7 @@ void returnTypeCheck(int *errorCount, int *warningCount, SymbolTable *st, TreeNo
             printf("ERROR(%d): Function '%s' at line %d is expecting to return type %s but returns type %s.\n", t->lineno, defNode->attr.string, defNode->lineno, expToString(defNode->expType), expToString(t->expType));
             *errorCount = *errorCount + 1;
         }
+        // printf("Not sure how you got here (util.cpp returnTypeCheck else statement)\n");
     }
     // printf("MyDebug(%d): Stmt %s StmtK and subkind is%sreturn.\n", t->lineno, t->nodeKind == NodeKind::StmtK ? "is" : "is not", t->subkind.stmt == StmtKind::ReturnK ? " " : " not ");
 }
