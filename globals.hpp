@@ -232,6 +232,7 @@ public:
     bool isUnary;
     bool worksWithArrays;
     bool onlyWorksWithArrays;
+    bool isConstantExpression;
     bool passesEqualCheck(TreeNode *t)
     {
         if (t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType)
@@ -421,7 +422,7 @@ public:
             return false;
     }
 
-    OpTypeInfo(ExpType LHS, ExpType RHS, ExpType ReturnType, bool SameTypes, bool BothAreArrays, bool LeftIsArray, bool WorksWithArrays)
+    OpTypeInfo(ExpType LHS, ExpType RHS, ExpType ReturnType, bool SameTypes, bool BothAreArrays, bool LeftIsArray, bool WorksWithArrays, bool IsConstantExpression)
     {
         lhs = LHS;
         rhs = RHS;
@@ -432,8 +433,9 @@ public:
         isUnary = false;
         worksWithArrays = WorksWithArrays;
         onlyWorksWithArrays = false;
+        isConstantExpression = IsConstantExpression;
     }
-    OpTypeInfo(ExpType LHS, ExpType ReturnType, bool LeftIsArray, bool WorksWithArrays, bool OnlyWorksWithArrs)
+    OpTypeInfo(ExpType LHS, ExpType ReturnType, bool LeftIsArray, bool WorksWithArrays, bool OnlyWorksWithArrs, bool IsConstantExpression)
     {
         lhs = LHS;
         returnType = ReturnType;
@@ -441,6 +443,7 @@ public:
         isUnary = true;
         worksWithArrays = WorksWithArrays;
         onlyWorksWithArrays = OnlyWorksWithArrs;
+        isConstantExpression = IsConstantExpression;
     }
     OpTypeInfo()
     {
