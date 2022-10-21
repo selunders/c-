@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "globals.hpp"
 #include "symbolTable.hpp"
 #include "analyze.hpp"
@@ -33,7 +34,7 @@ void InitOpTypeList()
     opInfoMap[SUBASS] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, false);
     opInfoMap[MULASS] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, false);
     opInfoMap[DIVASS] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, false);
-    opInfoMap['+'] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, false);
+    opInfoMap['+'] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, true);
     opInfoMap[SUBTRACT] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, false);
     opInfoMap[MULTIPLY] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, false);
     opInfoMap['/'] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, false);
@@ -111,17 +112,20 @@ bool nodeIsConstant(SymbolTable *st, TreeNode *t)
             return false;
             break;
         case ExpKind::OpK:
+        {
+
             if (t->attr.op == '[')
             {
                 return (!isUnindexedArray(t->child[0]));
             }
-            else
-            {
-                return false;
-            }
+            // else
+            // {
+            // return false;
+            // }
             OpTypeInfo currentOp = opInfoMap[t->attr.op];
             return currentOp.isConstantExpression;
             break;
+        }
         }
         break;
     case NodeKind::StmtK:
@@ -279,7 +283,20 @@ static void checkUse(string str, void *t)
     TreeNode *tmp = (TreeNode *)t;
     if (!tmp->isUsed)
     {
-        printf("WARNING(%d): The %s '%s' seems not to be used.\n", tmp->lineno, tmp->subkind.decl == DeclKind::ParamK ? "parameter" : "variable", tmp->attr.string);
+        char *declKind;
+        switch (tmp->subkind.decl)
+        {
+        case DeclKind::FuncK:
+            declKind = (char *)"function";
+            break;
+        case DeclKind::ParamK:
+            declKind = (char *)"parameter";
+            break;
+        case DeclKind::VarK:
+            declKind = (char *)"variable";
+            break;
+        }
+        printf("WARNING(%d): The %s '%s' seems not to be used.\n", tmp->lineno, declKind, tmp->attr.string);
         numAnalyzeWarnings++;
     }
 }
@@ -514,6 +531,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     t->needsInitCheck = tmp->needsInitCheck;
             }
             t->expType = getType(st, t);
+            t->isConstantExp = true;
             if (tmp != NULL && (tmp == tmp_g))
             {
                 tmp->isInit = true;
@@ -524,6 +542,8 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             break;
         }
         case ExpKind::OpK:
+        {
+            OpTypeInfo currentOp = opInfoMap[t->attr.op];
             // if (t->attr.op == '=' && t->child[0] != NULL)
             // {
             // t->child[0]->isInit = true;
@@ -562,13 +582,12 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             {
                 t->expType = ExpType::Boolean;
             }
-            switch (t->attr.op)
+            if (!currentOp.isUnary)
             {
-            case OR:
-                // t->child[0]->needsInitCheck = false;
-                // t->child[1]->needsInitCheck = false;
-                break;
+                if (nodeIsConstant(st, t->child[0]) || nodeIsConstant(st, t->child[1]))
+                    t->isConstantExp = true;
             }
+        }
         default:
             break;
         }
@@ -790,11 +809,11 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 // printf("ERROR(%d): '%s' requires operands of the same type but lhs is type %s and rhs is type %s.\n", t->lineno, assignToString(t->attr.op), expToString(t->child[0]->expType), expToString(t->child[1]->expType));
                 if (!currentOp.passesEqualCheck(t))
                 {
-                    if (t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::IdK)
-                    {
-                        printf("ERROR(%d): '%s' requires operands of the same type but lhs is type %s and rhs is type %s.\n", t->lineno, assignToString(t->attr.op), expToString(t->child[0]->expType), expToString(t->child[1]->expType));
-                        numAnalyzeErrors++;
-                    }
+                    // if (t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::IdK)
+                    // {
+                    printf("ERROR(%d): '%s' requires operands of the same type but lhs is type %s and rhs is type %s.\n", t->lineno, assignToString(t->attr.op), expToString(t->child[0]->expType), expToString(t->child[1]->expType));
+                    numAnalyzeErrors++;
+                    // }
                 }
                 if (!currentOp.isArrayAndWorks(t))
                 {
@@ -1139,11 +1158,14 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
     // printTree(root, true);
     traverse(st, root, moveUpTypes, printAnalysis, true);
     // traverse(st, root, printAnalysis, nullProc, true);
-    // st->applyToAllGlobal(checkUse);
+    TreeNode *mainPointer = (TreeNode *)st->lookup((string) "main");
+    if (mainPointer != NULL)
+        mainPointer->isUsed = true;
+
+    st->applyToAllGlobal(checkUse);
     // traverse(st, root, printProc, nullProc, false);
 
     // Do final check for main()
-    TreeNode *mainPointer = (TreeNode *)st->lookup((string) "main");
     if ((mainPointer != NULL) && (mainPointer->nodeKind == NodeKind::DeclK) && (mainPointer->subkind.decl == DeclKind::FuncK) && mainPointer->child[0] == NULL)
     {
         // printf("Found main()\n\n");
