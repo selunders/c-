@@ -208,7 +208,7 @@ static bool isUnindexedArray(TreeNode *t)
     }
     if (t->isArray)
     {
-        if(t->child[0] != NULL)
+        if (t->child[0] != NULL)
             t->isIndexed = true;
         if (t->isIndexed)
             return false;
