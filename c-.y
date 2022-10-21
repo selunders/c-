@@ -692,7 +692,8 @@ mutable
             tmp->isArray = false;
             // tmp->isArray = true;
             tmp->isIndexed = true;
-            tmp->isConstantExp = true;
+            // tmp->isConstantExp = true;
+            // tmp->isConstantExp = true;
             // $$->isUsed = true;
             // tmp->isInit = true;
             $$ = newExpNode(ExpKind::OpK, $2, tmp, $[e], NULL);
@@ -753,7 +754,7 @@ constant
             $$ = newExpNode(ExpKind::ConstantK, $1, NULL, NULL, NULL);
             $$->attr.value = $1->numValue;
             $$->expType = ExpType::Integer;
-            $$->isConstantExp = true;
+            // $$->isConstantExp = true;
         }
     | CHARCONST
         {
@@ -761,7 +762,7 @@ constant
             $$->attr.cvalue = $1->charValue;
             $$->expType = ExpType::Char;
             $$->isArray = false;
-            $$->isConstantExp = true;
+            // $$->isConstantExp = true;
         }
     | STRINGCONST
         {
@@ -769,14 +770,14 @@ constant
             $$->attr.string = strdup($1->stringValue);
             $$->expType = ExpType::Char;
             $$->isArray = true;
-            $$->isConstantExp = true;
+            // $$->isConstantExp = true;
         }
     | BOOLCONST
         {
             $$ = newExpNode(ExpKind::ConstantK, $1, NULL, NULL, NULL);
             $$->attr.value = $1->boolValue;
             $$->expType = ExpType::Boolean;
-            $$->isConstantExp = true;
+            // $$->isConstantExp = true;
         }
     ;
 

@@ -110,13 +110,13 @@ bool nodeIsConstant(SymbolTable *st, TreeNode *t)
             return false;
             break;
         case ExpKind::OpK:
-            if (t->attr.op = '[')
+            if (t->attr.op == '[')
             {
-                return (!isUnindexedArray(t));
+                return (!isUnindexedArray(t->child[0]));
             }
             else
             {
-                return true;
+                return false;
             }
             break;
         }
@@ -385,8 +385,8 @@ ExpType getType(SymbolTable *st, TreeNode *t)
                 OpTypeInfo currentOp = opInfoMap[t->attr.op];
                 t->expType = currentOp.returnType;
                 return currentOp.returnType;
+                break;
             }
-            break;
             }
             break;
         }
@@ -411,6 +411,13 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             {
                 tmp->needsInitCheck = true;
                 t->needsInitCheck = true;
+            }
+            if (t->child[0] != NULL)
+            {
+                if (nodeIsConstant(st, t->child[0]))
+                {
+                    t->isConstantExp = true;
+                }
             }
             break;
         }
@@ -702,7 +709,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 // if (t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::ConstantK)
                 {
                     // Initialized correctly?
-                    // printf("ERROR(%d): Initializer for variable '%s' is a constant expression.\n", t->lineno, t->child[0]->attr.string);
+                    printf("ERROR(%d): Initializer for variable '%s' is a constant expression.\n", t->lineno, t->attr.string);
                 }
                 else
                 {
@@ -750,7 +757,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 {
                     // Initialized correctly?
                     // if (t->child[0] != NULL && t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::IdK)
-                        // printf("ERROR(%d): Initializer for variable '%s' is a constant expression.\n", t->lineno, t->child[0]->attr.string);
+                    // printf("ERROR(%d): Initializer for variable '%s' is a constant expression.\n", t->lineno, t->child[0]->attr.string);
                 }
                 else
                 {
@@ -944,12 +951,12 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             {
                 // TreeNode* tmp = (TreeNode*) st->lookup(t->child[0]->attr.string);
                 t->expType = getType(st, t);
-                if((st->lookup(t->child[0]->attr.string) != NULL) && (t->child[0] == NULL || !t->child[0]->isArray && t->child[0]->isIndexed || !t->isArray))
+                if ((st->lookup(t->child[0]->attr.string) != NULL) && (t->child[0] == NULL || !t->child[0]->isArray && t->child[0]->isIndexed || !t->isArray))
                 {
                     printf("ERROR(%d): Cannot index nonarray '%s'.\n", t->lineno, t->child[0]->attr.string);
                     numAnalyzeErrors++;
                 }
-                else if((st->lookup(t->child[0]->attr.string) == NULL) && (t->child[0] != NULL || !t->child[0]->isArray && !t->child[0]->isIndexed || !t->isArray))
+                else if ((st->lookup(t->child[0]->attr.string) == NULL) && (t->child[0] != NULL || !t->child[0]->isArray && !t->child[0]->isIndexed || !t->isArray))
                 {
                     printf("ERROR(%d): Cannot index nonarray '%s'.\n", t->lineno, t->child[0]->attr.string);
                     numAnalyzeErrors++;
