@@ -772,15 +772,14 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             {
             case '[':
             {
-                TreeNode* tmp = (TreeNode*) st->lookup(t->child[0]->attr.string);
+                // TreeNode* tmp = (TreeNode*) st->lookup(t->child[0]->attr.string);
                 t->expType = getType(st, t);
-                
-                if(t->child[0] != NULL)
-                    t->isIndexed = true;
-                // LHS is defined AND (Has no child, or is not an indexed array, or is not an array)
-                // if ((st->lookup(t->child[0]->attr.string) != NULL) && (t->child[0] == NULL || !t->child[0]->isArray && !t->child[0]->isIndexed || !t->isArray))
-                // if(!isUnindexedArray(t))
-                if(tmp != NULL && !tmp->isArray)
+                if((st->lookup(t->child[0]->attr.string) != NULL) && (t->child[0] == NULL || !t->child[0]->isArray && t->child[0]->isIndexed || !t->isArray))
+                {
+                    printf("ERROR(%d): Cannot index nonarray '%s'.\n", t->lineno, t->child[0]->attr.string);
+                    numAnalyzeErrors++;
+                }
+                else if((st->lookup(t->child[0]->attr.string) == NULL) && (t->child[0] != NULL || !t->child[0]->isArray && !t->child[0]->isIndexed || !t->isArray))
                 {
                     printf("ERROR(%d): Cannot index nonarray '%s'.\n", t->lineno, t->child[0]->attr.string);
                     numAnalyzeErrors++;
