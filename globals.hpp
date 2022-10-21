@@ -272,6 +272,7 @@ public:
 
     bool passesRightCheck(TreeNode *t)
     {
+        // pointerPrintNode(t);
         ExpType RIGHT = t->child[1]->expType;
         if (rhs == ExpType::UndefinedType || RIGHT == ExpType::UndefinedType)
         {

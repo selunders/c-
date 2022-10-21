@@ -60,7 +60,7 @@ elif [ "$allTests_flag" = true ]; then
     echo 'Diffing outputs'
     for file in sample/assign4/*.out
     do
-	echo $file
+#	echo $file
         x=${file%.out}
         y=${x##*/}
         echo -e "\nsdiff -l -s myOutput/$y.out $file"
