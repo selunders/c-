@@ -756,8 +756,11 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 }
                 else
                 {
-                    // if (t->child[0] != NULL && t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::IdK)
-                    printf("ERROR(%d): Initializer for variable '%s' is not a constant expression.\n", t->lineno, t->child[0]->attr.string);
+                    ////////////
+                    // WARNING
+                    //   The current way this is set up, it doesn't check for arrays on the left.
+                    if (t->child[0] != NULL && t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::IdK)
+                        printf("ERROR(%d): Initializer for variable '%s' is not a constant expression.\n", t->lineno, t->child[0]->attr.string);
                     numAnalyzeErrors++;
                 }
                 if (t->expType != t->child[0]->expType)
