@@ -80,8 +80,11 @@ TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0, TreeNode *c1,
             t->attr.value = token->numValue;
             break;
         case CHARCONST:
-            t->attr.cvalue = token->charValue;
+        {
+            char tmp[2] = {(char)token->charValue, '\0'};
+            t->attr.string = strdup(tmp);
             break;
+        }
         case STRINGCONST:
             t->attr.string = strdup(token->stringValue);
             break;
@@ -329,52 +332,12 @@ void printBasicTree(TreeNode *tree, NodeRelation relation, int id, int layer)
 {
     int i;
     INDENT;
-    // printf("My addr:%p\n My Children:\n%p\n%p\n%p\n\n", tree, tree->child[0], tree->child[1], tree->child[2]);
-    // while (tree != NULL)
     if (tree != NULL)
     {
         printSpaces(layer);
         switch (relation)
         {
         case NodeRelation::Parent:
-            switch (tree->nodeKind)
-            {
-                // case NodeKind::DeclK:
-                //     switch(tree->subkind.decl)
-                //     {
-                //         case DeclKind::VarK:
-                //             printf("Var: ");
-                //             break;
-                //         case DeclKind::FuncK:
-                //             printf("Func: ");
-                //             break;
-                //         default:
-                //             printf("Couldn't tell: ");
-                //             break;
-                //         // case DeclKind::ParamK:
-                //             // printf("Param");
-                //             // break;
-                //     }
-                //     break;
-                // case NodeKind::ExpK:
-                //     switch(tree->subkind.exp)
-                //     {
-                //         case ExpKind::IdK:
-                //             printf("Var: ");
-                //             if(tree->isArray)
-                //                 printf("of array ");
-                //             printf("of type ", expToString(tree->expType));
-                //         break;
-                //     }
-                //     break;
-                // case NodeKind::StmtK:
-                //     switch(tree->subkind.stmt)
-                //     {
-
-                //     }
-                //     break;
-            }
-            // printf("Staring with node of type: %d\n\n", tree->subkind.decl);
             break;
         case NodeRelation::Child:
             printf("Child: %d  ", id);
@@ -813,7 +776,7 @@ void checkParamTypes(int *errorCount, int *warningCount, TreeNode *callNode, Tre
     }
 }
 
-void returnTypeCheck(int *errorCount, int *warningCount, SymbolTable *st, TreeNode *t, TreeNode *defNode, bool *doesReturnSomething)
+void returnTypeCheck(int *errorCount, int *warningCount, TreeNode *t, TreeNode *defNode, bool *doesReturnSomething)
 {
     int childIndex = 0;
     TreeNode *childTmp;
@@ -829,14 +792,14 @@ void returnTypeCheck(int *errorCount, int *warningCount, SymbolTable *st, TreeNo
     {
         childTmp = t->child[childIndex];
         // printf("Checking child %d\n", childIndex);
-        returnTypeCheck(errorCount, warningCount, st, childTmp, defNode, doesReturnSomething);
+        returnTypeCheck(errorCount, warningCount, childTmp, defNode, doesReturnSomething);
         if (childTmp != NULL)
             siblingTmp = childTmp->sibling;
         else
             siblingTmp = NULL;
         while (siblingTmp != NULL)
         {
-            returnTypeCheck(errorCount, warningCount, st, siblingTmp, defNode, doesReturnSomething);
+            returnTypeCheck(errorCount, warningCount, siblingTmp, defNode, doesReturnSomething);
             siblingTmp = siblingTmp->sibling;
         }
 
@@ -874,16 +837,40 @@ void returnTypeCheck(int *errorCount, int *warningCount, SymbolTable *st, TreeNo
     // printf("MyDebug(%d): Stmt %s StmtK and subkind is%sreturn.\n", t->lineno, t->nodeKind == NodeKind::StmtK ? "is" : "is not", t->subkind.stmt == StmtKind::ReturnK ? " " : " not ");
 }
 
-void doReturnTypeCheck(int *errorCount, int *warningCount, SymbolTable *st, TreeNode *t, TreeNode *defNode)
+void doReturnTypeCheck(int *errorCount, int *warningCount, TreeNode *t, TreeNode *defNode)
 {
     bool doesReturnSomething = false;
-    returnTypeCheck(errorCount, warningCount, st, t, defNode, &doesReturnSomething);
+    returnTypeCheck(errorCount, warningCount, t, defNode, &doesReturnSomething);
     if (defNode->expType != ExpType::Void && (!doesReturnSomething))
     {
         printf("WARNING(%d): Expecting to return type %s but function '%s' has no return statement.\n", t->lineno, expToString(defNode->expType), defNode->attr.string);
         *warningCount = *warningCount + 1;
         // printf("ERROR(%d): Function '%s' at line %d is expecting to return %s, but return has no value.\n", t->lineno, defNode->attr.string, defNode->lineno, expToString(defNode->expType));
         // *errorCount = *errorCount + 1;
+    }
+}
+
+void doRangeTypeCheck(int *errorCount, int *warningCount, TreeNode *t)
+{
+    int i = 0;
+    TreeNode *tmpChild;
+    while (i < MAXCHILDREN)
+    {
+        tmpChild = t->child[i];
+        if (tmpChild != NULL)
+        {
+            if (tmpChild->expType != ExpType::Integer)
+            {
+                printf("ERROR(%d): Expecting type int in position %d in range of for statement but got type %s.\n", t->lineno, i + 1, expToString(tmpChild->expType));
+                *errorCount = *errorCount + 1;
+            }
+            if (isUnindexedArray(tmpChild))
+            {
+                printf("ERROR(%d): Cannot use array in position %d in range of for statement.\n", tmpChild->lineno, i + 1);
+                *errorCount = *errorCount + 1;
+            }
+        }
+        i++;
     }
 }
 //

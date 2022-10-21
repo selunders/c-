@@ -57,6 +57,76 @@ TreeNode *getSTNode(SymbolTable *st, TreeNode *t)
     return (TreeNode *)st->lookup(t->attr.string);
 }
 
+bool nodeIsConstant(SymbolTable *st, TreeNode *t)
+{
+    // printf("Checking if node is constant\n");
+    // return true;
+    TreeNode *tmp = NULL;
+    if (t == NULL)
+        return false;
+    switch (t->nodeKind)
+    {
+    case NodeKind::DeclK:
+        return t->isConstantExp;
+        break;
+    case NodeKind::ExpK:
+        switch (t->subkind.exp)
+        {
+        case ExpKind::AssignK:
+            if (t->attr.op = '=')
+            {
+                if (nodeIsConstant(st, t->child[1]))
+                {
+                    if (tmp != NULL)
+                        tmp->isConstantExp = true;
+                    return true;
+                }
+            }
+            // return nodeIsConstant(st, t->child[1]);
+            else
+                return true;
+            break;
+        case ExpKind::CallK:
+            return false;
+            break;
+        case ExpKind::ConstantK:
+            return true;
+            break;
+        case ExpKind::IdK:
+            tmp = (TreeNode *)st->lookup(t->attr.string);
+            if (tmp != NULL)
+            {
+                if (tmp->isConstantExp || t->isConstantExp)
+                {
+                    tmp->isConstantExp = true;
+                    t->isConstantExp = true;
+                }
+                return nodeIsConstant(st, tmp);
+            }
+            else
+                return t->isConstantExp;
+            break;
+        case ExpKind::InitK:
+            return false;
+            break;
+        case ExpKind::OpK:
+            if (t->attr.op = '[')
+            {
+                return (!isUnindexedArray(t));
+            }
+            else
+            {
+                return true;
+            }
+            break;
+        }
+        break;
+    case NodeKind::StmtK:
+        return false;
+        break;
+    }
+}
+
 static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *, TreeNode *, bool *), void (*postProc)(SymbolTable *, TreeNode *, bool *), bool doErrorChecking)
 {
     // printf("Starting with %d errors, %d warnings.\n", numAnalyzeErrors, numAnalyzeWarnings);
@@ -243,6 +313,7 @@ ExpType getType(SymbolTable *st, TreeNode *t)
             {
                 t->expType = getType(st, t->child[0]);
                 t->isArray = t->child[0]->isArray;
+                // nodeIsConstant(t);
                 return t->expType;
             }
             else
@@ -263,7 +334,7 @@ ExpType getType(SymbolTable *st, TreeNode *t)
                 // printf("MyError(%d): Call %s returns type %s\n", t->lineno, t->attr.string, expToString(t->expType));
                 return tmp->expType;
             }
-            else if(tmp_g != NULL)
+            else if (tmp_g != NULL)
             {
                 return tmp_g->expType;
             }
@@ -281,6 +352,11 @@ ExpType getType(SymbolTable *st, TreeNode *t)
             {
                 t->isArray = tmp->isArray;
                 // tmp->isArray = t->isArray;
+                if (t->isConstantExp || tmp->isConstantExp)
+                {
+                    tmp->isConstantExp = true;
+                    t->isConstantExp = true;
+                }
                 if (t->isInit)
                     tmp->isInit = true;
                 else if (tmp->isInit)
@@ -348,10 +424,21 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
         {
         case ExpKind::AssignK:
         {
+            TreeNode *tmp = NULL;
             if (t->attr.op == '=' || t->attr.op == '[')
             {
+                if (t->child[0] != NULL && t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::IdK)
+                    tmp = (TreeNode *)st->lookup(t->child[0]->attr.string);
                 t->expType = getType(st, t);
                 // t->expType = t->child[0]->expType;
+                if (t->child[1] != NULL && nodeIsConstant(st, t->child[1]))
+                {
+                    t->isConstantExp = true;
+                    if (tmp != NULL)
+                    {
+                        tmp->isConstantExp = true;
+                    }
+                }
             }
             break;
         }
@@ -359,11 +446,11 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
         {
             TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
             TreeNode *tmp_g = (TreeNode *)st->lookupGlobal(t->attr.string);
-            if(tmp != NULL)
+            if (tmp != NULL)
             {
                 t->expType = tmp->expType;
             }
-            else if(tmp_g != NULL)
+            else if (tmp_g != NULL)
             {
                 printf("Found global %s\n", tmp_g->attr.string);
                 t->expType = tmp_g->expType;
@@ -381,6 +468,11 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             {
                 t->isArray = tmp->isArray;
                 t->isStatic = tmp->isStatic;
+                if (tmp->isConstantExp || t->isConstantExp)
+                {
+                    tmp->isConstantExp = true;
+                    t->isConstantExp = true;
+                }
                 if (tmp->isInit)
                 {
                     t->isInit = true;
@@ -398,6 +490,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 // printf("Found global %s\n", tmp_g->attr.string);
                 t->isArray = tmp->isArray;
                 t->isStatic = tmp->isStatic;
+                t->isConstantExp = tmp->isConstantExp;
                 if (tmp->isInit)
                 {
                     t->isInit = true;
@@ -421,13 +514,13 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             break;
         }
         case ExpKind::OpK:
-            if (t->attr.op == '=' && t->child[0] != NULL)
-            {
-                t->child[0]->isInit = true;
-                // if(!isUnindexedArray(t->child[0]))
-                // t->child[0]->isArray = false;
-            }
-            if (t->attr.op == '=' || t->attr.op == '[')
+            // if (t->attr.op == '=' && t->child[0] != NULL)
+            // {
+            // t->child[0]->isInit = true;
+            // if(!isUnindexedArray(t->child[0]))
+            // t->child[0]->isArray = false;
+            // }
+            if (t->attr.op == '[')
             {
                 if (t->child[0] != NULL)
                 {
@@ -439,6 +532,16 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                         t->expType = getType(st, t);
                         t->isArray = tmp->isArray;
                         t->isInit = tmp->isInit;
+
+                        if (tmp->isConstantExp)
+                        {
+                            t->isConstantExp = true;
+                        }
+                        else if (t->child[1] != NULL && t->child[1]->isConstantExp)
+                        {
+                            tmp->isConstantExp = true;
+                            t->isConstantExp = true;
+                        }
                         // t->needsInitCheck = tmp->needsInitCheck;
                     }
                 }
@@ -461,15 +564,27 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
         }
     case NodeKind::StmtK:
     {
-        switch(t->subkind.stmt)
+        switch (t->subkind.stmt)
         {
-            case StmtKind::ReturnK:
-                if(t->child[0] != NULL)
-                    t->expType = getType(st, t->child[0]);
-                else
-                    t->expType = ExpType::Void;
+        case StmtKind::ReturnK:
+            if (t->child[0] != NULL)
+                t->expType = getType(st, t->child[0]);
+            else
+                t->expType = ExpType::Void;
             break;
-            default:
+        case StmtKind::RangeK:
+        {
+            int i = 0;
+            while (i < MAXCHILDREN)
+            {
+                if (t->child[i] != NULL)
+                    t->child[i]->expType = getType(st, t->child[i]);
+                // printf("Child %d is type %s\n", i, expToString(t->child[i]->expType));
+                i++;
+                // printf("Test\n\n");
+            }
+        }
+        default:
             break;
         }
         break;
@@ -550,7 +665,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         switch (t->subkind.decl)
         {
         case DeclKind::FuncK:
-            doReturnTypeCheck(&numAnalyzeErrors, &numAnalyzeWarnings, st, t, tmp);
+            doReturnTypeCheck(&numAnalyzeErrors, &numAnalyzeWarnings, t, tmp);
             break;
         case DeclKind::ParamK:
         {
@@ -581,6 +696,34 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     // t->isInit = true;
                     break;
                 }
+            if (t->child[0] != NULL)
+            {
+                if (nodeIsConstant(st, t->child[0]))
+                // if (t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::ConstantK)
+                {
+                    // Initialized correctly?
+                    // printf("ERROR(%d): Initializer for variable '%s' is a constant expression.\n", t->lineno, t->child[0]->attr.string);
+                }
+                else
+                {
+                    ////////
+                    // NOTE
+                    // This should be combined with the other assignment checking
+                    printf("ERROR(%d): Initializer for variable '%s' is not a constant expression.\n", t->lineno, t->attr.string);
+                    numAnalyzeErrors++;
+                }
+                if (t->expType != t->child[0]->expType)
+                {
+                    printf("ERROR(%d): Initializer for variable '%s' of type %s is of type %s\n", t->lineno, t->attr.string, expToString(t->expType), expToString(t->child[0]->expType));
+                    numAnalyzeErrors++;
+                }
+                // if(t->isArray != !isUnindexedArray(t->child[0]))
+                // {
+                // printf("ERROR(%d): Initializer for variable '%s' requires both operands be arrays or not but variable is%san array and rhs is%san array.\n", t->lineno, t->attr.string, isUnindexedArray(t->child[0]) ? " " : " not ", isUnindexedArray(t->child[1]) ? " " : " not ");
+                // numAnalyzeErrors++;
+                // }
+            }
+
             break;
         }
         break;
@@ -593,7 +736,34 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         {
             OpTypeInfo currentOp = opInfoMap[t->attr.op];
             if (t->attr.op == '=')
+            {
                 t->child[0]->isInit = true;
+                // if ((t->child[0] != NULL && t->child[0]->isConstantExp) || (t->child[1] != NULL && t->child[1]->isConstantExp))
+                // {
+                //     TreeNode *tmp = NULL;
+                //     tmp = (TreeNode *)st->lookup(t->child[0]->attr.string);
+                //     if (tmp != NULL)
+                //         tmp->isConstantExp = true;
+                //     t->isConstantExp = true;
+                // }
+                if (nodeIsConstant(st, t->child[0]))
+                {
+                    // Initialized correctly?
+                    // if (t->child[0] != NULL && t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::IdK)
+                        // printf("ERROR(%d): Initializer for variable '%s' is a constant expression.\n", t->lineno, t->child[0]->attr.string);
+                }
+                else
+                {
+                    // if (t->child[0] != NULL && t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::IdK)
+                    printf("ERROR(%d): Initializer for variable '%s' is not a constant expression.\n", t->lineno, t->child[0]->attr.string);
+                    numAnalyzeErrors++;
+                }
+                if (t->expType != t->child[0]->expType)
+                {
+                    printf("ERROR(%d): Initializer for variable '%s' of type %s is of type %s\n", t->lineno, t->attr.string, expToString(t->expType), expToString(t->child[0]->expType));
+                    numAnalyzeErrors++;
+                }
+            }
             if (t->attr.op == '=' || t->attr.op == '[')
             {
                 t->expType = getType(st, t);
@@ -612,7 +782,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     printf("ERROR(%d): '%s' requires operands of type %s but rhs is of type %s.\n", t->lineno, assignToString(t->attr.op), expToString(currentOp.lhs), expToString(t->child[1]->expType));
                     numAnalyzeErrors++;
                 }
-                    // printf("ERROR(%d): '%s' requires operands of the same type but lhs is type %s and rhs is type %s.\n", t->lineno, assignToString(t->attr.op), expToString(t->child[0]->expType), expToString(t->child[1]->expType));
+                // printf("ERROR(%d): '%s' requires operands of the same type but lhs is type %s and rhs is type %s.\n", t->lineno, assignToString(t->attr.op), expToString(t->child[0]->expType), expToString(t->child[1]->expType));
                 if (!currentOp.passesEqualCheck(t))
                 {
                     printf("ERROR(%d): '%s' requires operands of the same type but lhs is type %s and rhs is type %s.\n", t->lineno, assignToString(t->attr.op), expToString(t->child[0]->expType), expToString(t->child[1]->expType));
@@ -764,7 +934,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
 
         case ExpKind::OpK:
         {
-            if (t->attr.op == '=' || t->attr.op == '[')
+            if (t->attr.op == '[')
             {
                 t->expType = getType(st, t);
             }
@@ -772,15 +942,15 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             {
             case '[':
             {
-                TreeNode* tmp = (TreeNode*) st->lookup(t->child[0]->attr.string);
+                TreeNode *tmp = (TreeNode *)st->lookup(t->child[0]->attr.string);
                 t->expType = getType(st, t);
-                
-                if(t->child[0] != NULL)
+
+                if (t->child[0] != NULL)
                     t->isIndexed = true;
                 // LHS is defined AND (Has no child, or is not an indexed array, or is not an array)
                 // if ((st->lookup(t->child[0]->attr.string) != NULL) && (t->child[0] == NULL || !t->child[0]->isArray && !t->child[0]->isIndexed || !t->isArray))
                 // if(!isUnindexedArray(t))
-                if(tmp != NULL && !tmp->isArray)
+                if (tmp != NULL && !tmp->isArray)
                 {
                     printf("ERROR(%d): Cannot index nonarray '%s'.\n", t->lineno, t->child[0]->attr.string);
                     numAnalyzeErrors++;
@@ -916,6 +1086,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         case StmtKind::NullK:
             break;
         case StmtKind::RangeK:
+            doRangeTypeCheck(&numAnalyzeErrors, &numAnalyzeWarnings, t);
             break;
         case StmtKind::ReturnK:
             if (t->child[0] != NULL && t->child[0]->isArray && !t->child[0]->isIndexed)
@@ -958,6 +1129,7 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
     // delete st;
     // st = new SymbolTable();
     // st->debug(debugState);
+    // printTree(root, true);
     traverse(st, root, moveUpTypes, printAnalysis, true);
     // traverse(st, root, printAnalysis, nullProc, true);
     // st->applyToAllGlobal(checkUse);

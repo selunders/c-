@@ -168,6 +168,7 @@ public:
     int declDepth;
     bool declChecked;
     bool isForVar;
+    bool isConstantExp;
     // bool enteredScope;
     TreeNode()
     {
@@ -193,6 +194,7 @@ public:
         isIndexed = false;
         canEnterThisScope = true;
         isForVar = false;
+        isConstantExp = false;
     }
 };
 
