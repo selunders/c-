@@ -3,6 +3,7 @@ CC = g++
 
 SRCS = $(BIN).y  $(BIN).l util.cpp main.cpp symbolTable.cpp analyze.cpp
 HDRS = scanType.h globals.hpp util.hpp analyze.hpp symbolTable.hpp
+LIBS = io.c-
 OBJS = lex.yy.o $(BIN).tab.o util.o main.o analyze.o symbolTable.o
 CFLAGS = -std=c++11 -g
 
@@ -32,4 +33,4 @@ clean :
 	rm -f *~ $(OBJS) $(BIN) lex.yy.c $(BIN).tab.h $(BIN).tab.c $(BIN).output *.gch
 
 tar : $(HDRS) $(SRCS) makefile
-	tar -cvf $(BIN).tar $(HDRS) $(SRCS) $(DOCS) makefile
+	tar -cvf $(BIN).tar $(HDRS) $(SRCS) $(DOCS) $(LIBS) makefile

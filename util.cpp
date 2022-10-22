@@ -659,10 +659,10 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer)
                 printf("Compound");
                 break;
             case StmtKind::ReturnK:
-                printf("\033[1;33m");
+                // printf("\033[1;33m");
                 printf("Return type %s", expToString(tree->expType));
                 // printf("Return");
-                printf("\033[0m");
+                // printf("\033[0m");
                 break;
             case StmtKind::BreakK:
                 printf("Break");

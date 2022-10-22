@@ -35,10 +35,10 @@ void InitOpTypeList()
     opInfoMap[MULASS] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, false);
     opInfoMap[DIVASS] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, false);
     opInfoMap['+'] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, true);
-    opInfoMap[SUBTRACT] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, false);
-    opInfoMap[MULTIPLY] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, false);
-    opInfoMap['/'] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, false);
-    opInfoMap[MODULO] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, false);
+    opInfoMap[SUBTRACT] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, true);
+    opInfoMap[MULTIPLY] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, true);
+    opInfoMap['/'] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, true);
+    opInfoMap[MODULO] = OpTypeInfo(ExpType::Integer, ExpType::Integer, ExpType::Integer, false, false, false, false, true);
     opInfoMap['['] = OpTypeInfo(ExpType::Array, ExpType::Integer, ExpType::LHS, false, false, true, true, false);
     // Unary
     opInfoMap[INC] = OpTypeInfo(ExpType::Integer, ExpType::Integer, false, false, false, false);
@@ -294,8 +294,10 @@ static void printProc(SymbolTable *st, TreeNode *t, bool *enteredScope)
 
 static void setUsed(SymbolTable *st, TreeNode *t, bool *placeholder)
 {
+    // For use in library functions
     // TreeNode* tmp = (TreeNode *)
     t->isUsed = true;
+    t->lineno = -1;
 }
 
 static void checkUse(string str, void *t)
@@ -1121,7 +1123,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         case StmtKind::ForK:
             break;
         case StmtKind::IfK:
-            if (t->child[0]->expType != ExpType::Boolean)
+            if (t->child[0]->expType != ExpType::Boolean && t->child[0]->expType != ExpType::UndefinedType)
             {
                 printf("ERROR(%d): Expecting Boolean test condition in if statement but got type %s.\n", t->lineno, expToString(t->child[0]->expType));
                 numAnalyzeErrors++;
@@ -1145,7 +1147,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             }
             break;
         case StmtKind::WhileK:
-            if (t->child[0]->expType != ExpType::Boolean)
+            if (t->child[0]->expType != ExpType::Boolean && t->child[0]->expType != ExpType::UndefinedType)
             {
                 printf("ERROR(%d): Expecting Boolean test condition in while statement but got type %s.\n", t->lineno, expToString(t->child[0]->expType));
                 numAnalyzeErrors++;
