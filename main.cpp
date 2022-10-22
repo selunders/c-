@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
         fclose(tmpFile);
         SymbolTable *symbolTable = new SymbolTable();
         // printTree(tmpRoot, false);
-        // ASTtoSymbolTable(symbolTable, tmpRoot);
+        ASTtoSymbolTable(symbolTable, tmpRoot);
         tmpRoot = parseFile(fileIn);
         if (printTreeFlag && !printTypeInfo)
         {

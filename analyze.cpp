@@ -53,8 +53,7 @@ void InitOpTypeList()
 
 void InitIOToSymbolTable(SymbolTable *st)
 {
-    
-    
+
     /*
         void output(int)
         void outputb(bool)
@@ -291,6 +290,12 @@ static void printProc(SymbolTable *st, TreeNode *t, bool *enteredScope)
     pointerPrintNode(t);
     // pointerPrintStr(t);
     // pointerPrintAddr(t);
+}
+
+static void setUsed(SymbolTable *st, TreeNode *t, bool *placeholder)
+{
+    // TreeNode* tmp = (TreeNode *)
+    t->isUsed = true;
 }
 
 static void checkUse(string str, void *t)
@@ -794,8 +799,10 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     // WARNING
                     //   The current way this is set up, it doesn't check for arrays on the left.
                     if (t->child[0] != NULL && t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::IdK)
+                    {
                         printf("ERROR(%d): Initializer for variable '%s' is not a constant expression.\n", t->lineno, t->child[0]->attr.string);
-                    numAnalyzeErrors++;
+                        numAnalyzeErrors++;
+                    }
                 }
                 if (t->expType != t->child[0]->expType)
                 {
@@ -1156,6 +1163,11 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
     default:
         break;
     }
+}
+
+void ASTtoSymbolTable(SymbolTable *st, TreeNode *root)
+{
+    traverse(st, root, setUsed, nullProc, false);
 }
 
 void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
