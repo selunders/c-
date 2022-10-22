@@ -20,7 +20,11 @@ For reference:
 TreeNode *newDeclNode(DeclKind kind, ExpType type, TokenData *token, TreeNode *c0, TreeNode *c1, TreeNode *c2)
 {
     TreeNode *t = new TreeNode();
-    t->attr.string = strdup(token->tokenstr);
+    if (token != NULL)
+    {
+        t->attr.string = strdup(token->tokenstr);
+        t->lineno = token->linenum;
+    }
 
     t->child[0] = c0;
     t->child[1] = c1;
@@ -29,7 +33,6 @@ TreeNode *newDeclNode(DeclKind kind, ExpType type, TokenData *token, TreeNode *c
     t->nodeKind = NodeKind::DeclK;
     t->subkind.decl = kind;
     t->expType = type;
-    t->lineno = token->linenum;
 
     return t;
 }
@@ -874,7 +877,7 @@ void doRangeTypeCheck(int *errorCount, int *warningCount, TreeNode *t)
     }
 }
 
-TreeNode* newFunctionNodeToST(ExpType returnType, char* funName, ExpType paramType, char* paramName)
+TreeNode *newFunctionNodeToST(ExpType returnType, char *funName, ExpType paramType, char *paramName)
 {
     TreeNode *tmpFun = NULL;
     TreeNode *tmpParam = NULL;

@@ -22,6 +22,7 @@ FILE *tmpFile;
 TreeNode *tmpRoot;
 
 TreeNode *parseFile(FILE *file);
+TreeNode *createIOAST();
 
 int main(int argc, char *argv[])
 {
@@ -90,31 +91,44 @@ int main(int argc, char *argv[])
             // printf("\n");
             exit(1);
         }
-        // init variables a through z
-        /* for (int i=0; i<26; i++) vars[i] = 0.0; */
 
-        // do the parsing
-
-        // tmpFile = fopen("sample/assign4/small.c-", "r");
-        tmpFile = fopen("io.c-", "r");
-        // printf("%s io.c-\n", tmpFile ? "Found" : "Couldn't find");
-        tmpRoot = parseFile(tmpFile);
-        resetParse();
-        fclose(tmpFile);
+        // Create symbol table
         SymbolTable *symbolTable = new SymbolTable();
-        // printTree(tmpRoot, false);
+
+        ///////////////
+        // Read in the helper functions file(s)
+        ////////
+        // NOTE
+        // This section of code works on the CS server, but doesn't seem to read from the
+        //   io.c- file when ran on the submission site. I'm keeping it in here commented
+        //   in case it comes in handy later, but for now will just manually add the IO tree to the SymbolTable.
+        /*
+            tmpFile = fopen("io.c-", "r");
+            tmpRoot = parseFile(tmpFile);
+            resetParse();
+            fclose(tmpFile);
+            */
+        /*
         ASTtoSymbolTable(symbolTable, tmpRoot);
+    */
+        //
+        ////////////////
+        TreeNode* IORoot = createIOAST();
+        ASTtoSymbolTable(symbolTable, IORoot);
+
         tmpRoot = parseFile(fileIn);
+
+        // Print initial
         if (printTreeFlag && !printTypeInfo)
         {
             // printf("Not printing type info\n");
-            printTree(rootNode, false);
+            printTree(tmpRoot, false);
         }
 
         // symbolTable->test();
         symbolTable->debug(symbTabDEBUG);
 
-        semanticAnalysis(symbolTable, rootNode, printTypeInfo);
+        semanticAnalysis(symbolTable, tmpRoot, printTypeInfo);
         // symbolTable->print(pointerPrintNode);
         // symbolTable->print(pointerPrintStr);
         // symbolTable->applyToAll();
@@ -134,11 +148,49 @@ int main(int argc, char *argv[])
 
 TreeNode *parseFile(FILE *file)
 {
-    TreeNode* tmp;
+    TreeNode *tmp;
     // yyin = file;
     resetParse();
     yyin = file;
     yyparse();
     tmp = rootNode;
     return tmp;
+}
+
+TreeNode *createASTNode(DeclKind declType, ExpType returnType, ExpType paramType, char* idName)
+{
+    TreeNode *paramTmp = NULL;
+    if (paramType != ExpType::UndefinedType)
+    {
+        paramTmp = newDeclNode(DeclKind::ParamK, paramType, NULL, NULL, NULL, NULL);
+        paramTmp->attr.string = (char *)"placeholder";
+    }
+
+    TreeNode *tmp = newDeclNode(DeclKind::FuncK, returnType, NULL, paramTmp, NULL, NULL);
+    tmp->attr.string = strdup(idName);
+    tmp->isUsed = true;
+    tmp->isDeclared = true;
+    tmp->isInit = true;
+    tmp->isConstantExp = true;
+    return tmp;
+}
+
+TreeNode *createIOAST()
+{
+    TreeNode *root;
+    TreeNode *tmp;
+    root = tmp = createASTNode(DeclKind::FuncK, ExpType::Integer, ExpType::UndefinedType, (char*) "input");
+    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Boolean, ExpType::UndefinedType, (char*) "inputb");
+    tmp = tmp->sibling;
+    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Char, ExpType::UndefinedType, (char*) "inputc");
+    tmp = tmp->sibling;
+    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Void, ExpType::Integer, (char*) "output");
+    tmp = tmp->sibling;
+    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Void, ExpType::Boolean, (char*) "outputb");
+    tmp = tmp->sibling;
+    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Void, ExpType::Char, (char*) "outputc");
+    tmp = tmp->sibling;
+    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Void, ExpType::UndefinedType, (char*) "outnl");
+    tmp = tmp->sibling;
+    return root;
 }
