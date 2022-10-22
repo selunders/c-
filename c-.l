@@ -19,6 +19,14 @@ void myFree(void * freeThis)
     }
 }
 
+void resetLexer()
+{
+    YY_FLUSH_BUFFER;
+    // line = 1;
+    // yy_flush_buffer(YY_CURRENT_BUFFER);
+    // BEGIN(0);
+}
+
 // This removes backslashes from STRINGCONSTS for the C- language.
 void handleStrEscapeChars(char* tokString, char** outString)
 {

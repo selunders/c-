@@ -450,6 +450,21 @@ public:
     }
 };
 
+// class LibraryFunction
+// {
+// public:
+//     ExpType returnType;
+//     char* funName;
+//     ExpType paramType;
+
+
+
+//     LibraryFunction()
+//     {
+
+//     }
+// };
+
 #endif
 // class ParentInfo
 // {

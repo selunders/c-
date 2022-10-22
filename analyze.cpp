@@ -51,87 +51,26 @@ void InitOpTypeList()
     // opInfoMap[NEGATIVE] = OpTypeInfo(ExpType::Array, ExpType::Integer, ExpType::LHS, false, false, true);
 }
 
+void InitIOToSymbolTable(SymbolTable *st)
+{
+    
+    
+    /*
+        void output(int)
+        void outputb(bool)
+        void outputc(char)
+        int input()
+        bool inputb()
+        char inputc()
+        void outnl()
+    */
+}
+
 static void checkUse(string, void *);
 
 TreeNode *getSTNode(SymbolTable *st, TreeNode *t)
 {
     return (TreeNode *)st->lookup(t->attr.string);
-}
-
-bool nodeIsConstant(SymbolTable *st, TreeNode *t)
-{
-    // printf("Checking if node is constant\n");
-    // return true;
-    TreeNode *tmp = NULL;
-    if (t == NULL)
-        return false;
-    switch (t->nodeKind)
-    {
-    case NodeKind::DeclK:
-        return t->isConstantExp;
-        break;
-    case NodeKind::ExpK:
-        switch (t->subkind.exp)
-        {
-        case ExpKind::AssignK:
-            if (t->attr.op == '=')
-            {
-                if (nodeIsConstant(st, t->child[1]))
-                {
-                    if (tmp != NULL)
-                        tmp->isConstantExp = true;
-                    return true;
-                }
-            }
-            // return nodeIsConstant(st, t->child[1]);
-            else
-                return true;
-            break;
-        case ExpKind::CallK:
-            return false;
-            break;
-        case ExpKind::ConstantK:
-            return true;
-            break;
-        case ExpKind::IdK:
-            tmp = (TreeNode *)st->lookup(t->attr.string);
-            if (tmp != NULL)
-            {
-                if (tmp->isConstantExp || t->isConstantExp)
-                {
-                    tmp->isConstantExp = true;
-                    t->isConstantExp = true;
-                }
-                return tmp->isConstantExp;
-                // return nodeIsConstant(st, tmp);
-            }
-            else
-                return t->isConstantExp;
-            break;
-        case ExpKind::InitK:
-            return false;
-            break;
-        case ExpKind::OpK:
-        {
-
-            if (t->attr.op == '[')
-            {
-                return (!isUnindexedArray(t->child[0]));
-            }
-            // else
-            // {
-            // return false;
-            // }
-            OpTypeInfo currentOp = opInfoMap[t->attr.op];
-            return currentOp.isConstantExpression;
-            break;
-        }
-        }
-        break;
-    case NodeKind::StmtK:
-        return false;
-        break;
-    }
 }
 
 static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *, TreeNode *, bool *), void (*postProc)(SymbolTable *, TreeNode *, bool *), bool doErrorChecking)
@@ -261,6 +200,82 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
         // st->print(pointerPrintNode);
     }
     // printf("Ending with %d errors, %d warnings.\n", numAnalyzeErrors, numAnalyzeWarnings);
+}
+
+bool nodeIsConstant(SymbolTable *st, TreeNode *t)
+{
+    // printf("Checking if node is constant\n");
+    // return true;
+    TreeNode *tmp = NULL;
+    if (t == NULL)
+        return false;
+    switch (t->nodeKind)
+    {
+    case NodeKind::DeclK:
+        return t->isConstantExp;
+        break;
+    case NodeKind::ExpK:
+        switch (t->subkind.exp)
+        {
+        case ExpKind::AssignK:
+            if (t->attr.op == '=')
+            {
+                if (nodeIsConstant(st, t->child[1]))
+                {
+                    if (tmp != NULL)
+                        tmp->isConstantExp = true;
+                    return true;
+                }
+            }
+            // return nodeIsConstant(st, t->child[1]);
+            else
+                return true;
+            break;
+        case ExpKind::CallK:
+            return false;
+            break;
+        case ExpKind::ConstantK:
+            return true;
+            break;
+        case ExpKind::IdK:
+            tmp = (TreeNode *)st->lookup(t->attr.string);
+            if (tmp != NULL)
+            {
+                if (tmp->isConstantExp || t->isConstantExp)
+                {
+                    tmp->isConstantExp = true;
+                    t->isConstantExp = true;
+                }
+                return tmp->isConstantExp;
+                // return nodeIsConstant(st, tmp);
+            }
+            else
+                return t->isConstantExp;
+            break;
+        case ExpKind::InitK:
+            return false;
+            break;
+        case ExpKind::OpK:
+        {
+
+            if (t->attr.op == '[')
+            {
+                return (!isUnindexedArray(t->child[0]));
+            }
+            // else
+            // {
+            // return false;
+            // }
+            OpTypeInfo currentOp = opInfoMap[t->attr.op];
+            return currentOp.isConstantExpression;
+            break;
+        }
+        }
+        break;
+    case NodeKind::StmtK:
+        return false;
+        break;
+    }
 }
 
 static void nullProc(SymbolTable *st, TreeNode *t, bool *enteredScope)
@@ -1146,6 +1161,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
 void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
 {
     InitOpTypeList();
+    InitIOToSymbolTable(st);
     numAnalyzeWarnings = 0;
     numAnalyzeErrors = 0;
     // traverse(st, root, nullProc, moveUpTypes, false);

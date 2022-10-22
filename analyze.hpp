@@ -4,6 +4,8 @@
 #include "globals.hpp"
 
 void semanticAnalysis(SymbolTable*, TreeNode*, bool);
+void ASTtoSymbolTable(SymbolTable*, TreeNode*);
+
 
 void buildSymTab(TreeNode * );
 

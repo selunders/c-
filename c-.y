@@ -22,6 +22,7 @@ extern int yylex();
 extern FILE *yyin;
 extern int line;         // ERR line number from the scanner!!
 extern int numErrors;    // ERR err count
+extern void resetLexer();
 
 TreeNode* rootNode;
 
@@ -40,6 +41,14 @@ void printCharByChar(char* stringToPrint)
         printf("%c", stringToPrint[i]);
         i++;
     }
+}
+
+void resetParse()
+{
+    line = 1;
+    // numErrors = 0;
+    resetLexer();
+    // rootNode = NULL;
 }
 
 %}

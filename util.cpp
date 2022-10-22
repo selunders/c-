@@ -873,5 +873,21 @@ void doRangeTypeCheck(int *errorCount, int *warningCount, TreeNode *t)
         i++;
     }
 }
+
+TreeNode* newFunctionNodeToST(ExpType returnType, char* funName, ExpType paramType, char* paramName)
+{
+    TreeNode *tmpFun = NULL;
+    TreeNode *tmpParam = NULL;
+    tmpParam = newDeclNode(DeclKind::ParamK, returnType, NULL, NULL, NULL, NULL);
+    tmpParam->attr.string = paramName;
+    tmpParam->lineno = -1;
+    tmpFun = newDeclNode(DeclKind::FuncK, returnType, NULL, tmpParam, NULL, NULL);
+    tmpFun->lineno = -1;
+    tmpFun->attr.string = funName;
+    tmpFun->isUsed = true;
+    tmpParam = NULL;
+    tmpFun = NULL;
+    return tmpFun;
+}
 //
 //////////////////////
