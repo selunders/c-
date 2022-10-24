@@ -844,7 +844,7 @@ void doReturnTypeCheck(int *errorCount, int *warningCount, TreeNode *t, TreeNode
 {
     bool doesReturnSomething = false;
     returnTypeCheck(errorCount, warningCount, t, defNode, &doesReturnSomething);
-    if (defNode->subkind.decl == DeclKind::FuncK && defNode->expType != ExpType::Void &&  defNode->expType != ExpType::UndefinedType && (!doesReturnSomething))
+    if (defNode->subkind.decl == DeclKind::FuncK && defNode->expType != ExpType::Void && defNode->expType != ExpType::UndefinedType && (!doesReturnSomething))
     {
         printf("WARNING(%d): Expecting to return type %s but function '%s' has no return statement.\n", t->lineno, expToString(defNode->expType), defNode->attr.string);
         *warningCount = *warningCount + 1;
@@ -853,7 +853,7 @@ void doReturnTypeCheck(int *errorCount, int *warningCount, TreeNode *t, TreeNode
     }
 }
 
-void doRangeTypeCheck(int *errorCount, int *warningCount, TreeNode *t)
+void doRangeTypeCheck(int *errorCount, int *warningCount, SymbolTable* st, TreeNode *t)
 {
     int i = 0;
     TreeNode *tmpChild;
@@ -863,7 +863,16 @@ void doRangeTypeCheck(int *errorCount, int *warningCount, TreeNode *t)
         if (tmpChild != NULL)
         // if (tmpChild != NULL && tmpChild->isDeclared)
         {
+            TreeNode *tmp = NULL;
+            if(tmpChild->nodeKind == NodeKind::ExpK && tmpChild->subkind.exp == ExpKind::IdK)
+            {
+                tmp = (TreeNode*) st->lookup(tmpChild->attr.string);
+                if (tmp != NULL && tmp->subkind.decl == DeclKind::FuncK)
+                    break;
+            }
+
             if (tmpChild->expType != ExpType::Integer && tmpChild->expType != ExpType::UndefinedType)
+            // if (tmpChild->expType != ExpType::Integer && tmpChild->expType != ExpType::UndefinedType && tmpChild->expType != ExpType::Void)
             {
                 printf("ERROR(%d): Expecting type int in position %d in range of for statement but got type %s.\n", t->lineno, i + 1, expToString(tmpChild->expType));
                 *errorCount = *errorCount + 1;

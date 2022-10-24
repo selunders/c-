@@ -233,16 +233,37 @@ public:
     bool worksWithArrays;
     bool onlyWorksWithArrays;
     bool isConstantExpression;
-    bool passesEqualCheck(TreeNode *t)
+    bool passesEqualCheck(SymbolTable *st, TreeNode *t)
     {
-        if (t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType)
-            // if (t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType || t->child[0]->expType == ExpType::Void || t->child[1]->expType == ExpType::Void)
+        TreeNode *LEFT = t->child[0];
+        TreeNode *RIGHT = t->child[1];
+        if (t->attr.op == '=')
+        {
+            TreeNode *tmp = NULL;
+            if (LEFT != NULL && LEFT->nodeKind == NodeKind::ExpK && LEFT->subkind.exp == ExpKind::IdK)
+            {
+                tmp = (TreeNode *)st->lookup(LEFT->attr.string);
+                if (tmp != NULL && tmp->subkind.decl == DeclKind::FuncK)
+                    return true;
+            }
+            if (RIGHT != NULL && RIGHT->nodeKind == NodeKind::ExpK && RIGHT->subkind.exp == ExpKind::IdK)
+            {
+                tmp = (TreeNode *)st->lookup(RIGHT->attr.string);
+                if (tmp != NULL && tmp->subkind.decl == DeclKind::FuncK)
+                    return true;
+            }
+
+            if (LEFT->expType == ExpType::Void)
+                return true;
+        }
+        if (LEFT->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType)
+            // if (LEFT->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType || LEFT->expType == ExpType::Void || t->child[1]->expType == ExpType::Void)
             return true;
         if (equalTypes)
-            return (t->child[0]->expType == t->child[1]->expType);
+            return (LEFT->expType == t->child[1]->expType);
         else
             return true;
-        // return (t->child[0]->expType != t->child[1]->expType);
+        // return (LEFT->expType != t->child[1]->expType);
     }
 
     bool passesLeftCheck(TreeNode *t)
@@ -270,7 +291,7 @@ public:
             return true;
         else
             return false;
-            // printf("Couldn't match sides: Exp %d Got %d\n", lhs, LEFT);
+        // printf("Couldn't match sides: Exp %d Got %d\n", lhs, LEFT);
     }
 
     bool passesRightCheck(TreeNode *t)
@@ -459,7 +480,6 @@ public:
 //     ExpType returnType;
 //     char* funName;
 //     ExpType paramType;
-
 
 //     LibraryFunction()
 //     {
