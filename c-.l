@@ -135,6 +135,7 @@ static int setValue(int linenum, int tokenClass, char *svalue)
             break;
         case STRINGCONST:
             handleStrEscapeChars(yylval.tokenData->tokenstr, &yylval.tokenData->stringValue);
+            // yylval.tokenData->isArray = true;
             break;
         case BOOLCONST:
             if(!strcmp(svalue, "true"))

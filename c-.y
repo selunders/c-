@@ -438,7 +438,7 @@ exp
             $$ = $[aop];
             $$->child[0] = $[m];
             // $[m]->isUsed = true;
-            $[m]->isInit = true;
+            // $[m]->isInit = true;
             $$->child[1] = $[e];
             // $[e]->needsInitCheck = true;
         }
@@ -773,7 +773,7 @@ constant
             $$ = newExpNode(ExpKind::ConstantK, $1, NULL, NULL, NULL);
             $$->attr.cvalue = $1->charValue;
             $$->expType = ExpType::Char;
-            $$->isArray = false;
+            // $$->isArray = false;
             $$->isConstantExp = true;
         }
     | STRINGCONST

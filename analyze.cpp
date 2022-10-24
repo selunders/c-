@@ -314,7 +314,8 @@ bool nodeIsConstant(SymbolTable *st, TreeNode *t)
             if (t->attr.op == '?')
             {
                 // printf("found ?\n");
-                return false;
+                t->isConstantExp = false;
+                return t->isConstantExp;
             }
             OpTypeInfo currentOp = opInfoMap[t->attr.op];
 
@@ -325,10 +326,10 @@ bool nodeIsConstant(SymbolTable *st, TreeNode *t)
             else if ((t->child[0] != NULL && nodeIsConstant(st, t->child[0])) && (t->child[1] != NULL && nodeIsConstant(st, t->child[1])))
                 return true;
             else
+                // return currentOp.isConstantExpression;
                 return false;
             // {
             // }
-            // return currentOp.isConstantExpression;
             break;
         }
         }
@@ -518,6 +519,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             }
             if (t->child[0] != NULL)
             {
+                t->isInit = true;
                 if (nodeIsConstant(st, t->child[0]))
                 {
                     t->isConstantExp = true;
@@ -539,7 +541,12 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             if (t->attr.op == '=' || t->attr.op == '[')
             {
                 if (t->child[0] != NULL && t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::IdK)
+                {
                     tmp = (TreeNode *)st->lookup(t->child[0]->attr.string);
+                    if(tmp != NULL)
+                        tmp->isInit = true;
+                }
+                t->isInit = true;
                 t->expType = getType(st, t);
                 // t->expType = t->child[0]->expType;
                 if (t->child[1] != NULL && nodeIsConstant(st, t->child[1]))
@@ -844,11 +851,15 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     printf("ERROR(%d): Initializer for variable '%s' of type %s is of type %s\n", t->lineno, t->attr.string, expToString(t->expType), expToString(t->child[0]->expType));
                     numAnalyzeErrors++;
                 }
+
+                // if (isUnindexedArray(t) && )
                 // if(t->isArray != !isUnindexedArray(t->child[0]))
-                // {
-                // printf("ERROR(%d): Initializer for variable '%s' requires both operands be arrays or not but variable is%san array and rhs is%san array.\n", t->lineno, t->attr.string, isUnindexedArray(t->child[0]) ? " " : " not ", isUnindexedArray(t->child[1]) ? " " : " not ");
-                // numAnalyzeErrors++;
-                // }
+                if(t->isArray != t->child[0]->isArray)
+                {
+                    // printf("That's fine\n");
+                printf("ERROR(%d): Initializer for variable '%s' requires both operands be arrays or not but variable is%san array and rhs is%san array.\n", t->lineno, t->attr.string, t->isArray ? " " : " not ", t->child[0]->isArray ? " " : " not ");
+                numAnalyzeErrors++;
+                }
             }
             break;
         }
@@ -1012,6 +1023,8 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 if (tmp->isArray)
                     t->isArray;
                 t->isArray = tmp->isArray;
+                // if(t->isArray)
+                    // t->needsInitCheck = false;
                 t->isDeclared = tmp->isDeclared;
                 tmp->isStatic = t->isStatic;
                 if (t->isStatic)
@@ -1041,7 +1054,8 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     if (t->needsInitCheck)
                     {
                         // printf("Needs init\n");
-                        if ((st->depth() > 1) && !tmp->isInit)
+                        if ((st->depth() > 1) && !tmp->isInit  && !t->isArray)
+                        // if ((st->depth() > 1) && !tmp->isInit && isUnindexedArray(t))
                         {
                             printf("WARNING(%d): Variable \'%s\' may be uninitialized when used here.\n", t->lineno, t->attr.string);
                             tmp->isInit = true;
