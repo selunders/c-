@@ -64,7 +64,7 @@ elif [ "$allTests_flag" = true ]; then
         x=${file%.out}
         y=${x##*/}
         echo -e "\nsdiff -l -s myOutput/$y.out $file"
-        sdiff -l -s  myOutput/$y.out $file
+        sdiff -l -s  <(sort myOutput/$y.out) <(sort $file)
         # rm myOutput/$y.out
     done
 elif [ "$valgrind_flag" = true ]; then
@@ -89,7 +89,7 @@ else
         fi
     elif [ "$diff_flag" = true ]; then
         ./c- sample/assign4/$fileIn.c- -P > myOutput/$fileIn.out
-        sdiff myOutput/$fileIn.out sample/assign4/$fileIn.out
+        sdiff <(sort myOutput/$fileIn.out) <(sort sample/assign4/$fileIn.out)
     else
         if [ "$printTypes_flag" = true ]; then
             ./c- sample/assign4/$fileIn.c- -P
