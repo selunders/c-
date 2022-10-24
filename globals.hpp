@@ -235,8 +235,8 @@ public:
     bool isConstantExpression;
     bool passesEqualCheck(TreeNode *t)
     {
-        // if (t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType)
-            if (t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType || t->child[0]->expType == ExpType::Void || t->child[1]->expType == ExpType::Void)
+        if (t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType)
+            // if (t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType || t->child[0]->expType == ExpType::Void || t->child[1]->expType == ExpType::Void)
             return true;
         if (equalTypes)
             return (t->child[0]->expType == t->child[1]->expType);
@@ -248,8 +248,8 @@ public:
     bool passesLeftCheck(TreeNode *t)
     {
         ExpType LEFT = t->child[0]->expType;
-        // if (lhs == ExpType::UndefinedType || LEFT == ExpType::UndefinedType)
-        if (lhs == ExpType::UndefinedType || LEFT == ExpType::UndefinedType || lhs == ExpType::Void || LEFT == ExpType::Void)
+        if (lhs == ExpType::UndefinedType || LEFT == ExpType::UndefinedType)
+        // if (lhs == ExpType::UndefinedType || LEFT == ExpType::UndefinedType || lhs == ExpType::Void || LEFT == ExpType::Void)
         // if (lhs == ExpType::UndefinedType || LEFT == ExpType::UndefinedType)
         {
             return true;
