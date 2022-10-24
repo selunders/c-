@@ -20,7 +20,7 @@ while getopts 'AdDhmopPf:vV' flag; do
         D) debug_flag=true ;;
         h) help_flag=true ;;
         m) make_flag=true ;;
-	o) viewOutput_flag=true ;;
+        o) viewOutput_flag=true ;;
         p) print_flag=true ;;
         P) printTypes_flag=true ;;
         f) fileIn="${OPTARG}" ;;
@@ -40,7 +40,7 @@ if [ "$help_flag" = true ] ; then
     echo        "P) Print Typed AST"
     echo        "f) Usage: -f filename (without extension)"
     echo        "v) View c- file content"
-elif [ "$allTests_flag" = true ]; then
+    elif [ "$allTests_flag" = true ]; then
     if [ "$make_flag" = true ]; then
         echo 'make c-'
         make clean; make;
@@ -51,23 +51,27 @@ elif [ "$allTests_flag" = true ]; then
     do
         x=${file%.c-}
         y=${x##*/}
-        # echo "./c- $file > myOutput/$y.out" 
+        # echo "./c- $file > myOutput/$y.out"
         ./c- $file -P > myOutput/$y.out
     done
-
+    
     echo -e "Complete. Files stored in myOutput/\n"
-
+    
     echo 'Diffing outputs'
     for file in sample/assign4/*.out
     do
-#	echo $file
+        #	echo $file
         x=${file%.out}
         y=${x##*/}
-        echo -e "\nsdiff -l -s myOutput/$y.out $file"
-        sdiff -l -s  <(sort myOutput/$y.out) <(sort $file)
+        SDIFF=$(sdiff -l -s  <(sort myOutput/$y.out) <(sort $file))
+        if [ "$SDIFF" != "" ]
+        then
+            echo -e "\nsdiff -l -s myOutput/$y.out $file"
+            echo "$SDIFF"
+        fi
         # rm myOutput/$y.out
     done
-elif [ "$valgrind_flag" = true ]; then
+    elif [ "$valgrind_flag" = true ]; then
     valgrind ./c- sample/assign4/$fileIn.c- -P
 else
     if [ "$make_flag" = true ]; then
@@ -76,24 +80,24 @@ else
     fi
     if [ "$justView_flag" = true ]; then
         cat -n sample/assign4/$fileIn.c-
-    elif [ "$viewOutput_flag" = true ]; then
-	echo "cat -n sample/assign4/$fileIn.out"
-	cat -n sample/assign4/$fileIn.out
-    elif [ "$debug_flag" = true ]; then
+        elif [ "$viewOutput_flag" = true ]; then
+        echo "cat -n sample/assign4/$fileIn.out"
+        cat -n sample/assign4/$fileIn.out
+        elif [ "$debug_flag" = true ]; then
         if [ "$printTypes_flag" = true ]; then
             ./c- sample/assign4/$fileIn.c- -D -P
-        elif [ "$print_flag" = true ]; then
+            elif [ "$print_flag" = true ]; then
             ./c- sample/assign4/$fileIn.c- -D -p
         else
             ./c- sample/assign4/$fileIn.c- -D
         fi
-    elif [ "$diff_flag" = true ]; then
+        elif [ "$diff_flag" = true ]; then
         ./c- sample/assign4/$fileIn.c- -P > myOutput/$fileIn.out
         sdiff <(sort myOutput/$fileIn.out) <(sort sample/assign4/$fileIn.out)
     else
         if [ "$printTypes_flag" = true ]; then
             ./c- sample/assign4/$fileIn.c- -P
-        elif [ "$print_flag" = true ]; then
+            elif [ "$print_flag" = true ]; then
             ./c- sample/assign4/$fileIn.c- -p
         else
             ./c- sample/assign4/$fileIn.c-
@@ -111,7 +115,7 @@ fi
 #     do
 #         x=${file%.c-}
 #         y=${x##*/}
-#         # echo "./c- $file > myOutput/$y.out" 
+#         # echo "./c- $file > myOutput/$y.out"
 #         ./c- $file -p > myOutput/$y.out
 #     done
 
