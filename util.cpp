@@ -663,8 +663,8 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer)
                 break;
             case StmtKind::ReturnK:
                 // printf("\033[1;33m");
-                printf("Return type %s", expToString(tree->expType));
-                // printf("Return");
+                // printf("Return type %s", expToString(tree->expType));
+                printf("Return");
                 // printf("\033[0m");
                 break;
             case StmtKind::BreakK:
@@ -822,7 +822,7 @@ void returnTypeCheck(int *errorCount, int *warningCount, TreeNode *t, TreeNode *
         if (defNode->expType == ExpType::Void && t->expType != ExpType::Void)
         {
             // IMPORTANT ---- Nevermind ------- Still need to check inverse of this, uses doesReturnSomething in parent doReturnTypeCheck function.
-            printf("ERROR(%d): Function '%s' at line %d is expecting no return value, but return has a value.\n", t->lineno, defNode->attr.string, defNode->lineno, expToString(t->expType));
+            printf("ERROR(%d): Function '%s' at line %d is expecting no return value, but return has a value.\n", t->lineno, defNode->attr.string, defNode->lineno);
             *errorCount = *errorCount + 1;
         }
         else if (defNode->expType != ExpType::Void && t->expType == ExpType::Void)
@@ -844,7 +844,7 @@ void doReturnTypeCheck(int *errorCount, int *warningCount, TreeNode *t, TreeNode
 {
     bool doesReturnSomething = false;
     returnTypeCheck(errorCount, warningCount, t, defNode, &doesReturnSomething);
-    if (defNode->expType != ExpType::Void && (!doesReturnSomething))
+    if (defNode->subkind.decl == DeclKind::FuncK && defNode->expType != ExpType::Void &&  defNode->expType != ExpType::UndefinedType && (!doesReturnSomething))
     {
         printf("WARNING(%d): Expecting to return type %s but function '%s' has no return statement.\n", t->lineno, expToString(defNode->expType), defNode->attr.string);
         *warningCount = *warningCount + 1;
@@ -861,8 +861,9 @@ void doRangeTypeCheck(int *errorCount, int *warningCount, TreeNode *t)
     {
         tmpChild = t->child[i];
         if (tmpChild != NULL)
+        // if (tmpChild != NULL && tmpChild->isDeclared)
         {
-            if (tmpChild->expType != ExpType::Integer)
+            if (tmpChild->expType != ExpType::Integer && tmpChild->expType != ExpType::UndefinedType)
             {
                 printf("ERROR(%d): Expecting type int in position %d in range of for statement but got type %s.\n", t->lineno, i + 1, expToString(tmpChild->expType));
                 *errorCount = *errorCount + 1;

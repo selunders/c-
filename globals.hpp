@@ -235,8 +235,8 @@ public:
     bool isConstantExpression;
     bool passesEqualCheck(TreeNode *t)
     {
-        if (t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType)
-            // if (t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType || t->child[0]->expType == ExpType::Void || t->child[1]->expType == ExpType::Void)
+        // if (t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType)
+            if (t->child[0]->expType == ExpType::UndefinedType || t->child[1]->expType == ExpType::UndefinedType || t->child[0]->expType == ExpType::Void || t->child[1]->expType == ExpType::Void)
             return true;
         if (equalTypes)
             return (t->child[0]->expType == t->child[1]->expType);
@@ -248,7 +248,8 @@ public:
     bool passesLeftCheck(TreeNode *t)
     {
         ExpType LEFT = t->child[0]->expType;
-        if (lhs == ExpType::UndefinedType || LEFT == ExpType::UndefinedType)
+        // if (lhs == ExpType::UndefinedType || LEFT == ExpType::UndefinedType)
+        if (lhs == ExpType::UndefinedType || LEFT == ExpType::UndefinedType || lhs == ExpType::Void || LEFT == ExpType::Void)
         // if (lhs == ExpType::UndefinedType || LEFT == ExpType::UndefinedType)
         {
             return true;
@@ -269,13 +270,15 @@ public:
             return true;
         else
             return false;
+            // printf("Couldn't match sides: Exp %d Got %d\n", lhs, LEFT);
     }
 
     bool passesRightCheck(TreeNode *t)
     {
         // pointerPrintNode(t);
         ExpType RIGHT = t->child[1]->expType;
-        if (rhs == ExpType::UndefinedType || RIGHT == ExpType::UndefinedType)
+        if (rhs == ExpType::UndefinedType || RIGHT == ExpType::UndefinedType || rhs == ExpType::Void || RIGHT == ExpType::Void)
+        // if (rhs == ExpType::UndefinedType || RIGHT == ExpType::UndefinedType)
         {
             return true;
         }

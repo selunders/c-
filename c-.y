@@ -208,6 +208,7 @@ funDecl
             $$->isInit = true;
             // $$->isUsed = true;
             $$->isDeclared = true;
+            $$->isConstantExp = true;
             $[cstmt]->canEnterThisScope = false;
         }
     | ID[id] '(' parms[prms] ')' compoundStmt[cstmt]
@@ -643,6 +644,8 @@ unaryExp
         {
             $$ = $[uop];
             $$->child[0] = $[uexp];
+            // $$->isConstantExp = true;
+            // $[uexp]->isConstantExp = true;
             // $[uexp]->needsInitCheck = true;
             
             // $$->expType = ExpType::Integer;
