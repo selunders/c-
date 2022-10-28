@@ -373,7 +373,7 @@ bool nodeIsInit(SymbolTable *st, TreeNode *t)
                 if (nodeIsInit(st, t->child[1]))
                 {
                     // if (tmp != NULL)
-                        // tmp->isInit = true;
+                    // tmp->isInit = true;
                     return true;
                 }
             }
@@ -688,6 +688,28 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                             tmp->isConstantExp = true;
                         }
                     }
+                }
+                if (t->child[1] != NULL)
+                // if (t->child[1] != NULL && t->child[1]->needsInitCheck == true)
+                {
+                    // printf("Checking %s (%d)\n", t->child[1]->attr.string, t->lineno);
+                    TreeNode *initTmp = NULL;
+                    initTmp = (TreeNode *)st->lookup(t->child[1]->attr.string);
+                    t->child[1]->needsInitCheck = false;
+                    if (initTmp != NULL)
+                    {
+                        t->child[1]->isInit = initTmp->isInit;
+                        // if (!t->child[1]->isInit)
+                        // printf("Is maybe init %d\n", t->lineno);
+                        if (!nodeIsInit(st, t->child[1]))
+                        {
+                            // printf("Is uninit\n");
+                            printf(getWarnMsg(warnUninitVar), t->child[1]->lineno, t->child[1]->attr.string);
+                            numAnalyzeWarnings++;
+                        }
+                    }
+                    // else
+                    // initTmp->needsInitCheck = false;
                 }
                 if (t->child[0] != NULL && t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::OpK && t->child[0]->attr.op == '[')
                 {
@@ -1063,27 +1085,27 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                         numAnalyzeErrors++;
                     }
                 }
-                if (t->child[1] != NULL && t->child[1]->needsInitCheck == true)
-                {
-                    // printf("Checking %s (%d)\n", t->child[1]->attr.string, t->lineno);
-                    TreeNode *initTmp = NULL;
-                    initTmp = (TreeNode *)st->lookup(t->child[1]->attr.string);
-                    t->child[1]->needsInitCheck = false;
-                    if (initTmp != NULL)
-                    {
-                        t->child[1]->isInit = initTmp->isInit;
-                        // if (!t->child[1]->isInit)
-                            printf("Is maybe init %d\n", t->lineno);
-                        if (!nodeIsInit(st, t->child[1]))
-                        {
-                            printf("Is uninit\n");
-                            printf(getWarnMsg(warnUninitVar), t->child[1]->lineno, t->child[1]->attr.string);
-                            numAnalyzeWarnings++;
-                        }
-                    }
-                    // else
-                    // initTmp->needsInitCheck = false;
-                }
+                // if (t->child[1] != NULL && t->child[1]->needsInitCheck == true)
+                // {
+                //     // printf("Checking %s (%d)\n", t->child[1]->attr.string, t->lineno);
+                //     TreeNode *initTmp = NULL;
+                //     initTmp = (TreeNode *)st->lookup(t->child[1]->attr.string);
+                //     t->child[1]->needsInitCheck = false;
+                //     if (initTmp != NULL)
+                //     {
+                //         t->child[1]->isInit = initTmp->isInit;
+                //         // if (!t->child[1]->isInit)
+                //             printf("Is maybe init %d\n", t->lineno);
+                //         if (!nodeIsInit(st, t->child[1]))
+                //         {
+                //             printf("Is uninit\n");
+                //             printf(getWarnMsg(warnUninitVar), t->child[1]->lineno, t->child[1]->attr.string);
+                //             numAnalyzeWarnings++;
+                //         }
+                //     }
+                //     // else
+                //     // initTmp->needsInitCheck = false;
+                // }
                 if (t->expType != t->child[0]->expType)
                 {
                     printf(getErrMsg(errWrongInitType), t->lineno, t->attr.string, expToString(t->expType), expToString(t->child[0]->expType));
