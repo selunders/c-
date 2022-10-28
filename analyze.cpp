@@ -289,6 +289,7 @@ bool nodeIsConstant(SymbolTable *st, TreeNode *t)
             return true;
             break;
         case ExpKind::IdK:
+            // return false;
             tmp = (TreeNode *)st->lookup(t->attr.string);
             if (tmp != NULL)
             {
@@ -338,6 +339,112 @@ bool nodeIsConstant(SymbolTable *st, TreeNode *t)
         break;
     case NodeKind::StmtK:
         return false;
+        break;
+    }
+}
+
+bool nodeIsInit(SymbolTable *st, TreeNode *t)
+{
+    // printf("Checking if node is constant\n");
+    // return true;
+    TreeNode *tmp = NULL;
+    if (t == NULL)
+        return false;
+    switch (t->nodeKind)
+    {
+    case NodeKind::DeclK:
+    {
+        printf("I don't think you should be here (nodeisinit->switch->declk\n\n");
+        TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
+        if (tmp != NULL)
+        {
+            return tmp->isInit;
+        }
+        else
+            return false;
+    }
+    break;
+    case NodeKind::ExpK:
+        switch (t->subkind.exp)
+        {
+        case ExpKind::AssignK:
+            if (t->attr.op == '=')
+            {
+                if (nodeIsInit(st, t->child[1]))
+                {
+                    // if (tmp != NULL)
+                        // tmp->isInit = true;
+                    return true;
+                }
+            }
+            // return nodeIsConstant(st, t->child[1]);
+            else
+                return true;
+            break;
+        case ExpKind::CallK:
+            tmp = (TreeNode *)st->lookup(t->attr.string);
+            if (tmp != NULL)
+                return tmp->isInit;
+            else
+                return false;
+            break;
+        case ExpKind::ConstantK:
+            return true;
+            break;
+        case ExpKind::IdK:
+            // tmp = (TreeNode *)st->lookup(t->attr.string);
+            // if (tmp != NULL)
+            // {
+            // if (tmp->isInit || t->isInit)
+            // {
+            // tmp->isInit = true;
+            // t->isInit = true;
+            // }
+            return t->isInit;
+            // return nodeIsConstant(st, tmp);
+            // }
+            // else
+            // return t->isInit;
+            break;
+        case ExpKind::InitK:
+            return false;
+            break;
+        case ExpKind::OpK:
+        {
+
+            if (t->attr.op == '[')
+            {
+                t->child[0]->isInit;
+                // return (nodeIsInit(st, t->child[0]));
+            }
+            // if (t->attr.op == '?')
+            // {
+            // printf("found ?\n");
+            // t->isInit = false;
+            // return t->isInit;
+            // }
+            OpTypeInfo currentOp = opInfoMap[t->attr.op];
+
+            if (currentOp.isUnary)
+            {
+                return nodeIsInit(st, t->child[0]);
+            }
+            else if ((t->child[0] != NULL && nodeIsInit(st, t->child[0])) && (t->child[1] != NULL && nodeIsConstant(st, t->child[1])))
+                return true;
+            else
+                // return currentOp.isInitression;
+                return false;
+            // {
+            // }
+            break;
+        }
+        }
+        break;
+    case NodeKind::StmtK:
+        return false;
+        break;
+    default:
+        return true;
         break;
     }
 }
@@ -584,10 +691,12 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 }
                 if (t->child[0] != NULL && t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::OpK && t->child[0]->attr.op == '[')
                 {
-                    t->child[0]->isInit = true;
-                    t->child[0]->needsInitCheck = true;
+                    // printf("lhs is an array: %s\n", t->child[0]->child[0]->attr.string);
                     t->child[0]->child[0]->isInit = true;
-                    t->child[0]->child[0]->needsInitCheck = true;
+                    // t->child[0]->isInit = true;
+                    // t->child[0]->needsInitCheck = false;
+                    // t->child[0]->child[0]->isInit = true;
+                    // t->child[0]->child[0]->needsInitCheck = false;
                 }
             }
             break;
@@ -904,9 +1013,9 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     // This should be combined with the other assignment checking
                     // printf("Shouldn't be here? %d %s\n\n", t->lineno, t->attr.string);
                     printf(getErrMsg(errInitNotConst), t->lineno, t->attr.string);
-                    // numAnalyzeErrors++;
+                    numAnalyzeErrors++;
                     // printf(getWarnMsg(warnUninitVar), t->lineno, t->attr.string);
-                    numAnalyzeWarnings++;
+                    // numAnalyzeWarnings++;
                 }
                 // Initialized correctly?
                 // printf("ERROR(%d): Initializer for variable '%s' is a constant expression.\n", t->lineno, t->attr.string);
@@ -963,12 +1072,14 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     if (initTmp != NULL)
                     {
                         t->child[1]->isInit = initTmp->isInit;
-                    }
-                    if (!t->child[1]->isInit)
-                    {
-                        // printf("Is uninit");
-                        printf(getWarnMsg(warnUninitVar), t->child[1]->lineno, t->child[1]->attr.string);
-                        numAnalyzeWarnings++;
+                        // if (!t->child[1]->isInit)
+                            printf("Is maybe init %d\n", t->lineno);
+                        if (!nodeIsInit(st, t->child[1]))
+                        {
+                            printf("Is uninit\n");
+                            printf(getWarnMsg(warnUninitVar), t->child[1]->lineno, t->child[1]->attr.string);
+                            numAnalyzeWarnings++;
+                        }
                     }
                     // else
                     // initTmp->needsInitCheck = false;
