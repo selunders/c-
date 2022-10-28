@@ -153,7 +153,7 @@ varDeclInit
             $$ = $[vdeclid];
             $$->child[0] = $[simpleexp];
             // $$->isUsed = true;
-            $$->isInit = true;
+            // $$->isInit = true; 
         }
     ;
 varDeclId
@@ -385,7 +385,7 @@ open_iterStmt
     | FOR ID[id] '=' iterRange[itrrng] DO open_stmt[opnstmt]
         {
             TreeNode* tmp = newDeclNode(DeclKind::VarK, ExpType::Integer, $[id], NULL, NULL, NULL);
-            tmp->isInit = true;
+            // tmp->isInit = true;
             // tmp->isUsed = true;
             tmp->isDeclared = true;
             // TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
@@ -400,7 +400,7 @@ closed_iterStmt
     | FOR ID[id] '=' iterRange[itrrng] DO closed_stmt[clsdstmt]
         {
             TreeNode* tmp = newDeclNode(DeclKind::VarK, ExpType::Integer, $[id], NULL, NULL, NULL);
-            tmp->isInit = true;
+            // tmp->isInit = true;
             // tmp->isUsed = true;
             tmp->isDeclared = true;
             // TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
@@ -420,6 +420,7 @@ returnStmt
     : RETURN ';'
         {
             $$ = newStmtNode(StmtKind::ReturnK, $1, NULL, NULL, NULL);
+            $$->expType = ExpType::Void;
         }
     | RETURN exp[e] ';'
         {
@@ -709,6 +710,7 @@ mutable
             // $$->isUsed = true;
             // tmp->isInit = true;
             $$ = newExpNode(ExpKind::OpK, $2, tmp, $[e], NULL);
+            // $[e]->needsInitCheck = false;
             // $[e]->isInit = true;
             // $[e]->needsInitCheck = true;
         }

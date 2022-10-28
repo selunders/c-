@@ -9,102 +9,104 @@ printTypes_flag=false
 justView_flag=false
 viewOutput_flag=false
 valgrind_flag=false
+segFault_flag=false
 fileIn=''
 
 sampleDirectory='sample/assign4/'
 
 while getopts 'AdDhmopPf:vV' flag; do
     case "${flag}" in
-        A) allTests_flag=true ;;
-        d) diff_flag=true ;;
-        D) debug_flag=true ;;
-        h) help_flag=true ;;
-        m) make_flag=true ;;
-        o) viewOutput_flag=true ;;
-        p) print_flag=true ;;
-        P) printTypes_flag=true ;;
-        f) fileIn="${OPTARG}" ;;
-        v) justView_flag=true ;;
-        V) valgrind_flag=true ;;
+    A) allTests_flag=true ;;
+    d) diff_flag=true ;;
+    D) debug_flag=true ;;
+    h) help_flag=true ;;
+    m) make_flag=true ;;
+    o) viewOutput_flag=true ;;
+    p) print_flag=true ;;
+    P) printTypes_flag=true ;;
+    f) fileIn="${OPTARG}" ;;
+    v) justView_flag=true ;;
+    V) valgrind_flag=true ;;
     esac
 done
 
-if [ "$help_flag" = true ] ; then
-    echo        "A) allTests_flag"
-    echo        "d) diff_flag"
-    echo        "D) debug_flag"
-    echo        "h) Help"
-    echo        "m) Make"
-    echo	"o) View target output"
-    echo        "p) Print AST"
-    echo        "P) Print Typed AST"
-    echo        "f) Usage: -f filename (without extension)"
-    echo        "v) View c- file content"
-    elif [ "$allTests_flag" = true ]; then
+if [ "$help_flag" = true ]; then
+    echo "A) allTests_flag"
+    echo "d) diff_flag"
+    echo "D) debug_flag"
+    echo "h) Help"
+    echo "m) Make"
+    echo "o) View target output"
+    echo "p) Print AST"
+    echo "P) Print Typed AST"
+    echo "f) Usage: -f filename (without extension)"
+    echo "v) View c- file content"
+elif [ "$allTests_flag" = true ]; then
     if [ "$make_flag" = true ]; then
         echo 'make c-'
-        make clean; make;
+        make clean
+        make
     fi
     echo 'Running ./c- on all the files in sample/assign4/'
     # for file in samplePrograms2/*.c-
-    for file in sample/assign4/*.c-
-    do
+    for file in sample/assign4/*.c-; do
         x=${file%.c-}
         y=${x##*/}
         # echo "./c- $file > myOutput/$y.out"
-        ./c- $file -P > myOutput/$y.out
+        ./c- $file -P >myOutput/$y.out || (echo "Seg fault in $file"; segFault_flag=true;)
     done
-    
-    echo -e "Complete. Files stored in myOutput/\n"
-    
-    echo 'Diffing outputs'
-    for file in sample/assign4/*.out
-    do
-        #	echo $file
-        x=${file%.out}
-        y=${x##*/}
-        SDIFF=$(sdiff -l -s  <(sort myOutput/$y.out) <(sort $file))
-        if [ "$SDIFF" != "" ]
-        then
-            echo -e "\nsdiff -l -s myOutput/$y.out $file"
-            echo "$SDIFF"
-        fi
-        # rm myOutput/$y.out
-    done
-    elif [ "$valgrind_flag" = true ]; then
+
+    if [ "$segFault_flag" = false ]; then
+        echo -e "Success. Files stored in myOutput/\n"
+        echo 'Diffing outputs'
+        for file in sample/assign4/*.out; do
+            #	echo $file
+            x=${file%.out}
+            y=${x##*/}
+            SDIFF=$(sdiff -l -s <(sort myOutput/$y.out) <(sort $file))
+            if [ "$SDIFF" != "" ]; then
+                echo -e "\nsdiff -l -s myOutput/$y.out $file"
+                echo "$SDIFF"
+            fi
+            # rm myOutput/$y.out
+        done
+    else
+        echo -e "One or more files had a seg fault."
+    fi
+elif [ "$valgrind_flag" = true ]; then
     valgrind ./c- sample/assign4/$fileIn.c- -P
 else
     if [ "$make_flag" = true ]; then
         echo 'make c-'
-        make clean; make;
+        make clean
+        make
     fi
     if [ "$justView_flag" = true ]; then
         cat -n sample/assign4/$fileIn.c-
-        elif [ "$viewOutput_flag" = true ]; then
+    elif [ "$viewOutput_flag" = true ]; then
         echo "cat -n sample/assign4/$fileIn.out"
         cat -n sample/assign4/$fileIn.out
-        elif [ "$debug_flag" = true ]; then
+    elif [ "$debug_flag" = true ]; then
         if [ "$printTypes_flag" = true ]; then
             ./c- sample/assign4/$fileIn.c- -D -P
-            elif [ "$print_flag" = true ]; then
+        elif [ "$print_flag" = true ]; then
             ./c- sample/assign4/$fileIn.c- -D -p
         else
             ./c- sample/assign4/$fileIn.c- -D
         fi
-        elif [ "$diff_flag" = true ]; then
-        ./c- sample/assign4/$fileIn.c- -P > myOutput/$fileIn.out
+    elif [ "$diff_flag" = true ]; then
+        ./c- sample/assign4/$fileIn.c- -P >myOutput/$fileIn.out
         sdiff <(sort myOutput/$fileIn.out) <(sort sample/assign4/$fileIn.out)
     else
         if [ "$printTypes_flag" = true ]; then
             ./c- sample/assign4/$fileIn.c- -P
-            elif [ "$print_flag" = true ]; then
+        elif [ "$print_flag" = true ]; then
             ./c- sample/assign4/$fileIn.c- -p
         else
             ./c- sample/assign4/$fileIn.c-
         fi
     fi
 fi
-
 
 # if [ -z $1 ]; then
 #     echo 'make c-'

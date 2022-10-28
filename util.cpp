@@ -1,6 +1,7 @@
 // #include "globals.hpp"
 #include "util.hpp"
 #include "c-.tab.h"
+#include "errorMsg.hpp"
 #include "analyze.hpp"
 
 using namespace std;
@@ -755,19 +756,20 @@ void checkParamTypes(int *errorCount, int *warningCount, TreeNode *callNode, Tre
         // printf("index %d: param %s array, call %s array.\n", parameterIndex, isUnindexedArray(expectedList) ? "is" : "is not", isUnindexedArray(callList) ? "is" : "is not");
         if (expectedList->isArray && !callList->isArray)
         {
-            printf("ERROR(%d): Expecting array in parameter %d of call to '%s' declared on line %d.\n", callNode->lineno, parameterIndex, defNode->attr.string, defNode->lineno);
+            printf(getErrMsg(errExpArrParam), callNode->lineno, "Expecting", parameterIndex, defNode->attr.string, defNode->lineno);
             *errorCount = *errorCount + 1;
         }
         else if (!expectedList->isArray && isUnindexedArray(callList))
         {
-            printf("ERROR(%d): Not expecting array in parameter %d of call to '%s' declared on line %d.\n", callNode->lineno, parameterIndex, defNode->attr.string, defNode->lineno);
+            printf(getErrMsg(errExpArrParam), callNode->lineno, "Not expecting", parameterIndex, defNode->attr.string, defNode->lineno);
             *errorCount = *errorCount + 1;
             // *errorCount++; // haha learned about order of operations here
         }
         if (expectedList->expType != callList->expType && expectedList->expType != ExpType::UndefinedType && callList->expType != ExpType::UndefinedType)
         {
-            printf("ERROR(%d): Expecting type %s in parameter %d of call to '%s' declared on line %d but got type %s.\n", callNode->lineno, expToString(expectedList->expType), parameterIndex, defNode->attr.string, defNode->lineno, expToString(callList->expType));
+            printf(getErrMsg(errParmType), callNode->lineno, expToString(expectedList->expType), parameterIndex, defNode->attr.string, defNode->lineno, expToString(callList->expType));
             // expectedList = NULL;
+            // "ERROR(%d): Expecting type %s in parameter %i of call to '%s' declared on line %d but got %s.\n"
             // callList = NULL;
             *errorCount = *errorCount + 1;
             // break;
@@ -812,29 +814,29 @@ void returnTypeCheck(int *errorCount, int *warningCount, TreeNode *t, TreeNode *
     // Check self
     if (t->nodeKind == NodeKind::StmtK && t->subkind.stmt == StmtKind::ReturnK)
     {
-        // t->expType = getType(st, t);
-        // printf("\nChecking Return Type\n");
-        // if (t->expType != ExpType::Void)
-        // {
+        // printf("Return statement type %s, FuncType %s\n", expToString(t->expType), expToString(defNode->expType));
         *doesReturnSomething = true;
-        // printf("setting does return something to true\n\n");
-        // }
         if (defNode->expType == ExpType::Void && t->expType != ExpType::Void)
         {
             // IMPORTANT ---- Nevermind ------- Still need to check inverse of this, uses doesReturnSomething in parent doReturnTypeCheck function.
-            printf("ERROR(%d): Function '%s' at line %d is expecting no return value, but return has a value.\n", t->lineno, defNode->attr.string, defNode->lineno);
+            printf(getErrMsg(errExpNoReturn), t->lineno, defNode->attr.string, defNode->lineno);
             *errorCount = *errorCount + 1;
         }
-        else if (defNode->expType != ExpType::Void && t->expType == ExpType::Void)
+        else if (t->expType == ExpType::UndefinedType)
         {
-            printf("ERROR(%d): Function '%s' at line %d is expecting to return type %s but return has no value.\n", t->lineno, defNode->attr.string, defNode->lineno, expToString(defNode->expType));
+            printf(getErrMsg(errNoReturnVal), t->lineno, defNode->attr.string, defNode->lineno, expToString(defNode->expType));
             *errorCount = *errorCount + 1;
         }
         else if (t->expType != defNode->expType)
         {
-            printf("ERROR(%d): Function '%s' at line %d is expecting to return type %s but returns type %s.\n", t->lineno, defNode->attr.string, defNode->lineno, expToString(defNode->expType), expToString(t->expType));
+            printf(getErrMsg(errReturnWrongType), t->lineno, defNode->attr.string, defNode->lineno, expToString(defNode->expType), expToString(t->expType));
             *errorCount = *errorCount + 1;
         }
+        // else if (defNode->expType != ExpType::Void && t->expType == ExpType::Void)
+        // {
+        //     printf(getErrMsg(errNoReturnVal), t->lineno, defNode->attr.string, defNode->lineno, expToString(defNode->expType));
+        //     *errorCount = *errorCount + 1;
+        // }
         // printf("Not sure how you got here (util.cpp returnTypeCheck else statement)\n");
     }
     // printf("MyDebug(%d): Stmt %s StmtK and subkind is%sreturn.\n", t->lineno, t->nodeKind == NodeKind::StmtK ? "is" : "is not", t->subkind.stmt == StmtKind::ReturnK ? " " : " not ");
@@ -846,10 +848,8 @@ void doReturnTypeCheck(int *errorCount, int *warningCount, TreeNode *t, TreeNode
     returnTypeCheck(errorCount, warningCount, t, defNode, &doesReturnSomething);
     if (defNode->subkind.decl == DeclKind::FuncK && defNode->expType != ExpType::Void && defNode->expType != ExpType::UndefinedType && (!doesReturnSomething))
     {
-        printf("WARNING(%d): Expecting to return type %s but function '%s' has no return statement.\n", t->lineno, expToString(defNode->expType), defNode->attr.string);
+        printf(getWarnMsg(warnMissingReturn), t->lineno, expToString(defNode->expType), defNode->attr.string);
         *warningCount = *warningCount + 1;
-        // printf("ERROR(%d): Function '%s' at line %d is expecting to return %s, but return has no value.\n", t->lineno, defNode->attr.string, defNode->lineno, expToString(defNode->expType));
-        // *errorCount = *errorCount + 1;
     }
 }
 
@@ -874,12 +874,12 @@ void doRangeTypeCheck(int *errorCount, int *warningCount, SymbolTable* st, TreeN
             if (tmpChild->expType != ExpType::Integer && tmpChild->expType != ExpType::UndefinedType)
             // if (tmpChild->expType != ExpType::Integer && tmpChild->expType != ExpType::UndefinedType && tmpChild->expType != ExpType::Void)
             {
-                printf("ERROR(%d): Expecting type int in position %d in range of for statement but got type %s.\n", t->lineno, i + 1, expToString(tmpChild->expType));
+                printf(getErrMsg(errIntInRange), t->lineno, i + 1, expToString(tmpChild->expType));
                 *errorCount = *errorCount + 1;
             }
             if (isUnindexedArray(tmpChild))
             {
-                printf("ERROR(%d): Cannot use array in position %d in range of for statement.\n", tmpChild->lineno, i + 1);
+                printf(getErrMsg(errArrInForRange), tmpChild->lineno, i + 1);
                 *errorCount = *errorCount + 1;
             }
         }

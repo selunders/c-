@@ -195,6 +195,7 @@ public:
         canEnterThisScope = true;
         isForVar = false;
         isConstantExp = false;
+        declDepth = -1;
     }
 };
 
