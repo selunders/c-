@@ -181,7 +181,7 @@ public:
         nodeKind = NodeKind::StmtK;
         isArray = false;
         isStatic = false;
-        isInit = false;
+        isInit = true;
         needsInitCheck = false;
         seenInit = false;
         isUsed = false;
