@@ -79,7 +79,7 @@ TreeNode *getSTNode(SymbolTable *st, TreeNode *t)
     }
     else
     {
-        printf("MyERROR(%d): Trying to look up an invalid node\n", t->lineno);
+        // printf("MyERROR(%d): Trying to look up an invalid node\n", t->lineno);
         return NULL;
     }
 }
@@ -94,12 +94,17 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
     bool skipErrorChecking = false;
     if (t != NULL)
     {
+        // if (!t->isInit)
+        // t->isInit = true;
+        // printf("%d node isInit:%d\n", t->lineno, t->isInit);
         // TreeNode *tmp;
         if (t->nodeKind == NodeKind::DeclK)
         {
             t->declDepth = st->depth();
-            t->needsInitCheck = true;
+            // t->needsInitCheck = true;
+            // printf("%s %s\n", t->attr.string, t->isInit ? "is init" : "is not init");
             t->isInit = false;
+            // printf("%s %s\n", t->attr.string, t->isInit ? "is init" : "is not init");
             // printf("%d", t->declDepth);
             switch (t->subkind.decl)
             {
@@ -133,7 +138,7 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
                     printf(getErrMsg(errSymAlreadyDecl), t->lineno, t->attr.string, tmp->lineno);
                     skipErrorChecking = true;
                     numAnalyzeErrors++;
-                    t->needsInitCheck = true;
+                    // t->needsInitCheck = true;
                 }
                 break;
             }
@@ -223,6 +228,14 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
 
                 break;
             default:
+                break;
+            }
+            break;
+        case NodeKind::ExpK:
+            switch (t->subkind.exp)
+            {
+            case ExpKind::IdK:
+                t->isInit = false;
                 break;
             }
             break;
@@ -406,9 +419,14 @@ bool nodeIsInit(SymbolTable *st, TreeNode *t)
             return true;
             break;
         case ExpKind::IdK:
-            tmp = (TreeNode *)st->lookup(t->attr.string);
+            // if (t->isInit)
+            // return true;
+            tmp = getSTNode(st, t);
+            // tmp = (TreeNode *)st->lookup(t->attr.string);
             if (tmp != NULL)
             {
+                // if(t->isInit)
+                // return true;
                 return tmp->isInit;
                 // if (tmp->isInit || t->isInit)
                 // {
@@ -419,7 +437,8 @@ bool nodeIsInit(SymbolTable *st, TreeNode *t)
                 // return t->isInit;
             }
             else
-                return t->isInit;
+                return false;
+            // return t->isInit;
             break;
         case ExpKind::InitK:
             return false;
@@ -429,8 +448,9 @@ bool nodeIsInit(SymbolTable *st, TreeNode *t)
 
             if (t->attr.op == '[')
             {
-                t->child[0]->isInit;
-                // return (nodeIsInit(st, t->child[0]));
+                // t->child[0]->isInit;
+                // return false;
+                return (nodeIsInit(st, t->child[0]));
             }
             // if (t->attr.op == '?')
             // {
@@ -455,9 +475,9 @@ bool nodeIsInit(SymbolTable *st, TreeNode *t)
         }
         }
         break;
-    case NodeKind::StmtK:
-        return false;
-        break;
+    // case NodeKind::StmtK:
+    // return true;
+    // break;
     default:
         return true;
         break;
@@ -592,10 +612,6 @@ ExpType getType(SymbolTable *st, TreeNode *t)
                     tmp->isConstantExp = true;
                     t->isConstantExp = true;
                 }
-                // if (t->isInit)
-                //     tmp->isInit = true;
-                // else if (tmp->isInit)
-                //     t->isInit;
                 return tmp->expType;
             }
             else
@@ -607,16 +623,10 @@ ExpType getType(SymbolTable *st, TreeNode *t)
             switch (t->attr.op)
             {
             case '[':
-                // if (t->isInit)
-                // t->child[0]->isInit = true;
                 return getType(st, t->child[0]);
                 break;
             default:
             {
-                // if (t->isInit)
-                // {
-                //     t->child[0]->isInit = true;
-                // }
                 OpTypeInfo currentOp = opInfoMap[t->attr.op];
                 t->expType = currentOp.returnType;
                 return currentOp.returnType;
@@ -631,9 +641,12 @@ ExpType getType(SymbolTable *st, TreeNode *t)
 
 static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
 {
+    // t->isInit = !t->isInit; // See 'for' loop in .y for explanation of this logic
     switch (t->nodeKind)
     {
     case NodeKind::DeclK:
+        // if (t->isInit)
+        // printf("%d  %s isInit:%d\n", t->lineno, t->attr.string, t->isInit);
         switch (t->subkind.decl)
         {
         case DeclKind::FuncK:
@@ -687,50 +700,44 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     }
                 }
                 // printf("Checking init %d\n", t->lineno);
-                // if (t->child[1] != NULL)
-                if (t->child[1] != NULL && t->child[1]->needsInitCheck)
-                // if (t->child[1] != NULL && t->child[1]->needsInitCheck == true)
+                if (t->child[1] != NULL)
                 {
-                    // printf("Checking %s (%d)\n", t->child[1]->attr.string, t->lineno);
                     TreeNode *initTmp = NULL;
                     initTmp = getSTNode(st, t->child[1]);
-                    // initTmp = (TreeNode *)st->lookup(t->child[1]->attr.string);
-                    t->child[1]->needsInitCheck = false;
+                    // if (initTmp != NULL)
+                    //     printf("Checking %s (%d)\n", initTmp->attr.string, t->lineno);
 
                     // Don't print undeclared errors
-                    if (initTmp != NULL)
+                    if (initTmp != NULL && initTmp->declDepth != 1)
                     {
-                        initTmp->needsInitCheck = false;
+                        // initTmp->needsInitCheck = false;
+                        // t->child[1]->isInit = false;
                         t->child[1]->isInit = initTmp->isInit;
                         // if (!t->child[1]->isInit)
                         // printf("Is maybe init %d\n", t->lineno);
                         if (!nodeIsInit(st, t->child[1]))
                         {
                             // printf("MoveUpTypes: ");
-                            printf(getWarnMsg(warnUninitVar), t->child[1]->lineno, t->child[1]->attr.string);
+                            printf(getWarnMsg(warnUninitVar), t->child[1]->lineno, initTmp->attr.string);
                             numAnalyzeWarnings++;
+                            initTmp->isInit = true;
+                            // t->child[1]->isInit = true;
                         }
                     }
                     else
                     {
                         // if()
-                        printf("Here's your problem %d\n", t->lineno);
+                        // printf("Here's your problem %d\n", t->lineno);
                     }
                 }
-                t->child[0]->needsInitCheck = false;
+                // t->child[0]->needsInitCheck = false;
                 TreeNode *childTmp = getSTNode(st, t->child[0]);
                 if (childTmp != NULL)
                 {
-                    childTmp->needsInitCheck = false;
+                    childTmp->isInit = true;
+                    t->child[0]->isInit = true;
                     // printf("Hellooooo %s\n\n", childTmp->attr.string);
                 }
-                // if (t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::OpK && t->child[0]->attr.op == '[')
-                // {
-                //     t->child[0]->needsInitCheck = false;
-                //     t->child[0]->isInit = true;
-                //     t->child[0]->child[0]->needsInitCheck = false;
-                //     t->child[0]->child[0]->isInit = true;
-                // }
             }
             break;
         }
@@ -757,7 +764,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             break;
         case ExpKind::IdK:
         {
-            t->needsInitCheck = true;
+            // t->needsInitCheck = true;
             TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
             TreeNode *tmp_g = (TreeNode *)st->lookupGlobal(t->attr.string);
             if (tmp != NULL)
@@ -769,17 +776,6 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     tmp->isConstantExp = true;
                     t->isConstantExp = true;
                 }
-                // if (tmp->isInit)
-                // {
-                //     t->isInit = true;
-                // }
-                // else if (t->isInit)
-                // {
-                //     tmp->isInit = true;
-                // }
-                // if (tmp->needsInitCheck == true)
-
-                //     t->needsInitCheck = tmp->needsInitCheck;
             }
             else if (tmp_g != NULL)
             {
@@ -787,26 +783,9 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 t->isArray = tmp->isArray;
                 t->isStatic = tmp->isStatic;
                 t->isConstantExp = tmp->isConstantExp;
-                // if (tmp->isInit)
-                // {
-                //     t->isInit = true;
-                // }
-                // else if (t->isInit)
-                // {
-                //     tmp->isInit = true;
-                // }
-                if (tmp->needsInitCheck == true)
-                    t->needsInitCheck = tmp->needsInitCheck;
             }
             t->expType = getType(st, t);
             t->isConstantExp = true;
-            // if (tmp != NULL && (tmp == tmp_g))
-            // {
-            //     tmp->isInit = true;
-            //     tmp_g->isInit = true;
-            //     t->isInit = true;
-            // }
-
             break;
         }
         case ExpKind::OpK:
@@ -819,11 +798,8 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     TreeNode *tmp = (TreeNode *)st->lookup(t->child[0]->attr.string);
                     if (tmp != NULL)
                     {
-                        // if (t->child[0]->isInit)
-                        //     tmp->isInit = true;
                         t->expType = getType(st, t);
                         t->isArray = tmp->isArray;
-                        // t->isInit = tmp->isInit;
 
                         if (tmp->isConstantExp)
                         {
@@ -866,17 +842,16 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             if (t->child[0] != NULL)
             {
                 t->child[0]->isInit = true;
-                t->child[0]->needsInitCheck = false;
                 if (t->child[0]->nodeKind == NodeKind::DeclK)
                     tmp = (TreeNode *)st->lookup(t->child[0]->attr.string);
             }
             if (tmp != NULL)
             {
                 tmp->isInit = true;
-                // tmp->child[0]->isInit = true;
-                // tmp->child[0]->needsInitCheck = false;
-                tmp->needsInitCheck = false;
             }
+            tmp = getSTNode(st, t->child[0]);
+            if (tmp != NULL)
+                tmp->isInit = true; 
         }
         break;
         case StmtKind::ReturnK:
@@ -990,7 +965,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
         {
             if (tmp != NULL)
             {
-                tmp->needsInitCheck = false;
+                // tmp->needsInitCheck = false;
             }
             // t->needsInitCheck = false;
             break;
@@ -1033,7 +1008,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     // printf("Shouldn't be here? %d %s\n\n", t->lineno, t->attr.string);
                     printf(getErrMsg(errInitNotConst), t->lineno, t->attr.string);
                     numAnalyzeErrors++;
-                    // printf(getWarnMsg(warnUninitVar), t->lineno, t->attr.string);
+                    // printf(getWarnMsg(warnUnintVar), t->lineno, t->attr.string);
                     // numAnalyzeWarnings++;
                 }
                 // Initialized correctly?
@@ -1084,8 +1059,8 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 }
                 if (t->child[0] != NULL && t->child[0]->nodeKind == NodeKind::ExpK && t->child[0]->subkind.exp == ExpKind::OpK && t->child[0]->attr.op == '[')
                 {
-                    t->child[0]->child[0]->isInit = true;
-                    t->child[0]->child[0]->needsInitCheck = false;
+                    // t->child[0]->child[0]->isInit = true;
+                    // t->child[0]->child[0]->needsInitCheck = false;
                 }
                 if (t->expType != t->child[0]->expType)
                 {
@@ -1093,19 +1068,20 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     numAnalyzeErrors++;
                 }
                 TreeNode *lhTmp = NULL;
-                if (t->child[0]->needsInitCheck)
-                    lhTmp = (TreeNode *)st->lookup(t->child[0]->attr.string);
+                // if (t->child[0]->needsInitCheck)
+                // lhTmp = (TreeNode *)st->lookup(t->child[0]->attr.string);
+                lhTmp = getSTNode(st, t->child[0]);
                 if (lhTmp != NULL)
                 {
                     lhTmp->isInit = true;
-                    lhTmp->needsInitCheck = false;
+                    // lhTmp->needsInitCheck = false;
                 }
                 t->child[0]->isInit = true;
-                t->child[0]->needsInitCheck = false;
+                // t->child[0]->needsInitCheck = false;
                 if (t->child[0]->child[0] != NULL)
                 {
                     t->child[0]->child[0]->isInit = true;
-                    t->child[0]->child[0]->needsInitCheck = false;
+                    // t->child[0]->child[0]->needsInitCheck = false;
                 }
             }
             if (t->attr.op == '=' || t->attr.op == '[')
@@ -1213,26 +1189,8 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
             if (tmp == NULL)
             {
-                // st->insert(t->attr.string, t);
                 printf(getErrMsg(errSymNotDecl), t->lineno, t->attr.string);
                 numAnalyzeErrors++;
-                // if ((st->depth() > 1) && t->isDeclared)
-                // if ((st->depth() > 1) && t->isDeclared && !t->isInit)
-                // if ((st->depth() > 1) && t->needsInitCheck && t->isDeclared && !t->isInit)
-                // {
-                // printf("This one's the problem \\/\n\n")
-                // printf("printAnalysis: ");
-                // printf(getWarnMsg(warnUninitVar), t->lineno, t->attr.string);
-                // // tmp->isInit = true;
-                // numAnalyzeWarnings++;
-                // t->needsInitCheck = false;
-                // }
-                // else
-                // {
-                // printf("Yup this one\n");
-                // }
-                // tmp->isInit = true;
-                // numAnalyzeWarnings++;
             }
             else
             {
@@ -1242,11 +1200,12 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 t->isArray = tmp->isArray;
                 // if(t->isArray)
                 // t->needsInitCheck = false;
-                t->isDeclared = tmp->isDeclared;
+                if (tmp->isDeclared)
+                    t->isDeclared = tmp->isDeclared;
                 t->isStatic = tmp->isStatic;
-                if (t->isStatic)
-                    t->needsInitCheck = false;
-                t->needsInitCheck = tmp->needsInitCheck;
+                // if (t->isStatic)
+                // t->needsInitCheck = false;
+                // t->needsInitCheck = tmp->needsInitCheck;
                 if (tmp->subkind.decl == DeclKind::FuncK)
                 {
 
@@ -1261,31 +1220,42 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     tmp->isUsed = true;
                 }
                 // printf("Maybe this'll help: '%s' init: %d needsinit: %d\n", t->attr.string, t->isInit, t->needsInitCheck);
+                if (t->isInit)
+                {
+                    tmp->isInit = true;
+                    // tmp->needsInitCheck = false;
+                    // t->needsInitCheck = false;
+                }
                 if (t->isDeclared)
                 {
                     if (!t->isStatic)
                     {
+                        if (tmp != NULL)
+                            // printf("Checking %s (%d)\n", tmp->attr.string, t->lineno);
 
-                        if (t->needsInitCheck)
-                        {
+                            // if (tmp->declDepth)
+                            // if (t->needsInitCheck)
+                            // {
                             // printf("Start Init Check %s\n", t->attr.string);
                             // if ((st->depth() > 1) && !tmp->isInit && !t->isArray)
                             // printf("declDepth: %d, stDetph: %d, tmp->isInit: %d, t->isInit: %d, needsInitCheck: %d\n", tmp->declDepth, st->depth(), tmp->isInit, t->isInit, t->needsInitCheck);
-                            // printf("'%s' tmp->declDepth: %d, st->depth: %d, tmp->isInit: %d\n", tmp->attr.string, tmp->declDepth, st->depth(), tmp->isInit);
-                            if (tmp->declDepth != 1 && (st->depth() > 1) && !tmp->isInit)
-                            // if ((st->depth() > 1) && !tmp->isInit && isUnindexedArray(t))
-                            {
-                                // printf("printAnalysis: ");
-                                // setPrintColor(PRINTCOLOR::PURPLE);
-                                printf(getWarnMsg(warnUninitVar), t->lineno, t->attr.string);
-                                // resetPrintColor();
-                                tmp->isInit = true;
-                                numAnalyzeWarnings++;
-                                tmp->needsInitCheck = false;
-                                t->needsInitCheck = false;
-                            }
-                            // printf("End %s\n", t->attr.string);
+                            // printf("%d '%s' t->isInit: %d, tmp->isInit: %d\n", t->lineno, tmp->attr.string, t->isInit, tmp->isInit);
+                        // printf("'%s' tmp->declDepth: %d, st->depth: %d, tmp->isInit: %d\n", tmp->attr.string, tmp->declDepth, st->depth(), tmp->isInit);
+                        if (tmp->declDepth != 1 && (st->depth() > 1) && !nodeIsInit(st, t))
+                        // if (tmp->declDepth != 1 && (st->depth() > 1) && nodeIsInit(t)!tmp->isInit)
+                        // if ((st->depth() > 1) && !tmp->isInit && isUnindexedArray(t))
+                        {
+                            // printf("printAnalysis: ");
+                            // setPrintColor(PRINTCOLOR::PURPLE);
+                            printf(getWarnMsg(warnUninitVar), t->lineno, t->attr.string);
+                            // resetPrintColor();
+                            tmp->isInit = true;
+                            numAnalyzeWarnings++;
+                            tmp->needsInitCheck = false;
+                            t->needsInitCheck = false;
                         }
+                        // printf("End %s\n", t->attr.string);
+                        // }
                     }
                     // else
                     // printf("Needs no init check\n");
@@ -1294,12 +1264,6 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 {
                     printf(getErrMsg(errSymNotDecl), t->lineno, t->attr.string);
                     numAnalyzeErrors++;
-                }
-                if (t->isInit)
-                {
-                    tmp->isInit = true;
-                    tmp->needsInitCheck = false;
-                    // t->needsInitCheck = false;
                 }
             }
             tmp = NULL;
@@ -1319,10 +1283,10 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             {
             case '[':
             {
-                if (t->child[0] != NULL)
-                {
-                    t->child[0]->needsInitCheck = false;
-                }
+                // if (t->child[0] != NULL)
+                // {
+                // t->child[0]->needsInitCheck = false;
+                // }
                 // TreeNode* tmp = (TreeNode*) st->lookup(t->child[0]->attr.string);
                 t->expType = getType(st, t);
                 if ((st->lookup(t->child[0]->attr.string) != NULL) && (t->child[0] == NULL || !t->child[0]->isArray && t->child[0]->isIndexed || !t->isArray))
@@ -1346,7 +1310,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                         }
                     }
                 }
-                if (t->child[1] != NULL && getType(st, t->child[1]) != ExpType::Integer)
+                if (t->child[1] != NULL && (getType(st, t->child[1]) != ExpType::Integer && getType(st, t->child[1]) != ExpType::UndefinedType))
                 {
                     printf(getErrMsg(errIndexTypeCheck), t->lineno, t->child[0]->attr.string, expToString(getType(st, t->child[1])));
                     numAnalyzeErrors++;

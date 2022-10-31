@@ -385,7 +385,10 @@ open_iterStmt
     | FOR ID[id] '=' iterRange[itrrng] DO open_stmt[opnstmt]
         {
             TreeNode* tmp = newDeclNode(DeclKind::VarK, ExpType::Integer, $[id], NULL, NULL, NULL);
-            // tmp->isInit = true;
+            
+            // All isInit is set to true at creation, any set to false will be set to true. This prevents the need for another flag.
+            tmp->isInit = false;
+            // printf("%d Setting %s to uninit\n", tmp->lineno, tmp->attr.string);
             // tmp->isUsed = true;
             tmp->isDeclared = true;
             // TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
@@ -400,8 +403,9 @@ closed_iterStmt
     | FOR ID[id] '=' iterRange[itrrng] DO closed_stmt[clsdstmt]
         {
             TreeNode* tmp = newDeclNode(DeclKind::VarK, ExpType::Integer, $[id], NULL, NULL, NULL);
-            // tmp->isInit = true;
+            tmp->isInit = false;
             // tmp->isUsed = true;
+            // printf("%d Setting %s to uninit (close)\n", tmp->lineno, tmp->attr.string);
             tmp->isDeclared = true;
             // TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
             $$ = newStmtNode(StmtKind::ForK, $1, tmp, $[itrrng], $[clsdstmt]);
@@ -697,6 +701,7 @@ mutable
         {
             $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             $$->attr.string = strdup($1->tokenstr);
+            $$->isInit = false;
         }
     | ID '[' exp[e] ']'
         {
@@ -708,7 +713,7 @@ mutable
             // tmp->isConstantExp = true;
             // tmp->isConstantExp = true;
             // $$->isUsed = true;
-            // tmp->isInit = true;
+            tmp->isInit = false;
             $$ = newExpNode(ExpKind::OpK, $2, tmp, $[e], NULL);
             // $[e]->needsInitCheck = false;
             // $[e]->isInit = true;

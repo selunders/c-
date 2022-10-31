@@ -844,16 +844,20 @@ void returnTypeCheck(int *errorCount, int *warningCount, TreeNode *t, TreeNode *
 
 void doReturnTypeCheck(int *errorCount, int *warningCount, TreeNode *t, TreeNode *defNode)
 {
-    bool doesReturnSomething = false;
-    returnTypeCheck(errorCount, warningCount, t, defNode, &doesReturnSomething);
-    if (defNode->subkind.decl == DeclKind::FuncK && defNode->expType != ExpType::Void && defNode->expType != ExpType::UndefinedType && (!doesReturnSomething))
+    if (t && defNode)
     {
-        printf(getWarnMsg(warnMissingReturn), t->lineno, expToString(defNode->expType), defNode->attr.string);
-        *warningCount = *warningCount + 1;
+        bool doesReturnSomething = false;
+        returnTypeCheck(errorCount, warningCount, t, defNode, &doesReturnSomething);
+        // if (defNode != NULL && t != NULL)
+        if (defNode->subkind.decl == DeclKind::FuncK && defNode->expType != ExpType::Void && defNode->expType != ExpType::UndefinedType && (!doesReturnSomething))
+        {
+            printf(getWarnMsg(warnMissingReturn), t->lineno, expToString(defNode->expType), defNode->attr.string);
+            *warningCount = *warningCount + 1;
+        }
     }
 }
 
-void doRangeTypeCheck(int *errorCount, int *warningCount, SymbolTable* st, TreeNode *t)
+void doRangeTypeCheck(int *errorCount, int *warningCount, SymbolTable *st, TreeNode *t)
 {
     int i = 0;
     TreeNode *tmpChild;
@@ -864,9 +868,9 @@ void doRangeTypeCheck(int *errorCount, int *warningCount, SymbolTable* st, TreeN
         // if (tmpChild != NULL && tmpChild->isDeclared)
         {
             TreeNode *tmp = NULL;
-            if(tmpChild->nodeKind == NodeKind::ExpK && tmpChild->subkind.exp == ExpKind::IdK)
+            if (tmpChild->nodeKind == NodeKind::ExpK && tmpChild->subkind.exp == ExpKind::IdK)
             {
-                tmp = (TreeNode*) st->lookup(tmpChild->attr.string);
+                tmp = (TreeNode *)st->lookup(tmpChild->attr.string);
                 if (tmp != NULL && tmp->subkind.decl == DeclKind::FuncK)
                     break;
             }
