@@ -157,7 +157,7 @@ void setType(TreeNode *t, ExpType type, bool isStatic, bool needsInitChecked)
         }
         // }
         t->isStatic = isStatic;
-        t->needsInitCheck = needsInitChecked;
+        // t->needsInitCheck = needsInitChecked;
         t->isDeclared = true;
         t = t->sibling;
     }
