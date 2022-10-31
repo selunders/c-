@@ -8,17 +8,18 @@ print_flag=false
 printTypes_flag=false
 justView_flag=false
 viewOutput_flag=false
-valgrind_flag=false
+gdb_flag=false
 segFault_flag=false
 fileIn=''
 
 sampleDirectory='sample/assign4/'
 
-while getopts 'AdDhmopPf:vV' flag; do
+while getopts 'AdDGhmopPf:v' flag; do
     case "${flag}" in
     A) allTests_flag=true ;;
     d) diff_flag=true ;;
     D) debug_flag=true ;;
+    G) gdb_flag=true ;;
     h) help_flag=true ;;
     m) make_flag=true ;;
     o) viewOutput_flag=true ;;
@@ -26,7 +27,6 @@ while getopts 'AdDhmopPf:vV' flag; do
     P) printTypes_flag=true ;;
     f) fileIn="${OPTARG}" ;;
     v) justView_flag=true ;;
-    V) valgrind_flag=true ;;
     esac
 done
 
@@ -34,6 +34,7 @@ if [ "$help_flag" = true ]; then
     echo "A) allTests_flag"
     echo "d) diff_flag"
     echo "D) debug_flag"
+    echo "G) Analyze with GDB"
     echo "h) Help"
     echo "m) Make"
     echo "o) View target output"
@@ -53,7 +54,10 @@ elif [ "$allTests_flag" = true ]; then
         x=${file%.c-}
         y=${x##*/}
         # echo "./c- $file > myOutput/$y.out"
-        ./c- $file -P >myOutput/$y.out || (echo "Seg fault in $file"; segFault_flag=true;)
+        ./c- $file -P >myOutput/$y.out || (
+            echo "Seg fault in $file"
+            segFault_flag=true
+        )
     done
 
     if [ "$segFault_flag" = false ]; then
@@ -73,15 +77,15 @@ elif [ "$allTests_flag" = true ]; then
     else
         echo -e "One or more files had a seg fault."
     fi
-elif [ "$valgrind_flag" = true ]; then
-    valgrind ./c- sample/assign4/$fileIn.c- -P
 else
     if [ "$make_flag" = true ]; then
         echo 'make c-'
         make clean
         make
     fi
-    if [ "$justView_flag" = true ]; then
+    if [ "$gdb_flag" = true ]; then
+        gdb --args ./c- sample/assign4/$fileIn.c- -P
+    elif [ "$justView_flag" = true ]; then
         cat -n sample/assign4/$fileIn.c-
     elif [ "$viewOutput_flag" = true ]; then
         echo "cat -n sample/assign4/$fileIn.out"

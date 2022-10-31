@@ -1,8 +1,9 @@
+
 BIN = c-
 CC = g++
 
 SRCS = $(BIN).y  $(BIN).l util.cpp main.cpp symbolTable.cpp analyze.cpp errorMsg.cpp
-HDRS = scanType.h globals.hpp util.hpp analyze.hpp symbolTable.hpp errorMsg.hpp
+HDRS = scanType.h globals.hpp util.hpp analyze.hpp symbolTable.hpp errorMsg.hpp colorPrint.hpp
 LIBS = io.c-
 OBJS = lex.yy.o $(BIN).tab.o util.o main.o analyze.o symbolTable.o errorMsg.o
 CFLAGS = -std=c++11 -g
@@ -33,7 +34,7 @@ errorMsg.o :
 	$(CC) $(CFLAGS) -c errorMsg.cpp -o errorMsg.o
 
 clean :
-	rm -f *~ $(OBJS) $(BIN) lex.yy.c $(BIN).tab.h $(BIN).tab.c $(BIN).output *.gch
+	rm -f *~ $(OBJS) $(BIN) lex.yy.c $(BIN).tab.h $(BIN).tab.c $(BIN).output *.gch *.o
 
 tar : $(HDRS) $(SRCS) makefile
 	tar -cvf $(BIN).tar $(HDRS) $(SRCS) $(DOCS) $(LIBS) makefile
