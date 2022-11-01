@@ -610,7 +610,7 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer)
                     break;
                 case ExpType::Char:
                     if (tree->isArray)
-                        printf("Const %s", tree->attr.string);
+                        printf("Const is array %s", tree->attr.string);
                     else
                         printf("Const \'%c\'", tree->attr.cvalue);
                     printf(" of type char");
@@ -815,20 +815,20 @@ void returnTypeCheck(int *errorCount, int *warningCount, TreeNode *t, TreeNode *
     // Check self
     if (t->nodeKind == NodeKind::StmtK && t->subkind.stmt == StmtKind::ReturnK)
     {
-        // printf("Return statement type %s, FuncType %s\n", expToString(t->expType), expToString(defNode->expType));
+        // printf("%d %s Returns type %s, FuncType %s\n", t->lineno, defNode->attr.string, expToString(t->expType), expToString(defNode->expType));
         *doesReturnSomething = true;
-        if (defNode->expType == ExpType::Void && t->expType != ExpType::Void)
+        if (defNode->expType == ExpType::Void && (t->expType != ExpType::Void && t->expType != ExpType::UndefinedType))
         {
             // IMPORTANT ---- Nevermind ------- Still need to check inverse of this, uses doesReturnSomething in parent doReturnTypeCheck function.
             printf(getErrMsg(errExpNoReturn), t->lineno, defNode->attr.string, defNode->lineno);
             *errorCount = *errorCount + 1;
         }
-        else if (t->expType == ExpType::UndefinedType)
+        else if (defNode->expType != ExpType::Void && t->expType == ExpType::UndefinedType)
         {
             printf(getErrMsg(errNoReturnVal), t->lineno, defNode->attr.string, defNode->lineno, expToString(defNode->expType));
             *errorCount = *errorCount + 1;
         }
-        else if (t->expType != defNode->expType)
+        else if (defNode->expType != ExpType::Void && t->expType != defNode->expType)
         {
             printf(getErrMsg(errReturnWrongType), t->lineno, defNode->attr.string, defNode->lineno, expToString(defNode->expType), expToString(t->expType));
             *errorCount = *errorCount + 1;
