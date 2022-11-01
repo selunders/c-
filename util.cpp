@@ -676,7 +676,7 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer)
                 printf("Range");
                 break;
             default:
-                printf("... how'd you get here? (util.cpp ~380 haha actually 728ish)\n\n");
+                printf("... how'd you get here? (util.cpp ~380 haha actually 679ish)\n\n");
                 break;
             }
             break;

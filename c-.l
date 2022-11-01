@@ -9,7 +9,8 @@
     // resetPrintColor();
 
 int line = 1;
-int numErrors;    // ERR err count
+int numErrors = 0;    // ERR err count
+int numWarnings = 0;
 
 void myFree(void * freeThis)
 {
@@ -199,7 +200,7 @@ static int setValue(int linenum, int tokenClass, char *svalue)
 [ \t]                   ;
 [\%]                    { return setValue(line, MODULO, yytext); }
 [\=\+\-\*\/\(\)]        { return setValue(line, yytext[0], yytext); }
-[\'\"\.\@\#\$\^\&\_\|\\\~\!]                { printf("ERROR(%d): Invalid or misplaced input character: \'%s\'. Character Ignored.\n", line, yytext); }
+[\'\"\.\@\#\$\^\&\_\|\\\~\!]                { printf("ERROR(%d): Invalid or misplaced input character: \'%s\'. Character Ignored.\n", line, yytext); numErrors++;}
 [\%\*\(\)\-\{\}\[\]\;\:\<\>\?\,\/]          { return setValue(line, yytext[0], yytext); }
 .                       { printf("ERROR(%d): char \'%c\' is not in the language\n", line, yytext[0]); numErrors++; }
 %%

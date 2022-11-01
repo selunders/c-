@@ -14,6 +14,8 @@ extern void resetParse();
 // extern void yyrestart();
 extern void yyrestart(FILE *);
 extern int yylex_destroy(void);
+extern int numErrors;
+extern int numWarnings;
 
 FILE *fileIn;
 TreeNode *fileInRoot;
@@ -113,7 +115,7 @@ int main(int argc, char *argv[])
     */
         //
         ////////////////
-        TreeNode* IORoot = createIOAST();
+        TreeNode *IORoot = createIOAST();
         ASTtoSymbolTable(symbolTable, IORoot);
 
         tmpRoot = parseFile(fileIn);
@@ -127,8 +129,12 @@ int main(int argc, char *argv[])
 
         // symbolTable->test();
         symbolTable->debug(symbTabDEBUG);
-
-        semanticAnalysis(symbolTable, tmpRoot, printTypeInfo);
+        printf("====================================\n");
+        if (numErrors == 0)
+            semanticAnalysis(symbolTable, tmpRoot, printTypeInfo);
+        printf("FILE: %s\n", argv[index]);
+        printf("Number of warnings: %d\n", numWarnings);
+        printf("Number of errors: %d\n", numErrors);
         // symbolTable->print(pointerPrintNode);
         // symbolTable->print(pointerPrintStr);
         // symbolTable->applyToAll();
@@ -157,7 +163,7 @@ TreeNode *parseFile(FILE *file)
     return tmp;
 }
 
-TreeNode *createASTNode(DeclKind declType, ExpType returnType, ExpType paramType, char* idName)
+TreeNode *createASTNode(DeclKind declType, ExpType returnType, ExpType paramType, char *idName)
 {
     TreeNode *paramTmp = NULL;
     if (paramType != ExpType::UndefinedType)
@@ -179,18 +185,18 @@ TreeNode *createIOAST()
 {
     TreeNode *root;
     TreeNode *tmp;
-    root = tmp = createASTNode(DeclKind::FuncK, ExpType::Integer, ExpType::UndefinedType, (char*) "input");
-    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Boolean, ExpType::UndefinedType, (char*) "inputb");
+    root = tmp = createASTNode(DeclKind::FuncK, ExpType::Integer, ExpType::UndefinedType, (char *)"input");
+    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Boolean, ExpType::UndefinedType, (char *)"inputb");
     tmp = tmp->sibling;
-    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Char, ExpType::UndefinedType, (char*) "inputc");
+    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Char, ExpType::UndefinedType, (char *)"inputc");
     tmp = tmp->sibling;
-    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Void, ExpType::Integer, (char*) "output");
+    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Void, ExpType::Integer, (char *)"output");
     tmp = tmp->sibling;
-    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Void, ExpType::Boolean, (char*) "outputb");
+    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Void, ExpType::Boolean, (char *)"outputb");
     tmp = tmp->sibling;
-    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Void, ExpType::Char, (char*) "outputc");
+    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Void, ExpType::Char, (char *)"outputc");
     tmp = tmp->sibling;
-    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Void, ExpType::UndefinedType, (char*) "outnl");
+    tmp->sibling = createASTNode(DeclKind::FuncK, ExpType::Void, ExpType::UndefinedType, (char *)"outnl");
     tmp = tmp->sibling;
     return root;
 }

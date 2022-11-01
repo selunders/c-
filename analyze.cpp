@@ -13,6 +13,8 @@
 using namespace std;
 
 // extern int yytokentype;
+extern int numErrors;
+extern int numWarnings;
 
 int numAnalyzeWarnings;
 int numAnalyzeErrors;
@@ -1508,8 +1510,8 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
         // printf("MyWarning: Printing Typed Tree even though there may be errors!\n");
         // printf("\033[0m");
     }
-    printf("Number of warnings: %d\n", numAnalyzeWarnings);
-    printf("Number of errors: %d\n", numAnalyzeErrors);
+    // printf("Number of warnings: %d\n", numAnalyzeWarnings);
+    // printf("Number of errors: %d\n", numAnalyzeErrors);
 
     // printf("Symbol Table:\n\n");
     // st->print(pointerPrintStr);
