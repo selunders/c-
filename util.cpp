@@ -7,6 +7,7 @@
 using namespace std;
 
 static int nodeCount = 0;
+extern int numErrors;
 
 /*
 For reference:
@@ -122,12 +123,12 @@ TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0, TreeNode *c1,
 
 TreeNode *addSibling(TreeNode *addToThis, TreeNode *nodeBeingAdded)
 {
-    if (nodeBeingAdded == NULL)
+    if (nodeBeingAdded == NULL && numErrors==0)
     {
         // printf("ERROR(SYSTEM): attempt to add a NULL to a sibling list.\n");
-        return addToThis;
-        // printf("ERROR(SYSTEM): never add a NULL to a sibling list.\n");
-        // exit(1);
+        // return addToThis;
+        printf("ERROR(SYSTEM): never add a NULL to a sibling list.\n");
+        exit(1);
     }
     if (addToThis != NULL)
     {

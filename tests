@@ -12,7 +12,8 @@ gdb_flag=false
 segFault_flag=false
 fileIn=''
 
-sampleDirectory='sample/assign4/'
+# sampleDirectory='sample/assign4/'
+sampleDirectory='sample/testDataA5/'
 
 while getopts 'AdDGhmopPf:v' flag; do
     case "${flag}" in
@@ -48,9 +49,9 @@ elif [ "$allTests_flag" = true ]; then
         make clean
         make
     fi
-    echo 'Running ./c- on all the files in sample/assign4/'
+    echo "Running ./c- on all the files in $sampleDirectory"
     # for file in samplePrograms2/*.c-
-    for file in sample/assign4/*.c-; do
+    for file in $sampleDirectory*.c-; do
         x=${file%.c-}
         y=${x##*/}
         # echo "./c- $file > myOutput/$y.out"
@@ -63,7 +64,7 @@ elif [ "$allTests_flag" = true ]; then
     if [ "$segFault_flag" = false ]; then
         echo -e "Success. Files stored in myOutput/\n"
         echo 'Diffing outputs'
-        for file in sample/assign4/*.out; do
+        for file in $sampleDirectory*.out; do
             #	echo $file
             x=${file%.out}
             y=${x##*/}
@@ -84,30 +85,30 @@ else
         make
     fi
     if [ "$gdb_flag" = true ]; then
-        gdb --args ./c- sample/assign4/$fileIn.c- -P
+        gdb --args ./c- $sampleDirectory$fileIn.c- -P
     elif [ "$justView_flag" = true ]; then
-        cat -n sample/assign4/$fileIn.c-
+        cat -n $sampleDirectory$fileIn.c-
     elif [ "$viewOutput_flag" = true ]; then
-        echo "cat -n sample/assign4/$fileIn.out"
-        cat -n sample/assign4/$fileIn.out
+        echo "cat -n $sampleDirectory$fileIn.out"
+        cat -n $sampleDirectory$fileIn.out
     elif [ "$debug_flag" = true ]; then
         if [ "$printTypes_flag" = true ]; then
-            ./c- sample/assign4/$fileIn.c- -D -P
+            ./c- $sampleDirectory$fileIn.c- -D -P
         elif [ "$print_flag" = true ]; then
-            ./c- sample/assign4/$fileIn.c- -D -p
+            ./c- $sampleDirectory$fileIn.c- -D -p
         else
-            ./c- sample/assign4/$fileIn.c- -D
+            ./c- $sampleDirectory$fileIn.c- -D
         fi
     elif [ "$diff_flag" = true ]; then
-        ./c- sample/assign4/$fileIn.c- -P >myOutput/$fileIn.out
-        sdiff <(sort myOutput/$fileIn.out) <(sort sample/assign4/$fileIn.out)
+        ./c- $sampleDirectory$fileIn.c- -P >myOutput/$fileIn.out
+        sdiff <(sort myOutput/$fileIn.out) <(sort $sampleDirectory$fileIn.out)
     else
         if [ "$printTypes_flag" = true ]; then
-            ./c- sample/assign4/$fileIn.c- -P
+            ./c- $sampleDirectory$fileIn.c- -P
         elif [ "$print_flag" = true ]; then
-            ./c- sample/assign4/$fileIn.c- -p
+            ./c- $sampleDirectory$fileIn.c- -p
         else
-            ./c- sample/assign4/$fileIn.c-
+            ./c- $sampleDirectory$fileIn.c-
         fi
     fi
 fi
@@ -117,7 +118,7 @@ fi
 #     make clean; make;
 #     echo 'Running ./c- on all the files in sampleOutput3'
 #     # for file in samplePrograms2/*.c-
-#     for file in sample/assign4/*.c-
+#     for file in $sampleDirectory*.c-
 #     do
 #         x=${file%.c-}
 #         y=${x##*/}
@@ -128,7 +129,7 @@ fi
 #     echo -e "Complete. Files stored in myOutput/\n"
 
 #     echo 'Diffing outputs'
-#     for file in sample/assign4/*.out
+#     for file in $sampleDirectory*.out
 #     do
 #         x=${file%.out}
 #         y=${x##*/}
@@ -140,7 +141,7 @@ fi
 #     case $2 in
 #     "-l")
 #     make clean; make;
-#     ./c- sample/assign4/$1.c- -p > myOutput/$1.out
-#     echo "sdiff myOutput/$1.out sample/assign4/$1.out"
-#     sdiff myOutput/$1.out sample/assign4/$1.out
+#     ./c- $sampleDirectory$1.c- -p > myOutput/$1.out
+#     echo "sdiff myOutput/$1.out $sampleDirectory$1.out"
+#     sdiff myOutput/$1.out $sampleDirectory$1.out
 # fi

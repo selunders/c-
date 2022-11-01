@@ -764,6 +764,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             break;
         case ExpKind::IdK:
         {
+            // printf("%d %s isInit %d\n", t->lineno, t->attr.string, t->isInit);
             // t->needsInitCheck = true;
             TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
             TreeNode *tmp_g = (TreeNode *)st->lookupGlobal(t->attr.string);
@@ -1177,6 +1178,8 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
             {
                 printf(getErrMsg(errSymNotDecl), t->lineno, t->attr.string);
                 numAnalyzeErrors++;
+                st->insert(t->attr.string, t);
+                t->isDeclared = true;
             }
             break;
         }

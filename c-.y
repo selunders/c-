@@ -105,6 +105,7 @@ declList
 decl
     : varDecl {$$ = $1;}
     | funDecl {$$ = $1;}
+    | error   { $$ = NULL; }
     ;
 varDecl
     : typeSpec[type] varDeclList[vdecllist] ';'
@@ -112,6 +113,17 @@ varDecl
             // $$ = newDeclNode(DeclKind::VarK, $[type], $3, $[vdecllist], NULL, NULL);
             $$ = $[vdecllist];
             setType($$, $[type], false, false);
+            yyerrok;
+        }
+    | error varDeclList ';'
+        {
+            $$ = NULL;
+            yyerrok;
+        }
+    | typeSpec error ';'
+        {
+            $$ = NULL;
+            yyerrok;
         }
     ;
 scopedVarDecl
@@ -122,6 +134,7 @@ scopedVarDecl
             setType($$, $[type], true, false);
             // Might need to actually do this:
             // setType($$->child[0], ... )
+            yyerrok;
         }
     | typeSpec[type] varDeclList[vdecllist] ';'
         {
@@ -130,6 +143,7 @@ scopedVarDecl
             setType($$, $[type], false, false);
             // Might need to actually do this:
             // setType($$->child[0], ... )
+            yyerrok;
         }
     ;
 varDeclList
@@ -137,11 +151,17 @@ varDeclList
         {
             $$ = $[vdecllist];
             addSibling($$, $[vdeclinit]);
+            yyerrok;
         }
     | varDeclInit
         {
             $$ = $1;
         }
+    | varDeclList ',' error
+        {
+            $$ = NULL;
+        }
+    | error { $$ = NULL; }
     ;
 varDeclInit
     : varDeclId
@@ -155,6 +175,7 @@ varDeclInit
             // $$->isUsed = true;
             // $$->isInit = true; 
         }
+    | error ':' simpleExp { $$ = NULL; yyerrok; }
     ;
 varDeclId
     : ID
@@ -173,6 +194,12 @@ varDeclId
             $$->isIndexed = false;
             // $$->isInit = true;
             // printf("Found ID: %s\n\n", $1->tokenstr);
+        }
+    | ID '['error']'
+        {
+            $$ = NULL;
+            // Might be an issue here, refer to grammarmods.txt
+            yyerrok;    
         }
     ;
 typeSpec
@@ -222,6 +249,10 @@ funDecl
             $$->isDeclared = true;
             $[cstmt]->canEnterThisScope = false;
         }
+    | typeSpec error { $$ = NULL; }
+    | typeSpec ID '(' error { $$ = NULL; }
+    | ID '(' error { $$ = NULL; }
+    | ID '(' parms ')' error { $$ = NULL; }
     ;
 parms
     : %empty
@@ -243,6 +274,8 @@ parmList
         {
             $$ = $1;
         }
+    | parmList ';' error { $$ = NULL; }
+    | error { $$ = NULL; }
     ;
 parmTypeList
     : typeSpec[type] parmIdList[prmidlist]
@@ -251,16 +284,20 @@ parmTypeList
             // printf("Found a list of parameters\n");
             setType($$, $[type], $$->isStatic, false);
         }
+    | typeSpec error { $$ = NULL; }
     ;
 parmIdList
     : parmIdList[prmidlist] ',' parmId[prmid]
         {
             $$ = addSibling($[prmidlist], $[prmid]);
+            yyerrok;
         }
     | parmId
         {
             $$ = $1;
         }
+    | parmIdList ',' error { $$ = NULL; }
+    | error { $$ = NULL; }
     ;
 parmId
     : ID
@@ -316,11 +353,17 @@ expStmt
         {
             $$ = NULL;
         }
+    | error ';'
+        {
+            $$ = NULL;
+            yyerrok;
+        }
     ;
 compoundStmt
     : '{' localDecls[lcldecls] stmtList[stmtlist] '}'
         {
             $$ = newStmtNode(StmtKind::CompoundK, $1, $[lcldecls], $[stmtlist], NULL);
+            yyerrok;
         }
     ;
 localDecls
@@ -354,9 +397,9 @@ selectSuperStmt
         }
     ;
 open_stmt
-    : IF simpleExp[simpleexp] THEN selectSuperStmt[selectsuperstmt]
+    : IF simpleExp[simpleexp] THEN selectSuperStmt[slctSperStmt]
         {
-            $$ = newStmtNode(StmtKind::IfK, $1, $[simpleexp], $[selectsuperstmt], NULL);
+            $$ = newStmtNode(StmtKind::IfK, $1, $[simpleexp], $[slctSperStmt], NULL);
         }
     | IF simpleExp[simpleexp] THEN closed_stmt[clsdstmt] ELSE open_stmt[opnstmt]
         {
@@ -365,6 +408,15 @@ open_stmt
     | open_iterStmt
         {
             $$ = $1;
+        }
+    | IF error THEN selectSuperStmt[slctSperStmt]
+        {
+            $$ = NULL; yyerrok;
+        }
+    | IF error THEN closed_stmt[clsdstmt] ELSE open_stmt[opnstmt]
+        {
+            $$ = NULL;
+            yyerrok;
         }
     ;
 closed_stmt
@@ -376,6 +428,9 @@ closed_stmt
         {
             $$ = newStmtNode(StmtKind::IfK, $1, $[simpleexp], $[clsstmt1], $[clsstmt2]);
         }
+    | IF error { $$ = NULL; }
+    | IF error ELSE closed_stmt { $$ = NULL; yyerrok; }
+    | IF error THEN closed_stmt ELSE closed_stmt { $$ = NULL; yyerrok; }
     ;
 open_iterStmt
     : WHILE simpleExp[simpleexp] DO open_stmt[opnstmt]
@@ -394,6 +449,10 @@ open_iterStmt
             // TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
             $$ = newStmtNode(StmtKind::ForK, $1, tmp, $[itrrng], $[opnstmt]);
         }
+    | WHILE error DO open_iterStmt[opnstmt]
+        {
+            $$ = NULL; yyerrok;
+        }
     ;
 closed_iterStmt
     : WHILE simpleExp[simpleexp] DO closed_stmt[clsdstmt]
@@ -410,6 +469,14 @@ closed_iterStmt
             // TreeNode* tmp = newExpNode(ExpKind::IdK, $[id], NULL, NULL, NULL);
             $$ = newStmtNode(StmtKind::ForK, $1, tmp, $[itrrng], $[clsdstmt]);
         }
+    | WHILE error DO closed_iterStmt[opnstmt]
+        {
+            $$ = NULL; yyerrok;
+        }
+    | WHILE error
+        {
+            $$ = NULL;
+        }
     ;
 iterRange
     : simpleExp[low] TO simpleExp[high]
@@ -420,6 +487,10 @@ iterRange
         {
             $$ = newStmtNode(StmtKind::RangeK, $2, $[low], $[high], $[step]);
         }
+    | simpleExp TO error { $$ = NULL; }
+    | error BY error { $$ = NULL; yyerrok; }
+    | simpleExp TO simpleExp BY error { $$ = NULL; }
+    ;
 returnStmt
     : RETURN ';'
         {
@@ -429,6 +500,12 @@ returnStmt
     | RETURN exp[e] ';'
         {
             $$ = newStmtNode(StmtKind::ReturnK, $1, $[e], NULL, NULL);
+            yyerrok;
+        }
+    | RETURN error ';'
+        {
+            $$ = NULL;
+            yyerrok;
         }
     ;
 breakStmt
@@ -460,6 +537,22 @@ exp
     | simpleExp
         {
             $$ = $1;
+        }
+    | error assignop exp
+        {
+            $$ = NULL; yyerrok;
+        }
+    | mutable assignop error
+        {
+            $$ = NULL;
+        }
+    | error INC
+        {
+            $$ = NULL; yyerrok;
+        }
+    | error DEC
+        {
+            $$ = NULL; yyerrok;
         }
     ;
 assignop
@@ -506,6 +599,10 @@ simpleExp
         {
             $$ = $1;
         }
+    | simpleExp OR error
+        {
+            $$ = NULL;
+        }
     ;
 andExp
     : andExp[aexp] AND[and] unaryRelExp[urexp]
@@ -519,6 +616,10 @@ andExp
         {
             $$ = $1;
         }
+    | andExp AND error
+        {
+            $$ = NULL;
+        }
     ;
 unaryRelExp
     : NOT unaryRelExp[urexp]
@@ -530,6 +631,10 @@ unaryRelExp
     | relExp
         {
             $$ = $1;
+        }
+    | NOT error
+        {
+            $$ = NULL;
         }
     ;
 relExp
@@ -591,6 +696,10 @@ sumExp
         {
             $$ = $1;
         }
+    | sumExp sumop error
+        {
+            $$ = NULL;
+        }
     ;
 sumop
     : '+'
@@ -622,6 +731,10 @@ mulExp
     | unaryExp
         {
             $$ = $1;
+        }
+    | mulExp mulop error
+        {
+            $$ = NULL;
         }
     ;
 mulop
@@ -658,6 +771,10 @@ unaryExp
     | factor
         {
             $$ = $1;
+        }
+    | unaryop error
+        {
+            $$ = NULL;
         }
     ;
 unaryop
@@ -724,6 +841,7 @@ immutable
     : '(' exp ')'
         {
             $$ = $2;
+            yyerrok;
         }
     | call
         {
@@ -732,6 +850,10 @@ immutable
     | constant
         {
             $$ = $1;
+        }
+    | '(' error
+        {
+            $$ = NULL;
         }
     ;
 call
@@ -745,6 +867,10 @@ call
             {
                 // $[arguments]->needsInitCheck = true;
             }
+        }
+    | error '('
+        {
+            $$ = NULL; yyerrok;
         }
     ;
 args
@@ -761,10 +887,15 @@ argList
     : argList[args] ',' exp[e]
         {
             $$ = addSibling($[args], $[e]);
+            yyerrok;
         }
     | exp
         {
             $$ = $1;
+        }
+    | argList ',' error
+        {
+            $$ = NULL;
         }
     ;
 constant
