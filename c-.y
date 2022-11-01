@@ -16,7 +16,7 @@
 #include "util.hpp"
 #include <stdio.h>
 #include <string.h> 
-
+#include "yyerror.h"
 
 extern int yylex();
 extern FILE *yyin;
@@ -27,11 +27,11 @@ extern void resetLexer();
 TreeNode* rootNode;
 
 #define YYERROR_VERBOSE
-void yyerror(const char *msg)
-{
-    printf("ERROR(%d): %s\n", line, msg);
-    numErrors++;
-}
+// void yyerror(const char *msg)
+// {
+//     printf("ERROR(%d): %s\n", line, msg);
+//     numErrors++;
+// }
 
 void printCharByChar(char* stringToPrint)
 {
@@ -282,7 +282,8 @@ parmTypeList
         {
             $$ = $[prmidlist];
             // printf("Found a list of parameters\n");
-            setType($$, $[type], $$->isStatic, false);
+            if($$ != NULL)
+                setType($$, $[type], $$->isStatic, false);
         }
     | typeSpec error { $$ = NULL; }
     ;
@@ -591,8 +592,8 @@ simpleExp
             // Pretty sure these should be true (same with AND) //
             ///************************************************/// 
             
-            $[sexp]->needsInitCheck = false;
-            $[aexp]->needsInitCheck = false;
+            // $[sexp]->needsInitCheck = false;
+            // $[aexp]->needsInitCheck = false;
             $$->expType = ExpType::Boolean;
         }
     | andExp
@@ -608,8 +609,8 @@ andExp
     : andExp[aexp] AND[and] unaryRelExp[urexp]
         {
             $$ = newExpNode(ExpKind::OpK, $[and], $[aexp], $[urexp], NULL);
-            $[aexp]->needsInitCheck = false;
-            $[urexp]->needsInitCheck = false;
+            // $[aexp]->needsInitCheck = false;
+            // $[urexp]->needsInitCheck = false;
             $$->expType = ExpType::Boolean;
         }
     | unaryRelExp

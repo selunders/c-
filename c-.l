@@ -11,6 +11,8 @@
 int line = 1;
 int numErrors = 0;    // ERR err count
 int numWarnings = 0;
+char* lastToken = NULL;
+// TokenData* lastToken = NULL;
 
 void myFree(void * freeThis)
 {
@@ -98,16 +100,23 @@ void handleCharEscapeChars(char* tokString, char* outChar)
         if(strlen(yylval.tokenData->tokenstr) > 4)
         {
             printf("WARNING(%d): character is %d characters long and not a single character: \'%s\'.  The first char will be used.\n", yylval.tokenData->linenum, strlen(yylval.tokenData->tokenstr)-2, yylval.tokenData->tokenstr);
+            numWarnings++;
         }
     }
     else if(strlen(yylval.tokenData->tokenstr) > 3)
     {
         printf("WARNING(%d): character is %d characters long and not a single character: \'%s\'.  The first char will be used.\n", yylval.tokenData->linenum, strlen(yylval.tokenData->tokenstr)-2, yylval.tokenData->tokenstr);
+        numWarnings++;
     }
     // setPrintColor(PRINTCOLOR::GREEN);
     // printf("The token is: %c\n", c);
     // resetPrintColor();
     *outChar = c;
+}
+
+static void setLastToken(char*)
+{
+    lastToken = yylval.tokenData->tokenstr;
 }
 
 static int setValue(int linenum, int tokenClass, char *svalue)
@@ -121,7 +130,7 @@ static int setValue(int linenum, int tokenClass, char *svalue)
     // fill it up
     yylval.tokenData->linenum = linenum;
     yylval.tokenData->tokenstr = strdup(svalue);  // duplicating string!!
-
+    lastToken = yylval.tokenData->tokenstr;
     switch(tokenClass)
     {
         case ID:
@@ -163,6 +172,7 @@ static int setValue(int linenum, int tokenClass, char *svalue)
 \n                      { line++; }
 "//".*\n                { line++; }
 [0-9]+                  { return setValue(line, NUMCONST, yytext);}
+"''"                    { printf("ERROR(%d): Empty character ''.  Characters ignored.\n", line), numErrors++; }
 "if"                    { return setValue(line, IF, (char*) "IF"); }
 "or"                    { return setValue(line, OR, (char*) "OR"); }
 "else"                  { return setValue(line, ELSE, (char*) "ELSE"); }
@@ -200,7 +210,7 @@ static int setValue(int linenum, int tokenClass, char *svalue)
 [ \t]                   ;
 [\%]                    { return setValue(line, MODULO, yytext); }
 [\=\+\-\*\/\(\)]        { return setValue(line, yytext[0], yytext); }
-[\'\"\.\@\#\$\^\&\_\|\\\~\!]                { printf("ERROR(%d): Invalid or misplaced input character: \'%s\'. Character Ignored.\n", line, yytext); numErrors++;}
+[\'\"\.\@\#\$\^\&\_\|\\\~\!\`]                { printf("ERROR(%d): Invalid or misplaced input character: \'%s\'. Character Ignored.\n", line, yytext); numErrors++;}
 [\%\*\(\)\-\{\}\[\]\;\:\<\>\?\,\/]          { return setValue(line, yytext[0], yytext); }
 .                       { printf("ERROR(%d): char \'%c\' is not in the language\n", line, yytext[0]); numErrors++; }
 %%

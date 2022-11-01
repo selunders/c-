@@ -4,6 +4,7 @@
 #include "util.hpp"
 #include "symbolTable.hpp"
 #include "analyze.hpp"
+#include "yyerror.h"
 
 extern FILE *yyin;
 extern FILE *yyout;
@@ -16,6 +17,7 @@ extern void yyrestart(FILE *);
 extern int yylex_destroy(void);
 extern int numErrors;
 extern int numWarnings;
+extern void initErrorProcessing();
 
 FILE *fileIn;
 TreeNode *fileInRoot;
@@ -96,6 +98,7 @@ int main(int argc, char *argv[])
 
         // Create symbol table
         SymbolTable *symbolTable = new SymbolTable();
+        initErrorProcessing(); 
 
         ///////////////
         // Read in the helper functions file(s)
@@ -118,6 +121,9 @@ int main(int argc, char *argv[])
         TreeNode *IORoot = createIOAST();
         ASTtoSymbolTable(symbolTable, IORoot);
 
+        printf("FILE: %s\n", argv[index]+18);
+        // printf("FILE: %s\n", argv[index]);
+        printf("====================================\n");
         tmpRoot = parseFile(fileIn);
 
         // Print initial
@@ -129,10 +135,8 @@ int main(int argc, char *argv[])
 
         // symbolTable->test();
         symbolTable->debug(symbTabDEBUG);
-        printf("====================================\n");
         if (numErrors == 0)
             semanticAnalysis(symbolTable, tmpRoot, printTypeInfo);
-        printf("FILE: %s\n", argv[index]);
         printf("Number of warnings: %d\n", numWarnings);
         printf("Number of errors: %d\n", numErrors);
         // symbolTable->print(pointerPrintNode);
