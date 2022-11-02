@@ -91,6 +91,7 @@ void resetParse()
 %%
 program
     : declList {rootNode = $1;}
+    /* | error                                   { $$ = NULL; } */
     ;
 declList
     : declList decl
@@ -101,6 +102,7 @@ declList
         {
             $$ = $1;
         }
+    /* | error                                   { $$ = NULL; } */
     ;
 decl
     : varDecl {$$ = $1;}
@@ -171,11 +173,17 @@ varDeclInit
     | varDeclId[vdeclid] ':' simpleExp[simpleexp]
         {
             $$ = $[vdeclid];
-            $$->child[0] = $[simpleexp];
+            if($$ != NULL)
+                $$->child[0] = $[simpleexp];
             // $$->isUsed = true;
             // $$->isInit = true; 
         }
     | error ':' simpleExp { $$ = NULL; yyerrok; }
+    /* | varDeclId[vdeclid] ':' error
+    {
+        $$ = $[vdeclid];
+        yyerrok;
+    } */
     ;
 varDeclId
     : ID
@@ -195,11 +203,16 @@ varDeclId
             // $$->isInit = true;
             // printf("Found ID: %s\n\n", $1->tokenstr);
         }
-    | ID '['error']'
+    | ID '[' error
         {
             $$ = NULL;
             // Might be an issue here, refer to grammarmods.txt
-            yyerrok;    
+            // yyerrok;    
+        }
+    | error ']'
+        {
+            $$ = NULL;
+            yyerrok;
         }
     ;
 typeSpec
@@ -249,10 +262,10 @@ funDecl
             $$->isDeclared = true;
             $[cstmt]->canEnterThisScope = false;
         }
-    | typeSpec error { $$ = NULL; }
-    | typeSpec ID '(' error { $$ = NULL; }
-    | ID '(' error { $$ = NULL; }
-    | ID '(' parms ')' error { $$ = NULL; }
+    | typeSpec error            { $$ = NULL; }
+    | typeSpec ID '(' error     { $$ = NULL; }
+    | ID '(' error              { $$ = NULL; }
+    | ID '(' parms ')' error    { $$ = NULL; }
     ;
 parms
     : %empty
@@ -274,8 +287,8 @@ parmList
         {
             $$ = $1;
         }
-    | parmList ';' error { $$ = NULL; }
-    | error { $$ = NULL; }
+    | parmList ';' error    { $$ = NULL; }
+    | error                 { $$ = NULL; }
     ;
 parmTypeList
     : typeSpec[type] parmIdList[prmidlist]
@@ -296,6 +309,7 @@ parmIdList
     | parmId
         {
             $$ = $1;
+            // yyerrok;
         }
     | parmIdList ',' error { $$ = NULL; }
     | error { $$ = NULL; }
@@ -454,6 +468,8 @@ open_iterStmt
         {
             $$ = NULL; yyerrok;
         }
+    /* | FOR ID '=' error DO open_stmt { $$ = NULL; yyerrok; } */
+    /* | FOR error { $$ = NULL; } */
     ;
 closed_iterStmt
     : WHILE simpleExp[simpleexp] DO closed_stmt[clsdstmt]
@@ -478,6 +494,8 @@ closed_iterStmt
         {
             $$ = NULL;
         }
+    | FOR ID '=' error DO closed_stmt {$$ = NULL; yyerrok; }
+    | FOR error { $$ = NULL; }
     ;
 iterRange
     : simpleExp[low] TO simpleExp[high]
@@ -541,7 +559,8 @@ exp
         }
     | error assignop exp
         {
-            $$ = NULL; yyerrok;
+            $$ = NULL;
+            yyerrok;
         }
     | mutable assignop error
         {
@@ -549,11 +568,13 @@ exp
         }
     | error INC
         {
-            $$ = NULL; yyerrok;
+            $$ = NULL;
+            yyerrok;
         }
     | error DEC
         {
-            $$ = NULL; yyerrok;
+            $$ = NULL;
+            yyerrok;
         }
     ;
 assignop
@@ -855,6 +876,7 @@ immutable
     | '(' error
         {
             $$ = NULL;
+            yyerrok;
         }
     ;
 call
@@ -871,7 +893,8 @@ call
         }
     | error '('
         {
-            $$ = NULL; yyerrok;
+            $$ = NULL;
+            yyerrok;
         }
     ;
 args
