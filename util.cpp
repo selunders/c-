@@ -300,6 +300,11 @@ char *assignToString(OpKind op)
     }
 }
 
+static void printLocation(TreeNode* t)
+{
+    printf(" [mem: %s loc: %d size: %d] [line: %d]\n", refTypeToStr(t->referenceType), t->location, t->size, t->lineno);
+}
+
 static int indentno = -1;
 
 #define INDENT indentno += 1
@@ -693,13 +698,13 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer, bo
             switch (tree->subkind.decl)
             {
             case DeclKind::FuncK:
-                printf(" [mem: loc: size: %d] [line: %d]\n", tree->size, tree->lineno);
+                printLocation(tree);
                 break;
             case DeclKind::ParamK:
-                printf(" [mem: loc: size: %d] [line: %d]\n", tree->size, tree->lineno);
+                printLocation(tree);
                 break;
             case DeclKind::VarK:
-                printf(" [mem: loc: size: %d] [line: %d]\n", tree->size, tree->lineno);
+                printLocation(tree);
                 break;
             }
             printedLineno = true;
@@ -708,7 +713,7 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer, bo
             switch (tree->subkind.exp)
             {
             case ExpKind::IdK:
-                printf(" [mem: loc: size: %d] [line: %d]\n", tree->size, tree->lineno);
+                printLocation(tree);
                 printedLineno = true;
                 break;
             }
@@ -717,7 +722,7 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer, bo
             switch (tree->subkind.stmt)
             {
             case StmtKind::CompoundK:
-                printf(" [mem: loc: size: %d] [line: %d]\n", tree->size, tree->lineno);
+                printLocation(tree);
                 printedLineno = true;
                 break;
             }
