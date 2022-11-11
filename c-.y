@@ -176,7 +176,7 @@ varDeclInit
             if($$ != NULL)
                 $$->child[0] = $[simpleexp];
             // $$->isUsed = true;
-            // $$->isInit = true; 
+            // $$->isInit = false; 
         }
     | error ':' simpleExp { $$ = NULL; yyerrok; }
     /* | varDeclId[vdeclid] ':' error
@@ -200,7 +200,7 @@ varDeclId
             // $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             $$->isArray = true;
             $$->isIndexed = false;
-            // $$->isInit = true;
+            // $$->isInit = false;
             // printf("Found ID: %s\n\n", $1->tokenstr);
         }
     | ID '[' error
@@ -245,7 +245,8 @@ funDecl
             // setType($$, $[type], $$->isStatic, false);
             // $[cstmt]->attr.string = $[id]->tokenstr ? strdup($[id]->tokenstr) : (char*) "";
             // $$->attr.idIndex = $id->idIndex;
-            $$->isInit = true;
+            // $$->isInit = false;
+            $$->isInit = false;
             // $$->isUsed = true;
             $$->isDeclared = true;
             $$->isConstantExp = true;
@@ -257,7 +258,7 @@ funDecl
             $[cstmt]->attr.string = strdup($[id]->tokenstr);
             $$->isDefined = true;
             // setType($$, ExpType::Void, $$->isStatic, false);
-            $$->isInit = true;
+            $$->isInit = false;
             // $$->isUsed = true;
             $$->isDeclared = true;
             $[cstmt]->canEnterThisScope = false;
@@ -539,7 +540,7 @@ exp
             $$ = $[aop];
             $$->child[0] = $[m];
             // $[m]->isUsed = true;
-            // $[m]->isInit = true;
+            // $[m]->isInit = false;
             $$->child[1] = $[e];
             // $[e]->needsInitCheck = true;
         }
@@ -855,7 +856,7 @@ mutable
             tmp->isInit = false;
             $$ = newExpNode(ExpKind::OpK, $2, tmp, $[e], NULL);
             // $[e]->needsInitCheck = false;
-            // $[e]->isInit = true;
+            // $[e]->isInit = false;
             // $[e]->needsInitCheck = true;
         }
     ;

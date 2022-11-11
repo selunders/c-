@@ -106,6 +106,7 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             // t->needsInitCheck = true;
             // printf("%s %s\n", t->attr.string, t->isInit ? "is init" : "is not init");
             t->isInit = false;
+            // printf("%d setting isInit to %s\n", t->lineno, "false");
             // printf("%s %s\n", t->attr.string, t->isInit ? "is init" : "is not init");
             // printf("%d", t->declDepth);
             switch (t->subkind.decl)
@@ -238,6 +239,7 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             {
             case ExpKind::IdK:
                 t->isInit = false;
+                // printf("%d setting isInit to %s\n", t->lineno, "false");
                 break;
             }
             break;
@@ -665,6 +667,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             if (t->child[0] != NULL)
             {
                 t->isInit = true;
+                // printf("%d setting isInit to %s\n", t->lineno, "true");
                 if (nodeIsConstant(st, t->child[0]))
                 {
                     t->isConstantExp = true;
@@ -674,6 +677,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
         }
         case DeclKind::ParamK:
             t->isInit = true;
+            // printf("%d setting isInit to %s\n", t->lineno, "true");
             break;
         }
         break;
@@ -715,6 +719,8 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                         // initTmp->needsInitCheck = false;
                         // t->child[1]->isInit = false;
                         t->child[1]->isInit = initTmp->isInit;
+                        // printf("%d setting isInit to %s\n", t->lineno, initTmp->isInit ? "true" : "false");
+
                         // if (!t->child[1]->isInit)
                         // printf("Is maybe init %d\n", t->lineno);
                         if (!nodeIsInit(st, t->child[1]))
@@ -723,6 +729,8 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                             printf(getWarnMsg(warnUninitVar), t->child[1]->lineno, initTmp->attr.string);
                             numAnalyzeWarnings++;
                             initTmp->isInit = true;
+                            // printf("%d setting isInit to %s\n", t->lineno, initTmp->isInit ? "true" : "false");
+
                             // t->child[1]->isInit = true;
                         }
                     }
@@ -738,6 +746,8 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 {
                     childTmp->isInit = true;
                     t->child[0]->isInit = true;
+                    // printf("%d setting isInit to %s\n", t->lineno, childTmp->isInit ? "true" : "false");
+
                     // printf("Hellooooo %s\n\n", childTmp->attr.string);
                 }
             }
@@ -845,16 +855,22 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             if (t->child[0] != NULL)
             {
                 t->child[0]->isInit = true;
-                if (t->child[0]->nodeKind == NodeKind::DeclK)
-                    tmp = (TreeNode *)st->lookup(t->child[0]->attr.string);
+                // printf("%d setting child isInit to %s\n", t->lineno, "true");
             }
+            if(t->child[0]->nodeKind == NodeKind::DeclK)
+            {
+                tmp = (TreeNode*) st->lookup(t->child[0]->attr.string);
+            }
+            // tmp = getSTNode(st, t->child[0]);
             if (tmp != NULL)
             {
                 tmp->isInit = true;
+                printf("%d setting tmp %s at line %d isInit to %s\n\n", t->lineno, tmp->attr.string, tmp->lineno, "true");
             }
-            tmp = getSTNode(st, t->child[0]);
-            if (tmp != NULL)
-                tmp->isInit = true; 
+            // else
+            // {
+                // printf("Couldn't find node in ST %d\n", t->lineno);
+            // }
         }
         break;
         case StmtKind::ReturnK:
@@ -1077,13 +1093,17 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 if (lhTmp != NULL)
                 {
                     lhTmp->isInit = true;
+                    // printf("%d setting lhTmp isInit to %s\n", t->lineno, "true");
+
                     // lhTmp->needsInitCheck = false;
                 }
                 t->child[0]->isInit = true;
+                // printf("%d setting lh isInit to %s\n", t->lineno, "true");
                 // t->child[0]->needsInitCheck = false;
                 if (t->child[0]->child[0] != NULL)
                 {
                     t->child[0]->child[0]->isInit = true;
+                    // printf("%d setting lh->lh isInit to %s\n", t->lineno, "true");
                     // t->child[0]->child[0]->needsInitCheck = false;
                 }
             }
@@ -1228,6 +1248,8 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 if (t->isInit)
                 {
                     tmp->isInit = true;
+                    // printf("%d setting tmp isInit to %s\n", t->lineno, "true");
+
                     // tmp->needsInitCheck = false;
                     // t->needsInitCheck = false;
                 }
@@ -1245,20 +1267,22 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope)
                             // if ((st->depth() > 1) && !tmp->isInit && !t->isArray)
                             // printf("declDepth: %d, stDetph: %d, tmp->isInit: %d, t->isInit: %d, needsInitCheck: %d\n", tmp->declDepth, st->depth(), tmp->isInit, t->isInit, t->needsInitCheck);
                             // printf("%d '%s' t->isInit: %d, tmp->isInit: %d\n", t->lineno, tmp->attr.string, t->isInit, tmp->isInit);
-                        // printf("'%s' tmp->declDepth: %d, st->depth: %d, tmp->isInit: %d\n", tmp->attr.string, tmp->declDepth, st->depth(), tmp->isInit);
-                        if (tmp->declDepth != 1 && (st->depth() > 1) && !nodeIsInit(st, t))
-                        // if (tmp->declDepth != 1 && (st->depth() > 1) && nodeIsInit(t)!tmp->isInit)
-                        // if ((st->depth() > 1) && !tmp->isInit && isUnindexedArray(t))
-                        {
-                            // printf("printAnalysis: ");
-                            // setPrintColor(PRINTCOLOR::PURPLE);
-                            printf(getWarnMsg(warnUninitVar), t->lineno, t->attr.string);
-                            // resetPrintColor();
-                            tmp->isInit = true;
-                            numAnalyzeWarnings++;
-                            tmp->needsInitCheck = false;
-                            t->needsInitCheck = false;
-                        }
+                            // printf("'%s' tmp->declDepth: %d, st->depth: %d, tmp->isInit: %d\n", tmp->attr.string, tmp->declDepth, st->depth(), tmp->isInit);
+                            if (tmp->declDepth != 1 && (st->depth() > 1) && !nodeIsInit(st, t))
+                            // if (tmp->declDepth != 1 && (st->depth() > 1) && nodeIsInit(t)!tmp->isInit)
+                            // if ((st->depth() > 1) && !tmp->isInit && isUnindexedArray(t))
+                            {
+                                // printf("printAnalysis: ");
+                                // setPrintColor(PRINTCOLOR::PURPLE);
+                                printf(getWarnMsg(warnUninitVar), t->lineno, t->attr.string);
+                                // resetPrintColor();
+                                tmp->isInit = true;
+                                // printf("%d setting tmp isInit to %s\n", t->lineno, "true");
+
+                                numAnalyzeWarnings++;
+                                tmp->needsInitCheck = false;
+                                t->needsInitCheck = false;
+                            }
                         // printf("End %s\n", t->attr.string);
                         // }
                     }
