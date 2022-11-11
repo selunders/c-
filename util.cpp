@@ -123,7 +123,7 @@ TreeNode *newExpNode(ExpKind kind, TokenData *token, TreeNode *c0, TreeNode *c1,
 
 TreeNode *addSibling(TreeNode *addToThis, TreeNode *nodeBeingAdded)
 {
-    if (nodeBeingAdded == NULL && numErrors==0)
+    if (nodeBeingAdded == NULL && numErrors == 0)
     {
         // printf("ERROR(SYSTEM): attempt to add a NULL to a sibling list.\n");
         // return addToThis;
@@ -496,7 +496,7 @@ void printBasicTree(TreeNode *tree, NodeRelation relation, int id, int layer)
     UNINDENT;
 }
 
-void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer)
+void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer, bool printLocations)
 {
     int i;
     INDENT;
@@ -686,12 +686,50 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer)
         }
         // nodeCount++;
         // printf("%d\n", nodeCount);
-        printf(" [line: %d]\n", tree->lineno);
+        bool printedLineno = false;
+        switch (tree->nodeKind)
+        {
+        case NodeKind::DeclK:
+            switch (tree->subkind.decl)
+            {
+            case DeclKind::FuncK:
+                printf(" [mem: loc: size: %d] [line: %d]\n", tree->size, tree->lineno);
+                break;
+            case DeclKind::ParamK:
+                printf(" [mem: loc: size: %d] [line: %d]\n", tree->size, tree->lineno);
+                break;
+            case DeclKind::VarK:
+                printf(" [mem: loc: size: %d] [line: %d]\n", tree->size, tree->lineno);
+                break;
+            }
+            printedLineno = true;
+            break;
+        case NodeKind::ExpK:
+            switch (tree->subkind.exp)
+            {
+            case ExpKind::IdK:
+                printf(" [mem: loc: size: %d] [line: %d]\n", tree->size, tree->lineno);
+                printedLineno = true;
+                break;
+            }
+            break;
+        case NodeKind::StmtK:
+            switch (tree->subkind.stmt)
+            {
+            case StmtKind::CompoundK:
+                printf(" [mem: loc: size: %d] [line: %d]\n", tree->size, tree->lineno);
+                printedLineno = true;
+                break;
+            }
+            break;
+        }
+        if (!printedLineno)
+            printf(" [line: %d]\n", tree->lineno);
         for (i = 0; i < MAXCHILDREN; i++)
         {
             if (tree->child[i] != NULL)
             {
-                printTypedTree(tree->child[i], NodeRelation::Child, i, layer + 1);
+                printTypedTree(tree->child[i], NodeRelation::Child, i, layer + 1, printLocations);
                 // printf("child %d is not NULL %p\n", i, tree->child[i]);
             }
             // else
@@ -701,9 +739,9 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer)
         if (tree->sibling != NULL)
         {
             if (relation == NodeRelation::Sibling)
-                printTypedTree(tree->sibling, NodeRelation::Sibling, id + 1, layer);
+                printTypedTree(tree->sibling, NodeRelation::Sibling, id + 1, layer, printLocations);
             else
-                printTypedTree(tree->sibling, NodeRelation::Sibling, 1, layer);
+                printTypedTree(tree->sibling, NodeRelation::Sibling, 1, layer, printLocations);
         }
         // INDENT;
         // tree = NULL;
@@ -712,10 +750,12 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer)
     UNINDENT;
 }
 
-void printTree(TreeNode *tree, bool printTypeInfo)
+void printTree(TreeNode *tree, PrintMethod printOption)
 {
-    if (printTypeInfo)
-        printTypedTree(tree, NodeRelation::Parent, 0, 0);
+    if (printOption == PrintMethod::Typed)
+        printTypedTree(tree, NodeRelation::Parent, 0, 0, false);
+    else if (printOption == PrintMethod::Location)
+        printTypedTree(tree, NodeRelation::Parent, 0, 0, true);
     else
         printBasicTree(tree, NodeRelation::Parent, 0, 0);
 }

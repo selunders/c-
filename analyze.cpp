@@ -16,6 +16,9 @@ using namespace std;
 extern int numErrors;
 extern int numWarnings;
 
+static int foffset = 0;
+static int goffset = 0;
+
 int numAnalyzeWarnings;
 int numAnalyzeErrors;
 int loopDepth = 0;
@@ -673,6 +676,10 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     t->isConstantExp = true;
                 }
             }
+            if(t->isArray)
+            {
+                printf("%s is array, %s have child\n", t->attr.string, t->child[1] != NULL ? "does": "does not");
+            }
             break;
         }
         case DeclKind::ParamK:
@@ -823,10 +830,15 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                             tmp->isConstantExp = true;
                             t->isConstantExp = true;
                         }
+                        // tmp->size = t->child[1]->attr.value + 1;
+                        t->child[0]->size = tmp->size;
                     }
                 }
                 if (t->child[1] != NULL)
+                {
                     t->isIndexed = true;
+                    // t->child[0]->size = t->child[1]->attr.value + 1;
+                }
             }
             if (t->attr.op == NOT)
             {
@@ -857,9 +869,9 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 t->child[0]->isInit = true;
                 // printf("%d setting child isInit to %s\n", t->lineno, "true");
             }
-            if(t->child[0]->nodeKind == NodeKind::DeclK)
+            if (t->child[0]->nodeKind == NodeKind::DeclK)
             {
-                tmp = (TreeNode*) st->lookup(t->child[0]->attr.string);
+                tmp = (TreeNode *)st->lookup(t->child[0]->attr.string);
             }
             // tmp = getSTNode(st, t->child[0]);
             if (tmp != NULL)
@@ -869,7 +881,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             }
             // else
             // {
-                // printf("Couldn't find node in ST %d\n", t->lineno);
+            // printf("Couldn't find node in ST %d\n", t->lineno);
             // }
         }
         break;
@@ -1492,7 +1504,7 @@ void ASTtoSymbolTable(SymbolTable *st, TreeNode *root)
     traverse(st, root, setUsed, nullProc, false);
 }
 
-void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
+void semanticAnalysis(SymbolTable *st, TreeNode *root, PrintMethod printOption)
 {
     InitOpTypeList();
     initMsgTables();
@@ -1527,13 +1539,15 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, bool printTypedTree)
         numAnalyzeErrors++;
     }
     // if (printTypedTree)
-    if (printTypedTree && numAnalyzeErrors == 0)
-    {
-        printTree(root, true);
-        // printf("\033[0;33m");
-        // printf("MyWarning: Printing Typed Tree even though there may be errors!\n");
-        // printf("\033[0m");
-    }
+    // if (printTypedTree && numAnalyzeErrors == 0)
+    // {
+    //     printTree(root, true);
+    //     // printf("\033[0;33m");
+    //     // printf("MyWarning: Printing Typed Tree even though there may be errors!\n");
+    //     // printf("\033[0m");
+    // }
+    if (numAnalyzeErrors == 0 && printOption != PrintMethod::Basic && printOption != PrintMethod::None)
+        printTree(root, printOption);
     // printf("Number of warnings: %d\n", numAnalyzeWarnings);
     // printf("Number of errors: %d\n", numAnalyzeErrors);
 

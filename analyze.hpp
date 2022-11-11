@@ -3,7 +3,7 @@
 
 #include "globals.hpp"
 
-void semanticAnalysis(SymbolTable*, TreeNode*, bool);
+void semanticAnalysis(SymbolTable*, TreeNode*, PrintMethod);
 void ASTtoSymbolTable(SymbolTable*, TreeNode*);
 
 

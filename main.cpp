@@ -28,11 +28,14 @@ TreeNode *tmpRoot;
 TreeNode *parseFile(FILE *file);
 TreeNode *createIOAST();
 
+PrintMethod printOption = PrintMethod::Basic;
+
 int main(int argc, char *argv[])
 {
     bool printTreeFlag = false;
     bool printYYDEBUG = false;
     bool symbTabDEBUG = false;
+    bool sizeLocationFlag = false;
     bool printTypeInfo = false;
     bool printHelp = false;
 
@@ -40,7 +43,7 @@ int main(int argc, char *argv[])
     char *cvalue = NULL;
     int c;
 
-    while ((c = getopt(argc, argv, "dDpPh")) != -1)
+    while ((c = getopt(argc, argv, "dDMpPh")) != -1)
     {
         switch (c)
         {
@@ -50,11 +53,17 @@ int main(int argc, char *argv[])
         case 'D':
             symbTabDEBUG = true;
             break;
+        case 'M':
+            // sizeLocationFlag = true;
+            printOption = PrintMethod::Location;
+            break;
         case 'p':
-            printTreeFlag = true;
+            printOption = PrintMethod::Basic;
+            // printTreeFlag = true;
             break;
         case 'P':
-            printTypeInfo = true;
+            printOption = PrintMethod::Typed;
+            // printTypeInfo = true;
             break;
         case 'h':
             printHelp = true;
@@ -71,6 +80,7 @@ int main(int argc, char *argv[])
         printf("-d          - turn on parser debugging\n");
         printf("-D          - turn on symbol table debugging\n");
         printf("-h          - print this usage message\n");
+        printf("-M          - print the abstract syntax tree plus size & location information\n");
         printf("-p          - print the abstract syntax tree\n");
         printf("-P          - print the abstract syntax tree plus type information\n");
     }
@@ -121,22 +131,27 @@ int main(int argc, char *argv[])
         TreeNode *IORoot = createIOAST();
         ASTtoSymbolTable(symbolTable, IORoot);
 
-        printf("FILE: %s\n", argv[index]+18);
-        // printf("FILE: %s\n", argv[index]);
+        // printf("FILE: %s\n", argv[index]+16);
+        printf("FILE: %s\n", argv[index]);
         printf("====================================\n");
         tmpRoot = parseFile(fileIn);
 
         // Print initial
-        if (printTreeFlag && !printTypeInfo)
-        {
+        // if (printTreeFlag && !printTypeInfo && !sizeLocationFlag)
+        // {
             // printf("Not printing type info\n");
-            printTree(tmpRoot, false);
+            // printTree(tmpRoot, false);
+        // }
+
+        if (printOption == PrintMethod::Basic)
+        {
+            printTree(tmpRoot, printOption);
         }
 
         // symbolTable->test();
         symbolTable->debug(symbTabDEBUG);
         if (numErrors == 0)
-            semanticAnalysis(symbolTable, tmpRoot, printTypeInfo);
+            semanticAnalysis(symbolTable, tmpRoot, printOption);
         printf("Number of warnings: %d\n", numWarnings);
         printf("Number of errors: %d\n", numErrors);
         // symbolTable->print(pointerPrintNode);

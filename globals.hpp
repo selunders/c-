@@ -17,6 +17,13 @@
 // #define TRUE 1
 // #endif
 
+enum class PrintMethod {
+    None,
+    Basic,
+    Typed,
+    Location
+};
+
 typedef int OpKind;
 
 enum class TokenType
@@ -170,6 +177,9 @@ public:
     bool isForVar;
     bool isConstantExp;
     // bool enteredScope;
+    int size;
+
+
     TreeNode()
     {
         sibling = NULL;
@@ -196,6 +206,8 @@ public:
         isForVar = false;
         isConstantExp = false;
         declDepth = -1;
+        // -1 means 'size has been checked'
+        size = 1;
     }
 };
 

@@ -200,6 +200,7 @@ varDeclId
             // $$ = newExpNode(ExpKind::IdK, $1, NULL, NULL, NULL);
             $$->isArray = true;
             $$->isIndexed = false;
+            $$->size = $3->numValue + 1;
             // $$->isInit = false;
             // printf("Found ID: %s\n\n", $1->tokenstr);
         }
