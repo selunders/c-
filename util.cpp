@@ -128,7 +128,7 @@ TreeNode *addSibling(TreeNode *addToThis, TreeNode *nodeBeingAdded)
         // printf("ERROR(SYSTEM): attempt to add a NULL to a sibling list.\n");
         // return addToThis;
         printf("ERROR(SYSTEM): never add a NULL to a sibling list.\n");
-        exit(1);
+        // exit(1);
     }
     if (addToThis != NULL)
     {

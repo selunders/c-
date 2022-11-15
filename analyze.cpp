@@ -18,6 +18,7 @@ extern int numWarnings;
 
 static int foffset = 0;
 static int goffset = 0;
+std::vector<RefType> refScope;
 
 int numAnalyzeWarnings;
 int numAnalyzeErrors;
@@ -25,6 +26,24 @@ int loopDepth = 0;
 map<OpKind, OpTypeInfo> opInfoMap;
 static int location = 0;
 static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope);
+
+void enterRefScope(RefType rt)
+{
+    refScope.push_back(rt);
+}
+
+RefType getRefScope(RefType rt)
+{
+    if (!refScope.empty())
+        return refScope.back();
+    else
+        return RefType::None;
+}
+
+void exitRefScope()
+{
+    refScope.pop_back();
+}
 
 void InitOpTypeList()
 {
@@ -657,6 +676,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
         switch (t->subkind.decl)
         {
         case DeclKind::FuncK:
+            t->referenceType = RefType::Global;
             break;
         case DeclKind::VarK:
         {
@@ -676,14 +696,29 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     t->isConstantExp = true;
                 }
             }
-            if(t->isArray)
+            if (t->isArray)
             {
-                printf("%s is array, %s have child\n", t->attr.string, t->child[1] != NULL ? "does": "does not");
+                printf("%s is array, %s have child\n", t->attr.string, t->child[1] != NULL ? "does" : "does not");
             }
+
+            if(st->depth() == 1)
+            {
+                t->referenceType = RefType::Global;
+            }
+            else if(st->depth() > 1)
+            {
+                t->referenceType = RefType::Local;
+            }
+            if(t->isStatic)
+            {
+                t->referenceType = RefType::Static;
+            }
+
             break;
         }
         case DeclKind::ParamK:
             t->isInit = true;
+            t->referenceType = RefType::Parameter;
             // printf("%d setting isInit to %s\n", t->lineno, "true");
             break;
         }
@@ -796,6 +831,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                     tmp->isConstantExp = true;
                     t->isConstantExp = true;
                 }
+                t->referenceType = tmp->referenceType;
             }
             else if (tmp_g != NULL)
             {
@@ -1509,6 +1545,7 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, PrintMethod printOption)
     InitOpTypeList();
     initMsgTables();
     InitIOToSymbolTable(st);
+    refScope.push_back(RefType::Global);
     numAnalyzeWarnings = 0;
     numAnalyzeErrors = 0;
     // traverse(st, root, nullProc, moveUpTypes, false);
