@@ -22,6 +22,9 @@ char *refTypeToStr(RefType refType)
     case RefType::Local:
         return (char *)"Local";
         break;
+    case RefType::LocalStatic:
+        return (char *)"LocalStatic";
+        break;
     case RefType::Global:
         return (char *)"Global";
         break;
@@ -31,6 +34,9 @@ char *refTypeToStr(RefType refType)
     case RefType::Parameter:
         return (char *)"Parameter";
         break;
+    default:
+        return (char *)"ERROR";
+    break;
     }
 }
 

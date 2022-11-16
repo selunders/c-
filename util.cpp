@@ -3,11 +3,15 @@
 #include "c-.tab.h"
 #include "errorMsg.hpp"
 #include "analyze.hpp"
+#include "colorPrint.hpp"
 
 using namespace std;
 
 static int nodeCount = 0;
 extern int numErrors;
+
+extern int goffset;
+extern int foffset;
 
 /*
 For reference:
@@ -302,7 +306,10 @@ char *assignToString(OpKind op)
 
 static void printLocation(TreeNode* t)
 {
+    // setPrintColor(PRINTCOLOR::GREEN);
     printf(" [mem: %s loc: %d size: %d] [line: %d]\n", refTypeToStr(t->referenceType), t->location, t->size, t->lineno);
+    // printf("goffset: %d, foffset: %d\n", goffset, foffset);
+    // resetPrintColor();
 }
 
 static int indentno = -1;
@@ -371,7 +378,7 @@ void printBasicTree(TreeNode *tree, NodeRelation relation, int id, int layer)
                     printf("is array ");
                 if (tree->isStatic)
                     // printf("of static type %s", expToString(tree->expType));
-                    printf("of type %s", expToString(tree->expType));
+                    printf("of static type %s", expToString(tree->expType));
                 else
                     printf("of type %s", expToString(tree->expType));
                 break;
@@ -422,6 +429,10 @@ void printBasicTree(TreeNode *tree, NodeRelation relation, int id, int layer)
                 break;
             case ExpKind::IdK:
                 printf("Id: %s", tree->attr.string);
+                if(tree->isArray)
+                    printf(" of array ");
+                // if(tree->isStatic)
+                    // printf(" of static ");
                 break;
             case ExpKind::AssignK:
                 printf("Assign: %s", assignToString(tree->attr.op));
@@ -570,11 +581,12 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer, bo
             {
             case DeclKind::VarK:
                 printf("Var: %s ", tree->attr.string);
+                // printf("this node %s array", tree->isArray ? "is": "is not");
                 if (tree->isArray)
-                    printf("is array ");
+                    printf("of array ");
                 if (tree->isStatic)
                     // printf("of static type %s", expToString(tree->expType));
-                    printf("of type %s", expToString(tree->expType));
+                    printf("of static type %s", expToString(tree->expType));
                 else
                     printf("of type %s", expToString(tree->expType));
                 break;
@@ -588,7 +600,7 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer, bo
             case DeclKind::ParamK:
                 printf("Parm: %s ", tree->attr.string);
                 if (tree->isArray)
-                    printf("is array ");
+                    printf("of array ");
                 printf("of type %s", expToString(tree->expType));
                 break;
             }
@@ -634,7 +646,15 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer, bo
                 if (tree->expType == ExpType::UndefinedType)
                     printf("Id: %s of undefined type", tree->attr.string);
                 else
-                    printf("Id: %s of type %s", tree->attr.string, expToString(tree->expType));
+                {
+                    // printf("Id: %s %sof type %s", tree->attr.string, tree->isArray ? "of array " : "", expToString(tree->expType));
+                    printf("Id: %s of", tree->attr.string);
+                    if(tree->isStatic)
+                        printf(" static");
+                    if(tree->isArray)
+                        printf(" array of");
+                    printf(" type %s", expToString(tree->expType));
+                }
                 break;
             case ExpKind::AssignK:
 
