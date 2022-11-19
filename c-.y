@@ -947,6 +947,7 @@ constant
             $$->expType = ExpType::Char;
             $$->isArray = true;
             $$->isConstantExp = true;
+            $$->size = strlen($$->attr.string) - 1;
         }
     | BOOLCONST
         {

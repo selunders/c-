@@ -627,7 +627,7 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer, bo
                     break;
                 case ExpType::Char:
                     if (tree->isArray)
-                        printf("Const is array %s", tree->attr.string);
+                        printf("Const %s of array", tree->attr.string);
                     else
                         printf("Const \'%c\'", tree->attr.cvalue);
                     printf(" of type char");
@@ -735,6 +735,13 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer, bo
             case ExpKind::IdK:
                 printLocation(tree);
                 printedLineno = true;
+                break;
+            case ExpKind::ConstantK:
+                if(tree->isArray)
+                {
+                    printLocation(tree);
+                    printedLineno = true;
+                }
                 break;
             }
             break;

@@ -21,6 +21,7 @@ enum class RefType
 {
     None,
     Local,
+    LocalStatic,
     Global,
     Static,
     Parameter

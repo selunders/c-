@@ -285,8 +285,9 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             if (doErrorChecking)
                 st->applyToAll(checkUse);
             // t->size = foffset - 1;
-            if (t->child[1] != NULL)
-                t->child[1]->size = foffset;
+            // foffset = -2;
+            // if (t->child[1] != NULL)
+                // t->child[1]->size = foffset;
             st->leave();
             // printf("Left scope\n");
             enteredScope = false;
@@ -543,7 +544,7 @@ static void checkUse(string str, void *t)
     TreeNode *tmp = (TreeNode *)t;
     if (!tmp->isUsed)
     {
-        char *declKind;
+        char *declKind = NULL;
         switch (tmp->subkind.decl)
         {
         case DeclKind::FuncK:
@@ -556,8 +557,11 @@ static void checkUse(string str, void *t)
             declKind = (char *)"variable";
             break;
         }
+        if(declKind != NULL)
+        {
         printf(getWarnMsg(warnDeclNotUsed), tmp->lineno, declKind, tmp->attr.string);
         numAnalyzeWarnings++;
+        }
     }
 }
 
@@ -683,13 +687,14 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
         case DeclKind::FuncK:
             t->referenceType = RefType::Global;
             t->location = 0;
-            goffset = -2; // For return statement
-            foffset = goffset;
+            // goffset = -2; // For return statement
             t->size = -2;
             if(t->child[0] != NULL)
             {
                 t->size -= countSiblingListLength(t->child[0]);
             }
+            goffset =- t->size;
+            foffset = -2;
             break;
         case DeclKind::VarK:
         {
@@ -843,6 +848,11 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
         }
         case ExpKind::ConstantK:
             t->isConstantExp = true;
+            if(t->isArray)
+            {
+                goffset += t->size;
+                t->referenceType = RefType::Global;
+            }
             break;
         case ExpKind::IdK:
         {
@@ -943,7 +953,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             if (tmp != NULL)
             {
                 tmp->isInit = true;
-                printf("%d setting tmp %s at line %d isInit to %s\n\n", t->lineno, tmp->attr.string, tmp->lineno, "true");
+                // printf("%d setting tmp %s at line %d isInit to %s\n\n", t->lineno, tmp->attr.string, tmp->lineno, "true");
             }
             // else
             // {
