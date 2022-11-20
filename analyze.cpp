@@ -17,7 +17,7 @@ extern int numErrors;
 extern int numWarnings;
 
 int foffset = 0;
-int goffset = 0;
+int goffset = -2;
 
 std::vector<int> offsetStack;
 
@@ -31,6 +31,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope);
 void saveOffsetToStack(int i)
 {
     offsetStack.push_back(i);
+    foffset = 0;
 }
 
 int getScopesOffset()
@@ -41,9 +42,16 @@ int getScopesOffset()
         return -1;
 }
 
-void getOffsetFromStack()
+int getOffsetFromStack()
 {
-    offsetStack.pop_back();
+    if (!offsetStack.empty())
+    {
+        int i = offsetStack.back();
+        offsetStack.pop_back();
+        return i;
+    }
+    else
+        return -1;
 }
 
 void InitOpTypeList()
@@ -212,6 +220,7 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
                 {
                     // if (st->depth() > 2)
                     // st->leave();
+                    saveOffsetToStack(foffset);
                     st->enter((string) "Compound Statement");
                     enteredScope = true;
                 }
@@ -219,6 +228,8 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             case StmtKind::ForK:
                 st->enter((string) "For");
                 enteredScope = true;
+                saveOffsetToStack(foffset);
+
                 if (t->child[2] != NULL)
                 {
                     t->child[2]->canEnterThisScope = false;
@@ -231,6 +242,7 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
                 // t->expType = ExpType::Boolean;
                 st->enter((string) "If");
                 enteredScope = true;
+                saveOffsetToStack(foffset);
                 if (t->child[1] != NULL)
                 {
                     t->child[1]->canEnterThisScope = false;
@@ -245,6 +257,7 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             case StmtKind::WhileK:
                 st->enter((string) "While");
                 enteredScope = true;
+                saveOffsetToStack(foffset);
                 if (t->child[1] != NULL)
                 {
                     t->child[1]->canEnterThisScope = false;
@@ -284,10 +297,17 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
         {
             if (doErrorChecking)
                 st->applyToAll(checkUse);
+            else
+            {
+                t->size = foffset;
+                printf("[mem: foffset = %d\n", foffset);
+                foffset = getOffsetFromStack();
+                printf("\t[mem: foffset = %d\n", foffset);
+            }
             // t->size = foffset - 1;
-            // foffset = -2;
+
             // if (t->child[1] != NULL)
-                // t->child[1]->size = foffset;
+            // t->child[1]->size = foffset;
             st->leave();
             // printf("Left scope\n");
             enteredScope = false;
@@ -557,10 +577,10 @@ static void checkUse(string str, void *t)
             declKind = (char *)"variable";
             break;
         }
-        if(declKind != NULL)
+        if (declKind != NULL)
         {
-        printf(getWarnMsg(warnDeclNotUsed), tmp->lineno, declKind, tmp->attr.string);
-        numAnalyzeWarnings++;
+            printf(getWarnMsg(warnDeclNotUsed), tmp->lineno, declKind, tmp->attr.string);
+            numAnalyzeWarnings++;
         }
     }
 }
@@ -689,11 +709,11 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             t->location = 0;
             // goffset = -2; // For return statement
             t->size = -2;
-            if(t->child[0] != NULL)
+            if (t->child[0] != NULL)
             {
                 t->size -= countSiblingListLength(t->child[0]);
             }
-            goffset =- t->size;
+            goffset -= t->size;
             foffset = -2;
             break;
         case DeclKind::VarK:
@@ -704,12 +724,12 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             // }
             // if(t->isArray)
             // {
-                // t->location = t->location - 1;
+            // t->location = t->location - 1;
             // }
-            t->location = foffset;
-            if(t->isArray)
-                t->location -= 1;
-            foffset = foffset - t->size;
+            // t->location = foffset;
+            // if (t->isArray)
+            // t->location -= 1;
+            // foffset = foffset - t->size;
             // printf("%s Init depth: %d\n", t->attr.string, st->depth());
             TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
             if (tmp != NULL && (st->depth() > 1))
@@ -732,17 +752,46 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             // }
             if (t->isStatic)
             {
-                t->referenceType = RefType::Static;
+                if (st->depth() == 1)
+                {
+                    t->referenceType = RefType::Static;
+                    t->location = goffset;
+                    printf("  static: gof%d - t->size%d = %d\n", goffset, t->size, goffset - t->size);
+                    goffset -= t->size;
+                    if (t->isArray)
+                        t->location -= 1;
+                    // goffset -= 1;
+                }
+                else if (st->depth() > 1)
+                {
+                    t->referenceType = RefType::LocalStatic;
+                    t->location = goffset;
+                    printf("  locstat: fof%d - t->size%d = %d\n", foffset, t->size, foffset - t->size);
+                    goffset -= t->size;
+                    if (t->isArray)
+                        t->location -= 1;
+                    // goffset -= 1;
+                }
             }
-            if (st->depth() == 1)
+            else if (st->depth() == 1)
             {
                 t->referenceType = RefType::Global;
+                t->location = goffset;
+                printf("  global: gof%d - t->size%d = %d\n", goffset, t->size, goffset - t->size);
+                goffset -= t->size;
+                if (t->isArray)
+                    t->location -= 1;
+                // goffset -= 1;
             }
-            else if (st->depth() > 1)
-            {   
+            else
+            {
                 t->referenceType = RefType::Local;
-                if(t->isStatic)
-                    t->referenceType = RefType::LocalStatic;
+                t->location = foffset;
+                printf("  local: fof%d - t->size%d = %d\n", foffset, t->size, foffset - t->size);
+                foffset -= t->size;
+                if (t->isArray)
+                    t->location -= 1;
+                // foffset -= 1;
             }
 
             break;
@@ -751,7 +800,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             t->isInit = true;
             t->referenceType = RefType::Parameter;
             t->location = foffset;
-            foffset = foffset - t->size;
+            foffset -= t->size;
             // printf("%d setting isInit to %s\n", t->lineno, "true");
             break;
         }
@@ -848,11 +897,18 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
         }
         case ExpKind::ConstantK:
             t->isConstantExp = true;
-            if(t->isArray)
-            {
-                goffset += t->size;
-                t->referenceType = RefType::Global;
-            }
+            t->referenceType = RefType::Global;
+            // printf("go: %d, adding %d [mem:\n", goffset, t->size);
+            t->location = goffset;
+            goffset -= t->size;
+
+            // printf("\tgo: %d", goffset);
+            // if(t->isArray)
+            // {
+            // goffset += t->size;
+            // foffset += t->size;
+            // t->referenceType = RefType::Global;
+            // }
             break;
         case ExpKind::IdK:
         {
@@ -937,6 +993,12 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
     {
         switch (t->subkind.stmt)
         {
+        case StmtKind::CompoundK:
+        {
+            t->size = foffset;
+            foffset -= 1;
+        }
+        break;
         case StmtKind::ForK:
         {
             TreeNode *tmp = NULL;

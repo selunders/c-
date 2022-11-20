@@ -177,6 +177,12 @@ varDeclInit
                 $$->child[0] = $[simpleexp];
             // $$->isUsed = true;
             // $$->isInit = false; 
+            // if($[simpleexp]->nodeKind == NodeKind::ExpK && $[simpleexp]->subkind.exp == ExpKind::ConstantK && $[simpleexp]->isArray)
+            // {
+                // int len = strlen($[simpleexp]->attr.string);
+                // if(len > $$->size)
+                    // $$->size = len;
+            // }
         }
     | error ':' simpleExp { $$ = NULL; yyerrok; }
     /* | varDeclId[vdeclid] ':' error

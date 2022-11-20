@@ -752,6 +752,9 @@ void printTypedTree(TreeNode *tree, NodeRelation relation, int id, int layer, bo
                 printLocation(tree);
                 printedLineno = true;
                 break;
+            case StmtKind::ForK:
+                printLocation(tree);
+                printedLineno = true;
             }
             break;
         }

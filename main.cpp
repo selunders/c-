@@ -19,6 +19,8 @@ extern int numErrors;
 extern int numWarnings;
 extern void initErrorProcessing();
 
+extern int goffset;
+
 FILE *fileIn;
 TreeNode *fileInRoot;
 
@@ -152,6 +154,7 @@ int main(int argc, char *argv[])
         symbolTable->debug(symbTabDEBUG);
         if (numErrors == 0)
             semanticAnalysis(symbolTable, tmpRoot, printOption);
+        printf("Offset for end of global space: %d\n", goffset);
         printf("Number of warnings: %d\n", numWarnings);
         printf("Number of errors: %d\n", numErrors);
         // symbolTable->print(pointerPrintNode);
