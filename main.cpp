@@ -20,6 +20,7 @@ extern int numWarnings;
 extern void initErrorProcessing();
 
 extern int goffset;
+extern int finalOffset;
 
 FILE *fileIn;
 TreeNode *fileInRoot;
@@ -110,7 +111,7 @@ int main(int argc, char *argv[])
 
         // Create symbol table
         SymbolTable *symbolTable = new SymbolTable();
-        initErrorProcessing(); 
+        initErrorProcessing();
 
         ///////////////
         // Read in the helper functions file(s)
@@ -133,7 +134,7 @@ int main(int argc, char *argv[])
         TreeNode *IORoot = createIOAST();
         ASTtoSymbolTable(symbolTable, IORoot);
 
-        // printf("FILE: %s\n", argv[index]+16);
+        // printf("FILE: %s\n", argv[index] + 15);
         // printf("FILE: %s\n", argv[index]);
         // printf("====================================\n");
         tmpRoot = parseFile(fileIn);
@@ -141,8 +142,8 @@ int main(int argc, char *argv[])
         // Print initial
         // if (printTreeFlag && !printTypeInfo && !sizeLocationFlag)
         // {
-            // printf("Not printing type info\n");
-            // printTree(tmpRoot, false);
+        // printf("Not printing type info\n");
+        // printTree(tmpRoot, false);
         // }
 
         if (printOption == PrintMethod::Basic)
@@ -153,8 +154,11 @@ int main(int argc, char *argv[])
         // symbolTable->test();
         symbolTable->debug(symbTabDEBUG);
         if (numErrors == 0)
+        {
             semanticAnalysis(symbolTable, tmpRoot, printOption);
-        printf("Offset for end of global space: %d\n", goffset);
+            if (numErrors == 0)
+                printf("Offset for end of global space: %d\n", finalOffset);
+        }
         printf("Number of warnings: %d\n", numWarnings);
         printf("Number of errors: %d\n", numErrors);
         // symbolTable->print(pointerPrintNode);

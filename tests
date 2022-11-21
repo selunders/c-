@@ -72,9 +72,9 @@ elif [ "$allTests_flag" = true ]; then
             #	echo $file
             x=${file%.out}
             y=${x##*/}
-            SDIFF=$(sdiff --text -l -s <(sort myOutput/$y.out) <(sort $file))
+            SDIFF=$(diff --text -l -s <(sort myOutput/$y.out) <(sort $file))
             if [ "$SDIFF" != "" ]; then
-                echo -e "\nsdiff --text -l -s myOutput/$y.out $file"
+                echo -e "\ndiff --text -l -s myOutput/$y.out $file"
                 echo "$SDIFF"
             fi
             # rm myOutput/$y.out
@@ -107,7 +107,7 @@ else
         fi
     elif [ "$diff_flag" = true ]; then
         ./c- $sampleDirectory$fileIn.c- -P >myOutput/$fileIn.out
-        sdiff --text <(sort myOutput/$fileIn.out) <(sort $sampleDirectory$fileIn.out)
+        diff --text <(sort myOutput/$fileIn.out) <(sort $sampleDirectory$fileIn.out)
     else
         if [ "$printTypes_flag" = true ]; then
             ./c- $sampleDirectory$fileIn.c- -P
@@ -139,8 +139,8 @@ fi
 #     do
 #         x=${file%.out}
 #         y=${x##*/}
-#         echo -e "\nsdiff -l -s myOutput/$y.out $file"
-#         sdiff -l -s  myOutput/$y.out $file
+#         echo -e "\ndiff -l -s myOutput/$y.out $file"
+#         diff -l -s  myOutput/$y.out $file
 #         # rm myOutput/$y.out
 #     done
 # else
@@ -148,6 +148,6 @@ fi
 #     "-l")
 #     make clean; make;
 #     ./c- $sampleDirectory$1.c- -p > myOutput/$1.out
-#     echo "sdiff myOutput/$1.out $sampleDirectory$1.out"
-#     sdiff myOutput/$1.out $sampleDirectory$1.out
+#     echo "diff myOutput/$1.out $sampleDirectory$1.out"
+#     diff myOutput/$1.out $sampleDirectory$1.out
 # fi

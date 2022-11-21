@@ -18,6 +18,7 @@ extern int numWarnings;
 
 int foffset = 0;
 int goffset = 0;
+int finalOffset = 0;
 
 std::vector<int> offsetStack;
 
@@ -305,6 +306,7 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
                 // printf("    Exiting\n\n");
                 // printf("line %d: foffset = %d\n", t->lineno, foffset);
                 foffset = getOffsetFromStack();
+                finalOffset = goffset;
                 // printf("\t[mem: foffset = %d\n", foffset);
                 // t->size = 8;
             }
@@ -781,8 +783,10 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 {
                     t->referenceType = RefType::LocalStatic;
                     t->location = goffset;
+                    // t->location = foffset;
                     // printf("  locstat: gof%d - t->size%d = %d\n", goffset, t->size, goffset - t->size);
                     goffset -= t->size;
+                    // foffset -= t->size;
                     if (t->isArray)
                         t->location -= 1;
                     // goffset -= 1;
@@ -1068,6 +1072,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
         break;
     }
     }
+    // finalOffset = goffset;
 }
 
 static void analyzeChildren(SymbolTable *st, TreeNode *t)
