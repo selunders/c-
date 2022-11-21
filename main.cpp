@@ -134,8 +134,8 @@ int main(int argc, char *argv[])
         ASTtoSymbolTable(symbolTable, IORoot);
 
         // printf("FILE: %s\n", argv[index]+16);
-        printf("FILE: %s\n", argv[index]);
-        printf("====================================\n");
+        // printf("FILE: %s\n", argv[index]);
+        // printf("====================================\n");
         tmpRoot = parseFile(fileIn);
 
         // Print initial

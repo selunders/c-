@@ -3,7 +3,7 @@
 #include "c-.tab.h"
 #include "errorMsg.hpp"
 #include "analyze.hpp"
-#include "colorPrint.hpp"
+// #include "colorPrint.hpp"
 
 using namespace std;
 

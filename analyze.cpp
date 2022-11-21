@@ -30,7 +30,7 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope);
 
 void saveOffsetToStack(int i)
 {
-    printf("Saving %d to stack\n", i);
+    // printf("Saving %d to stack\n", i);
     offsetStack.push_back(i);
     // foffset = 0;
 }
@@ -301,7 +301,9 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             else
             {
                 t->size = foffset;
-                printf("line %d: foffset = %d\n", t->lineno, foffset);
+                // goffset = 0;
+                // printf("    Exiting\n\n");
+                // printf("line %d: foffset = %d\n", t->lineno, foffset);
                 foffset = getOffsetFromStack();
                 // printf("\t[mem: foffset = %d\n", foffset);
                 // t->size = 8;
@@ -714,7 +716,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
         case DeclKind::FuncK:
             t->referenceType = RefType::Global;
             t->location = 0;
-            goffset = 0; // For return statement
+            // goffset = 0; // For return statement
             // if (t->expType == ExpType::Void)
             // {
             // t->size = -1;
@@ -726,8 +728,8 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             {
                 t->size -= countSiblingListLength(t->child[0]);
             }
-            goffset -= t->size;
-            foffset = -1;
+            // goffset += t->size;
+            foffset = -2;
             break;
         case DeclKind::VarK:
         {
@@ -813,8 +815,8 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             t->isInit = true;
             t->referenceType = RefType::Parameter;
             t->location = foffset;
-            if (t->isArray)
-                t->location -= 1;
+            // if (t->isArray)
+                // t->location -= 1;
             foffset -= t->size;
             // printf("%d setting isInit to %s\n", t->lineno, "true");
             break;
@@ -1011,7 +1013,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
         case StmtKind::CompoundK:
         {
             t->size = foffset;
-            foffset -= 1;
+            // foffset -= 1;
         }
         break;
         case StmtKind::ForK:
