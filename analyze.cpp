@@ -17,7 +17,7 @@ extern int numErrors;
 extern int numWarnings;
 
 int foffset = 0;
-int goffset = -2;
+int goffset = 0;
 
 std::vector<int> offsetStack;
 
@@ -30,8 +30,9 @@ static void printAnalysis(SymbolTable *st, TreeNode *t, bool *enteredScope);
 
 void saveOffsetToStack(int i)
 {
+    printf("Saving %d to stack\n", i);
     offsetStack.push_back(i);
-    foffset = 0;
+    // foffset = 0;
 }
 
 int getScopesOffset()
@@ -39,7 +40,7 @@ int getScopesOffset()
     if (!offsetStack.empty())
         return offsetStack.back();
     else
-        return -1;
+        return -7;
 }
 
 int getOffsetFromStack()
@@ -51,7 +52,7 @@ int getOffsetFromStack()
         return i;
     }
     else
-        return -1;
+        return -8;
 }
 
 void InitOpTypeList()
@@ -196,7 +197,7 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             case DeclKind::FuncK:
                 st->enter(t->attr.string);
                 enteredScope = true;
-                // saveOffsetToStack(foffset);
+                saveOffsetToStack(foffset);
                 if (t->child[1] != NULL)
                 {
                     t->child[1]->canEnterThisScope = false;
@@ -300,9 +301,10 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             else
             {
                 t->size = foffset;
-                printf("[mem: foffset = %d\n", foffset);
+                printf("line %d: foffset = %d\n", t->lineno, foffset);
                 foffset = getOffsetFromStack();
-                printf("\t[mem: foffset = %d\n", foffset);
+                // printf("\t[mem: foffset = %d\n", foffset);
+                // t->size = 8;
             }
             // t->size = foffset - 1;
 
@@ -311,6 +313,11 @@ static void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *
             st->leave();
             // printf("Left scope\n");
             enteredScope = false;
+        }
+        if (t->nodeKind == NodeKind::StmtK && t->subkind.stmt == StmtKind::CompoundK && !t->canEnterThisScope)
+        {
+            t->size = foffset;
+            // t->size = 7;
         }
         if (enteredLoop)
             loopDepth--;
@@ -707,14 +714,20 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
         case DeclKind::FuncK:
             t->referenceType = RefType::Global;
             t->location = 0;
-            // goffset = -2; // For return statement
+            goffset = 0; // For return statement
+            // if (t->expType == ExpType::Void)
+            // {
+            // t->size = -1;
+            // }
+            // else
             t->size = -2;
+
             if (t->child[0] != NULL)
             {
                 t->size -= countSiblingListLength(t->child[0]);
             }
             goffset -= t->size;
-            foffset = -2;
+            foffset = -1;
             break;
         case DeclKind::VarK:
         {
@@ -756,7 +769,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 {
                     t->referenceType = RefType::Static;
                     t->location = goffset;
-                    printf("  static: gof%d - t->size%d = %d\n", goffset, t->size, goffset - t->size);
+                    // printf("  static: gof%d - t->size%d = %d\n", goffset, t->size, goffset - t->size);
                     goffset -= t->size;
                     if (t->isArray)
                         t->location -= 1;
@@ -766,7 +779,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
                 {
                     t->referenceType = RefType::LocalStatic;
                     t->location = goffset;
-                    printf("  locstat: fof%d - t->size%d = %d\n", foffset, t->size, foffset - t->size);
+                    // printf("  locstat: gof%d - t->size%d = %d\n", goffset, t->size, goffset - t->size);
                     goffset -= t->size;
                     if (t->isArray)
                         t->location -= 1;
@@ -777,7 +790,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             {
                 t->referenceType = RefType::Global;
                 t->location = goffset;
-                printf("  global: gof%d - t->size%d = %d\n", goffset, t->size, goffset - t->size);
+                // printf("  global: gof%d - t->size%d = %d\n", goffset, t->size, goffset - t->size);
                 goffset -= t->size;
                 if (t->isArray)
                     t->location -= 1;
@@ -787,7 +800,7 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             {
                 t->referenceType = RefType::Local;
                 t->location = foffset;
-                printf("  local: fof%d - t->size%d = %d\n", foffset, t->size, foffset - t->size);
+                // printf("  local: fof%d - t->size%d = %d\n", foffset, t->size, foffset - t->size);
                 foffset -= t->size;
                 if (t->isArray)
                     t->location -= 1;
@@ -800,6 +813,8 @@ static void moveUpTypes(SymbolTable *st, TreeNode *t, bool *enteredScope)
             t->isInit = true;
             t->referenceType = RefType::Parameter;
             t->location = foffset;
+            if (t->isArray)
+                t->location -= 1;
             foffset -= t->size;
             // printf("%d setting isInit to %s\n", t->lineno, "true");
             break;
