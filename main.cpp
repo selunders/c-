@@ -35,7 +35,7 @@ TreeNode *tmpRoot;
 TreeNode *parseFile(FILE *file);
 TreeNode *createIOAST();
 
-PrintMethod printOption = PrintMethod::Basic;
+PrintMethod printOption = PrintMethod::None;
 
 int main(int argc, char *argv[])
 {
@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
         //     // printf("Printing type info\n");
         //     printTree(rootNode, true);
         // }
-        doCodeGen();
+        doCodeGen(tmpRoot);
         // printTree(rootNode, true);
         /* printf("Number of errors: %d\n", numErrors);   // ERR */
     }
