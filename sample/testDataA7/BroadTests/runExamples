@@ -6,17 +6,44 @@
 # file.out file of output from compiler and then from running code
 # file.tm  file of tm code
 
-runSpecificFile_flag=false
+diffExpectedMem_flag=false
+printTm_flag=false
+printExpectedOutput_flag=false
 fileIn=''
 
 compiler=../../../c-
 tmp=ztmp$$.txt
 
-while getopts 'f:' flag; do
+while getopts 'ef:mt' flag; do
     case "${flag}" in
+    e) printExpectedOutput_flag=true ;;
     f) fileIn="${OPTARG}" ;;
+    t) printTm_flag=true ;;
+    m) diffExpectedMem_flag=true ;;
     esac
 done
+
+if [ -f $fileIn ]; then
+    skipActualChecking=false
+    file=`basename $fileIn '.c-'`
+    if [ $printExpectedOutput_flag == true ]; then
+        cat $file.expected
+        skipActualChecking=true
+    fi
+    if [ $diffExpectedMem_flag == true ]; then
+        $compiler $file.c- -M > tmp1.txt
+        sdiff -l -s tmp1.txt $file.mem
+        rm tmp1.txt
+        skipActualChecking=true
+    fi
+    if [ $printTm_flag == true ]; then
+        cat $file.tm.bkp
+        skipActualChecking=true
+    fi
+    if [ $skipActualChecking == true ]; then
+        exit 1
+    fi
+fi
 
 if [ -f $fileIn ]
     then
