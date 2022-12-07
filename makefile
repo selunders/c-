@@ -2,10 +2,10 @@
 BIN = c-
 CC = g++
 
-SRCS = $(BIN).y  $(BIN).l util.cpp main.cpp symbolTable.cpp analyze.cpp errorMsg.cpp yyerror.cpp globals.cpp
-HDRS = scanType.h globals.hpp util.hpp analyze.hpp symbolTable.hpp errorMsg.hpp yyerror.h
+SRCS = $(BIN).y  $(BIN).l util.cpp main.cpp symbolTable.cpp analyze.cpp errorMsg.cpp yyerror.cpp globals.cpp codeGen.cpp
+HDRS = scanType.h globals.hpp util.hpp analyze.hpp symbolTable.hpp errorMsg.hpp yyerror.h codeGen.hpp
 LIBS = io.c-
-OBJS = lex.yy.o $(BIN).tab.o util.o main.o analyze.o symbolTable.o errorMsg.o yyerror.o globals.o
+OBJS = lex.yy.o $(BIN).tab.o util.o main.o analyze.o symbolTable.o errorMsg.o yyerror.o globals.o codeGen.o
 CFLAGS = -std=c++11 -g
 
 
@@ -38,6 +38,9 @@ errorMsg.o :
 
 yyerror.o :
 	$(CC) $(CFLAGS) -c yyerror.cpp -o yyerror.o
+
+codeGen.o :
+	$(CC) $(CFLAGS) -c codeGen.cpp -o codeGen.o
 
 clean :
 	rm -f *~ $(OBJS) $(BIN) lex.yy.c $(BIN).tab.h $(BIN).tab.c $(BIN).output *.gch *.o

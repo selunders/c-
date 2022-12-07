@@ -6,6 +6,8 @@
 #include "analyze.hpp"
 #include "yyerror.h"
 
+#include "codeGen.hpp"
+
 extern FILE *yyin;
 extern FILE *yyout;
 extern TreeNode *rootNode;
@@ -21,6 +23,8 @@ extern void initErrorProcessing();
 
 extern int goffset;
 extern int finalOffset;
+
+char* fileInName = NULL;
 
 FILE *fileIn;
 TreeNode *fileInRoot;
@@ -93,6 +97,11 @@ int main(int argc, char *argv[])
         {
             if ((fileIn = fopen(argv[index], "r")))
             {
+                // Remove the '.c-' from the end of the string
+                fileInName = (char*) malloc((strlen(argv[index]) - 3) * sizeof(char));
+                strncpy(fileInName, argv[index], strlen(argv[index]) - 3);
+                // printf("Strlen of %s: %d, \n", argv[index], strlen(argv[index]));
+                // printf("File name: %s\n\n", fileInName);
                 break;
             }
         }
@@ -170,7 +179,7 @@ int main(int argc, char *argv[])
         //     // printf("Printing type info\n");
         //     printTree(rootNode, true);
         // }
-
+        doCodeGen();
         // printTree(rootNode, true);
         /* printf("Number of errors: %d\n", numErrors);   // ERR */
     }

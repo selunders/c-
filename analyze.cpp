@@ -1672,22 +1672,12 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, PrintMethod printOption)
     // offsetStack.push_back(RefType::Global);
     numAnalyzeWarnings = 0;
     numAnalyzeErrors = 0;
-    // traverse(st, root, nullProc, moveUpTypes, false);
-    // traverse(st, root, nullProc, moveUpTypes, false);
-    // Clear ST when types are dispersed
-    // bool debugState = st->getDebugState();
-    // delete st;
-    // st = new SymbolTable();
-    // st->debug(debugState);
-    // printTree(root, true);
     traverse(st, root, moveUpTypes, printAnalysis, true);
     // traverse(st, root, printAnalysis, nullProc, true);
     TreeNode *mainPointer = (TreeNode *)st->lookup((string) "main");
     if (mainPointer != NULL)
         mainPointer->isUsed = true;
-
     st->applyToAllGlobal(checkUse);
-    // traverse(st, root, printProc, nullProc, false);
 
     // Do final check for main()
     if ((mainPointer != NULL) && (mainPointer->nodeKind == NodeKind::DeclK) && (mainPointer->subkind.decl == DeclKind::FuncK) && mainPointer->child[0] == NULL)
@@ -1699,14 +1689,7 @@ void semanticAnalysis(SymbolTable *st, TreeNode *root, PrintMethod printOption)
         printf(getErrMsg(errMainDef));
         numAnalyzeErrors++;
     }
-    // if (printTypedTree)
-    // if (printTypedTree && numAnalyzeErrors == 0)
-    // {
-    //     printTree(root, true);
-    //     // printf("\033[0;33m");
-    //     // printf("MyWarning: Printing Typed Tree even though there may be errors!\n");
-    //     // printf("\033[0m");
-    // }
+
     if (numAnalyzeErrors == 0 && printOption != PrintMethod::Basic && printOption != PrintMethod::None)
         printTree(root, printOption);
     // printf("Number of warnings: %d\n", numAnalyzeWarnings);

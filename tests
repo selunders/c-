@@ -15,7 +15,7 @@ fileIn=''
 
 # sampleDirectory='sample/assign4/'
 # sampleDirectory='sample/testDataA5/'
-sampleDirectory='sample/assign6/'
+sampleDirectory='sample/testDataA7/BroadTests/'
 
 while getopts 'AdDGhmMopPf:v' flag; do
     case "${flag}" in
