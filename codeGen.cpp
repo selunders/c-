@@ -59,10 +59,49 @@ void PreCodeGeneration(TreeNode *t)
     break;
     case NodeKind::ExpK:
     {
+        switch (t->subkind.exp)
+        {
+        case ExpKind::AssignK:
+            break;
+        case ExpKind::CallK:
+            break;
+        case ExpKind::ConstantK:
+            break;
+        case ExpKind::IdK:
+            break;
+        case ExpKind::InitK:
+            break;
+        case ExpKind::OpK:
+            break;
+        }
     }
     break;
     case NodeKind::StmtK:
     {
+        switch(t->subkind.stmt)
+        {
+            case StmtKind::BreakK:
+            break;
+            case StmtKind::CompoundK:
+            break;
+            case StmtKind::ForK:
+            break;
+            case StmtKind::IfK:
+                int rememberif = 0;
+                traverse(E);
+                rememberif = emitSkip(1);  // one location
+                traverse(A);                // do the the part
+                backPatchAJumpToHere(rememberif, (char*) "Jump to IF Stmt");
+            break;
+            case StmtKind::NullK:
+            break;
+            case StmtKind::RangeK:
+            break;
+            case StmtKind::ReturnK:
+            break;
+            case StmtKind::WhileK:
+            break;
+        }
     }
     break;
     }
@@ -79,7 +118,7 @@ void PostCodeGeneration(TreeNode *t)
         switch (t->subkind.decl)
         {
         case DeclKind::FuncK:
-            emitComment((char*)"END FUNCTION", t->attr.string);
+            emitComment((char *)"END FUNCTION", t->attr.string);
             break;
         case DeclKind::ParamK:
             break;
