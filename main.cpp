@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
         //     // printf("Printing type info\n");
         //     printTree(rootNode, true);
         // }
-        doCodeGen(tmpRoot);
+        doCodeGen(symbolTable, tmpRoot);
         // printTree(rootNode, true);
         /* printf("Number of errors: %d\n", numErrors);   // ERR */
     }

@@ -11,9 +11,9 @@ void PreCodeGeneration(TreeNode *);
 void PostCodeGeneration(TreeNode *);
 
 int mainLocation = -1;
-int tOffset = -2;
+int tOffset = 0;
 
-char *ioCode = (char *)"* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION input\n1:     ST  3,-1(1)	Store return address \n2:     IN  2,2,2	Grab int input \n3:     LD  3,-1(1)	Load return address \n4:     LD  1,0(1)	Adjust fp \n5:    JMP  7,0(3)	Return \n* END FUNCTION input\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION inputb\n6:     ST  3,-1(1)	Store return address \n7:    INB  2,2,2	Grab bool input \n8:     LD  3,-1(1)	Load return address \n9:     LD  1,0(1)	Adjust fp \n10:    JMP  7,0(3)	Return \n* END FUNCTION inputb\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION inputc\n11:     ST  3,-1(1)	Store return address \n12:    INC  2,2,2	Grab char input \n13:     LD  3,-1(1)	Load return address \n14:     LD  1,0(1)	Adjust fp \n15:    JMP  7,0(3)	Return \n* END FUNCTION inputc\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION output\n16:     ST  3,-1(1)	Store return address \n17:     LD  3,-2(1)	Load parameter \n18:    OUT  3,3,3	Output integer \n19:     LD  3,-1(1)	Load return address \n20:     LD  1,0(1)	Adjust fp \n21:    JMP  7,0(3)	Return \n* END FUNCTION output\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION outputb\n22:     ST  3,-1(1)	Store return address \n23:     LD  3,-2(1)	Load parameter \n24:   OUTB  3,3,3	Output bool \n25:     LD  3,-1(1)	Load return address \n26:     LD  1,0(1)	Adjust fp \n27:    JMP  7,0(3)	Return \n* END FUNCTION outputb\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION outputc\n28:     ST  3,-1(1)	Store return address \n29:     LD  3,-2(1)	Load parameter \n30:   OUTC  3,3,3	Output char \n31:     LD  3,-1(1)	Load return address \n32:     LD  1,0(1)	Adjust fp \n33:    JMP  7,0(3)	Return \n* END FUNCTION outputc\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION outnl\n34:     ST  3,-1(1)	Store return address \n35:  OUTNL  3,3,3	Output a newline \n36:     LD  3,-1(1)	Load return address \n37:     LD  1,0(1)	Adjust fp \n38:    JMP  7,0(3)	Return \n* END FUNCTION outnl\n";
+char *ioCode = (char *) "* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION input\n  1:     ST  3,-1(1)    Store return address \n  2:     IN  2,2,2      Grab int input \n  3:     LD  3,-1(1)    Load return address \n  4:     LD  1,0(1)     Adjust fp \n  5:    JMP  7,0(3)     Return \n* END FUNCTION input\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION output\n  6:     ST  3,-1(1)    Store return address \n  7:     LD  3,-2(1)    Load parameter \n  8:    OUT  3,3,3      Output integer \n  9:     LD  3,-1(1)    Load return address \n 10:     LD  1,0(1)     Adjust fp \n 11:    JMP  7,0(3)     Return \n* END FUNCTION output\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION inputb\n 12:     ST  3,-1(1)    Store return address \n 13:    INB  2,2,2      Grab bool input \n 14:     LD  3,-1(1)    Load return address \n 15:     LD  1,0(1)     Adjust fp \n 16:    JMP  7,0(3)     Return \n* END FUNCTION inputb\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION outputb\n 17:     ST  3,-1(1)    Store return address \n 18:     LD  3,-2(1)    Load parameter \n 19:   OUTB  3,3,3      Output bool \n 20:     LD  3,-1(1)    Load return address \n 21:     LD  1,0(1)     Adjust fp \n 22:    JMP  7,0(3)     Return \n* END FUNCTION outputb\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION inputc\n 23:     ST  3,-1(1)    Store return address \n 24:    INC  2,2,2      Grab char input \n 25:     LD  3,-1(1)    Load return address \n 26:     LD  1,0(1)     Adjust fp \n 27:    JMP  7,0(3)     Return \n* END FUNCTION inputc\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION outputc\n 28:     ST  3,-1(1)    Store return address \n 29:     LD  3,-2(1)    Load parameter \n 30:   OUTC  3,3,3      Output char \n 31:     LD  3,-1(1)    Load return address \n 32:     LD  1,0(1)     Adjust fp \n 33:    JMP  7,0(3)     Return \n* END FUNCTION outputc\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION outnl\n 34:     ST  3,-1(1)    Store return address \n 35:  OUTNL  3,3,3      Output a newline \n 36:     LD  3,-1(1)    Load return address \n 37:     LD  1,0(1)     Adjust fp \n 38:    JMP  7,0(3)     Return \n* END FUNCTION outnl\n* ";
 
 FILE *code;
 extern char *fileInName;
@@ -33,24 +33,25 @@ FILE *createOutputFile(char *name)
     return outputFile;
 }
 
-void traverse(TreeNode *t, void (*preProc)(TreeNode *), void (*postProc)(TreeNode *))
+void traverse(SymbolTable* st, TreeNode *t, void (*preProc)(SymbolTable*, TreeNode *), void (*postProc)(SymbolTable*, TreeNode *, int))
 {
+    int tmp_toffset = tOffset;
     if (t != NULL)
     {
-        preProc(t);
+        preProc(st, t);
         {
             int i;
             for (i = 0; i < MAXCHILDREN; i++)
             {
-                traverse(t->child[i], preProc, postProc);
+                traverse(st, t->child[i], preProc, postProc);
             }
         }
-        postProc(t);
-        traverse(t->sibling, preProc, postProc);
+        postProc(st, t, tmp_toffset);
+        traverse(st, t->sibling, preProc, postProc);
     }
 };
 
-void PreCodeGeneration(TreeNode *t)
+void PreCodeGeneration(SymbolTable* st, TreeNode *t)
 {
     if (t == NULL)
         return;
@@ -61,13 +62,15 @@ void PreCodeGeneration(TreeNode *t)
         switch (t->subkind.decl)
         {
         case DeclKind::FuncK:
-            if (!strcmp(t->attr.string, (char *)"main"))
-            {
-                mainLocation = emitWhereAmI();
+            t->callLocation = emitWhereAmI()-1;
+            // if (!strcmp(t->attr.string, (char *)"main"))
+            // {
+                // mainLocation = emitWhereAmI()-1;
                 // printf("Main is at %d\n", mainLocation);
-            }
+            // }
             emitComment((char *)"** ** ** ** ** ** ** ** ** ** ** **");
             emitComment((char *)"FUNCTION", t->attr.string);
+            tOffset=t->size;
             emitComment((char *)"TOFF set:", tOffset);
             emitRM((char *)"ST", AC, -1, FP, (char *)"Store return address");
             // if(t->child[0] != NULL)
@@ -113,7 +116,7 @@ void PreCodeGeneration(TreeNode *t)
                         emitRM((char *)"LDC", AC, 0, AC3, (char *)"Load boolean constant");
                         break;
                     case ExpType::Integer:
-                        emitRM((char *)"LDC", AC, 0, AC3, (char *)"Load integer constant");
+                        emitRM((char *)"LDC", AC, tmpChild->attr.value, AC3, (char *)"Load integer constant");
                         break;
                     case ExpType::Char:
                         emitRM((char *)"LDC", AC, 0, AC3, (char *)"Load character constant");
@@ -124,7 +127,10 @@ void PreCodeGeneration(TreeNode *t)
                 }
             }
             if (foundParam)
+            {
+                emitComment((char *)"TOFF dec:", --tOffset);
                 emitComment((char *)"Param end", t->attr.string);
+            }
         }
         break;
         case ExpKind::ConstantK:
@@ -147,6 +153,7 @@ void PreCodeGeneration(TreeNode *t)
         case StmtKind::CompoundK:
         {
             emitComment((char *)"COMPOUND");
+            tOffset = t->size;
             emitComment((char *)"TOFF set:", tOffset);
             emitComment((char *)"Compound Body");
             // traverse(t->child[1], PreCodeGeneration, PostCodeGeneration);
@@ -177,7 +184,7 @@ void PreCodeGeneration(TreeNode *t)
     }
 }
 
-void PostCodeGeneration(TreeNode *t)
+void PostCodeGeneration(SymbolTable* st, TreeNode *t, int tmp_toffset)
 {
     if (t == NULL)
         return;
@@ -196,6 +203,8 @@ void PostCodeGeneration(TreeNode *t)
                 emitRM((char *)"LD", FP, 0, FP, (char *)"Adjust fp");
                 emitRM((char *)"JMP", PC, 0, AC, (char *)"Return");
             }
+            tOffset = t->size;
+            emitComment((char *)"TOFF set", tOffset);
             emitComment((char *)"END FUNCTION", t->attr.string);
             break;
         case DeclKind::ParamK:
@@ -215,6 +224,8 @@ void PostCodeGeneration(TreeNode *t)
             emitRM((char *)"LDA", AC, 1, PC, (char *)"Return address in ac");
             emitRM((char *)"JMP", PC, outputblocation - emitWhereAmI(), PC, (char *)"CALL ", t->attr.string);
             emitRM((char *)"LDA", AC, 0, RT, (char *)"Save result in ac");
+            tOffset = tmp_toffset;
+            emitComment((char *)"TOFF dec:", tOffset);
             /*
             43:    LDA  1,-2(1)    Ghost frame becomes new active frame
             44:    LDA  3,1(7)     Return address in ac
@@ -231,7 +242,8 @@ void PostCodeGeneration(TreeNode *t)
         switch (t->subkind.stmt)
         {
         case StmtKind::CompoundK:
-            emitComment((char *)"TOFF dec:", --tOffset);
+            tOffset = t->size;
+            emitComment((char *)"TOFF set:", tOffset);
             emitComment((char *)"END COMPOUND");
             break;
         }
@@ -240,8 +252,9 @@ void PostCodeGeneration(TreeNode *t)
     }
 }
 
-void PostTraversal()
+void PostTraversal(SymbolTable* st)
 {
+    TreeNode* mainPtr = (TreeNode*) st->lookup("main");
     int i = emitWhereAmI();
     emitNewLoc(0);
     emitRM((char *)"JMP", PC, i-1, PC, (char *)"Jump to init [backpatch]");
@@ -253,14 +266,14 @@ void PostTraversal()
     emitComment((char *)"INIT GLOBALS AND STATICS");
     emitComment((char *)"END INIT GLOBALS AND STATICS");
     emitRM((char *)"LDA", AC, FP, PC, (char *)"Return address in ac");
-    emitRM((char *)"JMP", PC, mainLocation - emitWhereAmI(), PC, (char *)"Jump to main");
+    emitRM((char *)"JMP", PC, mainPtr->callLocation - emitWhereAmI(), PC, (char *)"Jump to main");
     emitRM((char *)"HALT", 0, 0, 0, (char *)"DONE!");
     emitComment((char *)"END INIT");
 
     // backPatchAJumpToHere(emitWhereAmI(), (char*)"");
 }
 
-void doCodeGen(TreeNode *root)
+void doCodeGen(SymbolTable* st, TreeNode *root)
 {
     printf("Starting Code Generation\n");
     char *baseFileName = strdup(fileInName);
@@ -273,9 +286,9 @@ void doCodeGen(TreeNode *root)
 
     if (root != NULL)
     {
-        printf("\nDoing CodeGen traversal\n");
-        traverse(root, PreCodeGeneration, PostCodeGeneration);
-        PostTraversal();
+        // printf("\nDoing CodeGen traversal\n");
+        traverse(st, root, PreCodeGeneration, PostCodeGeneration);
+        PostTraversal(st);
     }
     else
     {

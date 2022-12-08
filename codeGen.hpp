@@ -1,3 +1,3 @@
 #include "globals.hpp"
 
-void doCodeGen(TreeNode*);
+void doCodeGen(SymbolTable*, TreeNode*);
