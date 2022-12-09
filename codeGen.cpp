@@ -4,8 +4,8 @@
 #include "util.hpp"
 #include "codeGen.hpp"
 #include "emitcode.h"
+#include "c-.tab.h" // For operators
 #include <map>
-
 
 using namespace std;
 
@@ -217,23 +217,42 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
         case ExpKind::InitK:
             break;
         case ExpKind::OpK:
+        {
+            TreeNode *leftChild = t->child[0];
+            TreeNode *rightChild = t->child[1];
             OpTypeInfo currentOp = opInfoMap[t->attr.op];
-            
-            // switch (t->attr.op)
+            if (currentOp.isUnary)
+            {
+                // Handle child
+            }
+            // else
             // {
-            // case 1:
-            //     /* code */
-            //     break;
-
-            // default:
-            //     break;
+            //     leftChild->seenByCodeGen = true;
+            //     traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
+            //     emitRM((char *)"ST", AC, 0, FP, (char *)"Push left side");
+            //     emitRM((char *)"MUL", AC, AC1, AC, (char *)"Op ", (char *)"*");
+            //     leftChild->seenByCodeGen = true;
+            //     traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
+            //     emitRM((char *)"ST", AC, 0, FP, (char *)"Push right side");
             // }
+            switch (t->attr.op)
+            {
+            case MULTIPLY:
+                traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
+                leftChild->seenByCodeGen = true;
+                emitRM((char *)"ST", AC, 0, FP, (char *)"Push left side");
+                emitComment((char *)"TOFF dec:", --tOffset);
+                traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
+                emitComment((char *)"TOFF inc:", ++tOffset);
+                rightChild->seenByCodeGen = true;
+                emitRM((char *)"LD", AC1, 0, FP, (char *)"Pop left into AC1");
+                emitRM((char *)"MUL", AC, AC1, AC, (char *)"Op ", (char *)"*");
+                break;
+            default:
+                break;
+            }
             break;
         }
-        if (t->isAParam)
-        {
-            // printf("Hey i'm still a param (%s)\n", t->attr.string);
-            emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push parameter");
         }
     }
     break;
@@ -332,6 +351,11 @@ void PostCodeGeneration(SymbolTable *st, TreeNode *t, int tmp_toffset)
             */
             break;
         }
+        }
+        if (t->isAParam)
+        {
+            // printf("Hey i'm still a param (%s)\n", t->attr.string);
+            emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push parameter");
         }
     }
     break;
