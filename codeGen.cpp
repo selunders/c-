@@ -7,8 +7,8 @@
 
 using namespace std;
 
-void PreCodeGeneration(TreeNode *);
-void PostCodeGeneration(TreeNode *);
+void PreCodeGeneration(SymbolTable *, TreeNode *);
+void PostCodeGeneration(SymbolTable *, TreeNode *, int);
 
 int mainLocation = -1;
 int tOffset = 0;
@@ -27,9 +27,24 @@ static int inputcLocation = 22;
 static int outputcLocation = 27;
 static int outnlLocation = 33;
 
+static int siblingCount = 0;
+
 TreeNode *getFunctionDeclNode(SymbolTable *st, char *name)
 {
     return (TreeNode *)st->lookup(name);
+}
+
+void markAsParams(TreeNode *t)
+{
+    int i = 1;
+    while(t != NULL)
+    {
+        // printf("Marking %s as a param", t->attr.string);
+        t->paramNum = i;
+        t->isAParam = true;
+        i++;
+        t = t->sibling;
+    }
 }
 
 void setupIO(SymbolTable *st)
@@ -59,6 +74,7 @@ FILE *createOutputFile(char *name)
 
 void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *, TreeNode *), void (*postProc)(SymbolTable *, TreeNode *, int))
 {
+    int thisSibling = siblingCount;
     int tmp_toffset = tOffset;
     // printf("Storing offset as %d\n", tOffset);
     if (t != NULL)
@@ -72,9 +88,11 @@ void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *, TreeN
             }
         }
         postProc(st, t, tmp_toffset);
+        siblingCount++;
         traverse(st, t->sibling, preProc, postProc);
+        siblingCount = thisSibling;
     }
-};
+}
 
 void PreCodeGeneration(SymbolTable *st, TreeNode *t)
 {
@@ -97,13 +115,16 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             emitComment((char *)"FUNCTION", t->attr.string);
             tOffset = t->size;
             emitComment((char *)"TOFF set:", tOffset);
-            emitRM((char *)"ST", AC, -1, FP, (char *)"Store return address");
+            emitRM((char *)"ST", AC, tOffset+1, FP, (char *)"Store return address");
+            // emitRM((char *)"ST", AC, -1, FP, (char *)"Store return address");
             // if(t->child[0] != NULL)
             // {
             // traverse(t->child[0]);
             // }
             break;
         case DeclKind::ParamK:
+            emitComment((char *)"TOFF dec:", --tOffset);
+            emitComment((char *)"Param", siblingCount + 1);
             break;
         case DeclKind::VarK:
             break;
@@ -115,7 +136,26 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
         switch (t->subkind.exp)
         {
         case ExpKind::AssignK:
+        {
+            emitComment((char *)"EXPRESSION");
+            TreeNode *leftChild = t->child[0];
+            TreeNode *rightChild = t->child[1];
+            switch (t->attr.op)
+            {
+            case '=':
+            {
+                // emitRM((char *)"LDC", AC, rightChild->attr.value, AC3, (char *)"Load integer constant");
+                traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
+                rightChild->seenByCodeGen = true;
+                emitRM((char *)"ST", AC, 0, GP, (char *)"Store variable ", leftChild->attr.string);
+                leftChild->seenByCodeGen = true;
+                break;
+            }
+            default:
+                break;
+            }
             break;
+        }
         case ExpKind::CallK:
         {
             t->callLocation = emitWhereAmI() - 1;
@@ -124,47 +164,70 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             emitRM((char *)"ST", FP, tOffset, FP, (char *)"Store fp in ghost frame for ", t->attr.string);
             // tOffset = tOffset - 1;
             emitComment((char *)"TOFF dec:", --tOffset);
-            int i = 0;
-            bool foundParam = false;
-            for (i = 0; i < MAXCHILDREN; i++)
-            {
-                TreeNode *tmpChild = t->child[i];
-                if (tmpChild != NULL)
-                {
-                    foundParam = true;
-                    emitComment((char *)"TOFF dec:", --tOffset);
-                    // tOffset = tOffset - 1;
-                    emitComment((char *)"Param", i + 1);
-                    switch (tmpChild->expType)
-                    {
-                    case ExpType::Boolean:
-                        emitRM((char *)"LDC", AC, 0, AC3, (char *)"Load boolean constant");
-                        break;
-                    case ExpType::Integer:
-                        emitRM((char *)"LDC", AC, tmpChild->attr.value, AC3, (char *)"Load integer constant");
-                        break;
-                    case ExpType::Char:
-                        emitRM((char *)"LDC", AC, 0, AC3, (char *)"Load character constant");
-                        break;
-                        // emitRM((char *)"LDC", AC, 0, AC3, (char *)"Load string constant");
-                    }
-                    emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push parameter");
-                }
-            }
-            emitComment((char *)"TOFF dec:", --tOffset);
-            emitComment((char *)"Param end", t->attr.string);
-            // if (foundParam)
-            // {
-            // }
+
+            markAsParams(t->child[0]);
+            // tOffset = tOffset - 1;
+            // emitComment((char *)"TOFF dec:", --tOffset);
+            // emitComment((char *)"Param", 1);
+
+            // const K
+
+            // emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push parameter");
         }
+
         break;
         case ExpKind::ConstantK:
+            if (!t->seenByCodeGen)
+            {
+
+                switch (t->expType)
+                {
+                case ExpType::Boolean:
+                    emitRM((char *)"LDC", AC, t->attr.value, AC3, (char *)"Load boolean constant");
+                    break;
+                case ExpType::Integer:
+                    emitRM((char *)"LDC", AC, t->attr.value, AC3, (char *)"Load integer constant");
+                    break;
+                case ExpType::Char:
+                    emitRM((char *)"LDC", AC, t->attr.cvalue, AC3, (char *)"Load character constant");
+                    break;
+                }
+            }
             break;
         case ExpKind::IdK:
+        {
+            if (t->isAParam)
+            {
+                // printf("Hey i'm a param (%s)\n", t->attr.string);
+                // t->seenByCodeGen = true;
+                emitComment((char *)"TOFF dec:", --tOffset);
+                emitComment((char *)"Param", t->paramNum);
+                // emitRM((char *)"LDC", AC, tOffset, FP, (char *)"Load variable ", t->attr.string);
+            }
+            if (!t->seenByCodeGen)
+            {
+                // tOffset++;
+                emitRM((char *)"LDC", AC, 0, GP, (char *)"Load variable ", t->attr.string);
+            }
+            if (t->isAParam)
+            {
+                printf("Hey i'm still a param (%s)\n", t->attr.string);
+                emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push parameter");
+            }
             break;
+        }
         case ExpKind::InitK:
             break;
         case ExpKind::OpK:
+            // switch (t->attr.op)
+            // {
+            // case 1:
+            //     /* code */
+            //     break;
+
+            // default:
+            //     break;
+            // }
             break;
         }
     }
@@ -233,6 +296,7 @@ void PostCodeGeneration(SymbolTable *st, TreeNode *t, int tmp_toffset)
             emitComment((char *)"END FUNCTION", t->attr.string);
             break;
         case DeclKind::ParamK:
+            emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push parameter");
             break;
         case DeclKind::VarK:
             break;
@@ -245,6 +309,8 @@ void PostCodeGeneration(SymbolTable *st, TreeNode *t, int tmp_toffset)
         {
         case ExpKind::CallK:
         {
+            emitComment((char *)"TOFF dec:", --tOffset);
+            emitComment((char *)"Param end", t->attr.string);
             tOffset = tmp_toffset;
             TreeNode *tmp = getFunctionDeclNode(st, t->attr.string);
             emitRM((char *)"LDA", FP, tOffset, FP, (char *)"Ghost frame becomes new active frame");
@@ -289,7 +355,7 @@ void PostTraversal(SymbolTable *st)
     emitNewLoc(i);
 
     emitComment((char *)"INIT");
-    emitRM((char *)"LDA", FP, GP, GP, (char *)"set first frame at end of globals");
+    emitRM((char *)"LDA", FP, GP-1, GP, (char *)"set first frame at end of globals");
     emitRM((char *)"ST", FP, 0, FP, (char *)"store old fp (point to self");
     emitComment((char *)"INIT GLOBALS AND STATICS");
     emitComment((char *)"END INIT GLOBALS AND STATICS");
@@ -314,7 +380,7 @@ void doCodeGen(SymbolTable *st, TreeNode *root)
     printf("Input file: %s.c-, Output File: %s.tm\n", baseFileName, baseFileName);
     code = createOutputFile(fileOutName);
     // set up file header
-    fprintf(code, "* C- compiler version F22\n");
+    fprintf(code, "* C- compiler version F22_lunders\n");
     fprintf(code, "* File compiled: %s.c-\n* \n", baseFileName);
     fprintf(code, ioCode);
 

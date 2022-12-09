@@ -81,7 +81,11 @@ TreeNode::TreeNode()
     size = 1;
     location = 0;
     referenceType = RefType::None;
+    
     callLocation = -1;
+    seenByCodeGen = false;
+    isAParam = false;
+    paramNum = -1;
 }
 
 // #ifndef UNINDEXED_ARRAY

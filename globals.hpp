@@ -175,7 +175,9 @@ public:
     RefType referenceType;
 
     int callLocation;
-
+    bool seenByCodeGen;
+    bool isAParam;
+    int paramNum;
 
     TreeNode();
 };

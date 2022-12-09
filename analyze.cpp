@@ -342,7 +342,7 @@ bool nodeIsConstant(SymbolTable *st, TreeNode *t)
     {
     case NodeKind::DeclK:
     {
-        TreeNode *tmp = (TreeNode *)st->lookup(t->attr.string);
+        TreeNode *tmp = (TreeNode *)(t->attr.string);
         if (tmp != NULL)
         {
             return tmp->isConstantExp;
