@@ -4,9 +4,12 @@
 #include "util.hpp"
 #include "codeGen.hpp"
 #include "emitcode.h"
+#include <map>
+
 
 using namespace std;
 
+extern map<OpKind, OpTypeInfo> opInfoMap;
 void PreCodeGeneration(SymbolTable *, TreeNode *);
 void PostCodeGeneration(SymbolTable *, TreeNode *, int);
 
@@ -37,7 +40,7 @@ TreeNode *getFunctionDeclNode(SymbolTable *st, char *name)
 void markAsParams(TreeNode *t)
 {
     int i = 1;
-    while(t != NULL)
+    while (t != NULL)
     {
         // printf("Marking %s as a param", t->attr.string);
         t->paramNum = i;
@@ -115,7 +118,7 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             emitComment((char *)"FUNCTION", t->attr.string);
             tOffset = t->size;
             emitComment((char *)"TOFF set:", tOffset);
-            emitRM((char *)"ST", AC, tOffset+1, FP, (char *)"Store return address");
+            emitRM((char *)"ST", AC, tOffset + 1, FP, (char *)"Store return address");
             // emitRM((char *)"ST", AC, -1, FP, (char *)"Store return address");
             // if(t->child[0] != NULL)
             // {
@@ -133,6 +136,14 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
     break;
     case NodeKind::ExpK:
     {
+        if (t->isAParam)
+        {
+            // printf("Hey i'm a param (%s)\n", t->attr.string);
+            // t->seenByCodeGen = true;
+            emitComment((char *)"TOFF dec:", --tOffset);
+            emitComment((char *)"Param", t->paramNum);
+            // emitRM((char *)"LDC", AC, tOffset, FP, (char *)"Load variable ", t->attr.string);
+        }
         switch (t->subkind.exp)
         {
         case ExpKind::AssignK:
@@ -196,29 +207,18 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             break;
         case ExpKind::IdK:
         {
-            if (t->isAParam)
-            {
-                // printf("Hey i'm a param (%s)\n", t->attr.string);
-                // t->seenByCodeGen = true;
-                emitComment((char *)"TOFF dec:", --tOffset);
-                emitComment((char *)"Param", t->paramNum);
-                // emitRM((char *)"LDC", AC, tOffset, FP, (char *)"Load variable ", t->attr.string);
-            }
             if (!t->seenByCodeGen)
             {
                 // tOffset++;
                 emitRM((char *)"LDC", AC, 0, GP, (char *)"Load variable ", t->attr.string);
-            }
-            if (t->isAParam)
-            {
-                printf("Hey i'm still a param (%s)\n", t->attr.string);
-                emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push parameter");
             }
             break;
         }
         case ExpKind::InitK:
             break;
         case ExpKind::OpK:
+            OpTypeInfo currentOp = opInfoMap[t->attr.op];
+            
             // switch (t->attr.op)
             // {
             // case 1:
@@ -229,6 +229,11 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             //     break;
             // }
             break;
+        }
+        if (t->isAParam)
+        {
+            // printf("Hey i'm still a param (%s)\n", t->attr.string);
+            emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push parameter");
         }
     }
     break;
@@ -355,7 +360,7 @@ void PostTraversal(SymbolTable *st)
     emitNewLoc(i);
 
     emitComment((char *)"INIT");
-    emitRM((char *)"LDA", FP, GP-1, GP, (char *)"set first frame at end of globals");
+    emitRM((char *)"LDA", FP, GP - 1, GP, (char *)"set first frame at end of globals");
     emitRM((char *)"ST", FP, 0, FP, (char *)"store old fp (point to self");
     emitComment((char *)"INIT GLOBALS AND STATICS");
     emitComment((char *)"END INIT GLOBALS AND STATICS");
