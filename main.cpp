@@ -8,6 +8,8 @@
 
 #include "codeGen.hpp"
 
+char* folderName;
+
 extern FILE *yyin;
 extern FILE *yyout;
 extern TreeNode *rootNode;
@@ -39,6 +41,7 @@ PrintMethod printOption = PrintMethod::None;
 
 int main(int argc, char *argv[])
 {
+    folderName = get_current_dir_name();
     bool printTreeFlag = false;
     bool printYYDEBUG = false;
     bool symbTabDEBUG = false;
@@ -165,7 +168,7 @@ int main(int argc, char *argv[])
         if (numErrors == 0)
         {
             semanticAnalysis(symbolTable, tmpRoot, printOption);
-            if (numErrors == 0)
+            if (numErrors == 0 && printOption != PrintMethod::None)
                 printf("Offset for end of global space: %d\n", finalOffset);
         }
         printf("Number of warnings: %d\n", numWarnings);

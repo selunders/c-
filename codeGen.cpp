@@ -142,7 +142,7 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             // t->seenByCodeGen = true;
             emitComment((char *)"TOFF dec:", --tOffset);
             emitComment((char *)"Param", t->paramNum);
-            // emitRM((char *)"LDC", AC, tOffset, FP, (char *)"Load variable ", t->attr.string);
+            // emitRM((char *)"LDC", AC, tOffset, FP, (char *)"Load variable", t->attr.string);
         }
         switch (t->subkind.exp)
         {
@@ -158,7 +158,7 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                 // emitRM((char *)"LDC", AC, rightChild->attr.value, AC3, (char *)"Load integer constant");
                 traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
                 rightChild->seenByCodeGen = true;
-                emitRM((char *)"ST", AC, 0, GP, (char *)"Store variable ", leftChild->attr.string);
+                emitRM((char *)"ST", AC, 0, GP, (char *)"Store variable", leftChild->attr.string);
                 leftChild->seenByCodeGen = true;
                 break;
             }
@@ -172,7 +172,7 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             t->callLocation = emitWhereAmI() - 1;
             emitComment((char *)"EXPRESSION");
             emitComment((char *)"CALL", t->attr.string);
-            emitRM((char *)"ST", FP, tOffset, FP, (char *)"Store fp in ghost frame for ", t->attr.string);
+            emitRM((char *)"ST", FP, tOffset, FP, (char *)"Store fp in ghost frame for", t->attr.string);
             // tOffset = tOffset - 1;
             emitComment((char *)"TOFF dec:", --tOffset);
 
@@ -210,7 +210,7 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             if (!t->seenByCodeGen)
             {
                 // tOffset++;
-                emitRM((char *)"LDC", AC, 0, GP, (char *)"Load variable ", t->attr.string);
+                emitRM((char *)"LDC", AC, 0, GP, (char *)"Load variable", t->attr.string);
             }
             break;
         }
@@ -223,34 +223,83 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             OpTypeInfo currentOp = opInfoMap[t->attr.op];
             if (currentOp.isUnary)
             {
-                // Handle child
-            }
-            // else
-            // {
-            //     leftChild->seenByCodeGen = true;
-            //     traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
-            //     emitRM((char *)"ST", AC, 0, FP, (char *)"Push left side");
-            //     emitRM((char *)"MUL", AC, AC1, AC, (char *)"Op ", (char *)"*");
-            //     leftChild->seenByCodeGen = true;
-            //     traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
-            //     emitRM((char *)"ST", AC, 0, FP, (char *)"Push right side");
-            // }
-            switch (t->attr.op)
-            {
-            case MULTIPLY:
                 traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
                 leftChild->seenByCodeGen = true;
-                emitRM((char *)"ST", AC, 0, FP, (char *)"Push left side");
+                // emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push left side");
+                // emitComment((char *)"TOFF dec:", --tOffset);
+                traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
+                // emitComment((char *)"TOFF inc:", ++tOffset);
+                // rightChild->seenByCodeGen = true;
+                // emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Pop left into AC1");
+                switch (t->attr.op)
+                {
+                case NEGATIVE:
+                    emitRM((char *)"ADD", AC, AC1, AC, (char *)"Op unary", (char *)"-");
+                    break;
+                case NOT:
+                    emitRM((char *)"LDC", AC1, 1, AC3, (char *)"Load 1");
+                    emitRM((char *)"XOR", AC, AC, AC1, (char *)"XOR to get logical not");
+                    break;
+                }
+            }
+            else
+            {
+                traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
+                leftChild->seenByCodeGen = true;
+                emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push left side");
                 emitComment((char *)"TOFF dec:", --tOffset);
                 traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
                 emitComment((char *)"TOFF inc:", ++tOffset);
                 rightChild->seenByCodeGen = true;
-                emitRM((char *)"LD", AC1, 0, FP, (char *)"Pop left into AC1");
-                emitRM((char *)"MUL", AC, AC1, AC, (char *)"Op ", (char *)"*");
-                break;
-            default:
-                break;
+                emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Pop left into AC1");
+                switch (t->attr.op)
+                {
+                case '+':
+                    emitRM((char *)"ADD", AC, AC1, AC, (char *)"Op", (char *)"+");
+                    break;
+                case '/':
+                    emitRM((char *)"DIV", AC, AC1, AC, (char *)"Op", (char *)"/");
+                    break;
+                case AND:
+                    emitRM((char *)"AND", AC, AC1, AC, (char *)"Op", (char *)"AND");
+                    break;
+                case MODULO:
+                    emitRM((char *)"MOD", AC, AC1, AC, (char *)"Op", (char *)"%");
+                    break;
+                case MULTIPLY:
+                    emitRM((char *)"MUL", AC, AC1, AC, (char *)"Op", (char *)"*");
+                    break;
+                case OR:
+                    emitRM((char *)"OR", AC, AC1, AC, (char *)"Op", (char *)"OR");
+                    break;
+                case SUBTRACT:
+                    emitRM((char *)"SUB", AC, AC1, AC, (char *)"Op", (char *)"-");
+                    break;
+                }
             }
+
+            //////////////////
+            // Works for MUL
+
+            // switch (t->attr.op)
+            // {
+            // case MULTIPLY:
+            //     traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
+            //     leftChild->seenByCodeGen = true;
+            //     emitRM((char *)"ST", AC, 0, FP, (char *)"Push left side");
+            //     emitComment((char *)"TOFF dec:", --tOffset);
+            //     traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
+            //     emitComment((char *)"TOFF inc:", ++tOffset);
+            //     rightChild->seenByCodeGen = true;
+            //     emitRM((char *)"LD", AC1, 0, FP, (char *)"Pop left into AC1");
+            //     emitRM((char *)"MUL", AC, AC1, AC, (char *)"Op", (char *)"*");
+            //     break;
+            // default:
+            //     break;
+            // }
+
+            //
+            //////
             break;
         }
         }
@@ -339,9 +388,9 @@ void PostCodeGeneration(SymbolTable *st, TreeNode *t, int tmp_toffset)
             TreeNode *tmp = getFunctionDeclNode(st, t->attr.string);
             emitRM((char *)"LDA", FP, tOffset, FP, (char *)"Ghost frame becomes new active frame");
             emitRM((char *)"LDA", AC, 1, PC, (char *)"Return address in ac");
-            emitRM((char *)"JMP", PC, tmp->callLocation - emitWhereAmI(), PC, (char *)"CALL ", t->attr.string);
-            emitRM((char *)"LDA", AC, 0, RT, (char *)"Save result in ac");
-            emitComment((char *)"Call end ", t->attr.string);
+            emitRM((char *)"JMP", PC, tmp->callLocation - emitWhereAmI(), PC, (char *)"CALL", t->attr.string);
+            emitRM((char *)"LDA", AC, 0, RT, (char *)"Save the result in ac");
+            emitComment((char *)"Call end", t->attr.string);
             emitComment((char *)"TOFF set:", tOffset);
             /*
             43:    LDA  1,-2(1)    Ghost frame becomes new active frame
@@ -366,7 +415,7 @@ void PostCodeGeneration(SymbolTable *st, TreeNode *t, int tmp_toffset)
         case StmtKind::CompoundK:
             // tOffset = t->size;
             tOffset = tmp_toffset;
-            emitComment((char *)"TOFF dec:", tOffset);
+            emitComment((char *)"TOFF set:", tOffset);
             emitComment((char *)"END COMPOUND");
             break;
         }
@@ -384,13 +433,13 @@ void PostTraversal(SymbolTable *st)
     emitNewLoc(i);
 
     emitComment((char *)"INIT");
-    emitRM((char *)"LDA", FP, GP - 1, GP, (char *)"set first frame at end of globals");
-    emitRM((char *)"ST", FP, 0, FP, (char *)"store old fp (point to self");
+    emitRM((char *)"LDA", FP, 0, GP, (char *)"set first frame at end of globals");
+    emitRM((char *)"ST", FP, 0, FP, (char *)"store old fp (point to self)");
     emitComment((char *)"INIT GLOBALS AND STATICS");
     emitComment((char *)"END INIT GLOBALS AND STATICS");
     emitRM((char *)"LDA", AC, FP, PC, (char *)"Return address in ac");
     emitRM((char *)"JMP", PC, mainPtr->callLocation - emitWhereAmI(), PC, (char *)"Jump to main");
-    emitRM((char *)"HALT", 0, 0, 0, (char *)"DONE!");
+    emitRO((char *)"HALT", 0, 0, 0, (char *)"DONE!");
     emitComment((char *)"END INIT");
 
     // backPatchAJumpToHere(emitWhereAmI(), (char*)"");
@@ -398,7 +447,7 @@ void PostTraversal(SymbolTable *st)
 
 void doCodeGen(SymbolTable *st, TreeNode *root)
 {
-    printf("Starting Code Generation\n");
+    // printf("Starting Code Generation\n");
 
     // setup IO in SymbolTable
     setupIO(st);
@@ -406,7 +455,8 @@ void doCodeGen(SymbolTable *st, TreeNode *root)
     // create output .tm file
     char *baseFileName = strdup(fileInName);
     fileOutName = strcat(fileInName, ".tm");
-    printf("Input file: %s.c-, Output File: %s.tm\n", baseFileName, baseFileName);
+    // printf("Loading file: %s.tm\n", baseFileName);
+    // printf("Input file: %s.c-, Output File: %s.tm\n", baseFileName, baseFileName);
     code = createOutputFile(fileOutName);
     // set up file header
     fprintf(code, "* C- compiler version F22_lunders\n");
@@ -424,4 +474,5 @@ void doCodeGen(SymbolTable *st, TreeNode *root)
     {
         printf("\ntmpRoot is NULL\n");
     }
+    // printf("Bye.\n");
 }
