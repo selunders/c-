@@ -16,7 +16,6 @@
 
 extern FILE *code;
 
-
 //  TM location number for current instruction emission
 static int emitLoc = 39;   // next empty slot in Imem growing to lower memory
 static int litLoc = 1;    // next empty slot in Dmem growing to higher memory

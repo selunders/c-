@@ -83,6 +83,8 @@ void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *, TreeN
     // printf("Storing offset as %d\n", tOffset);
     if (t != NULL)
     {
+        if(t->seenByCodeGen)
+            return;
         preProc(st, t);
         {
             int i;
@@ -229,19 +231,21 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                 leftChild->seenByCodeGen = true;
                 // emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push left side");
                 // emitComment((char *)"TOFF dec:", --tOffset);
-                traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
+                // traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
                 // emitComment((char *)"TOFF inc:", ++tOffset);
                 // rightChild->seenByCodeGen = true;
                 // emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Pop left into AC1");
                 switch (t->attr.op)
                 {
                 case NEGATIVE:
-                    emitRM((char *)"ADD", AC, AC1, AC, (char *)"Op unary", (char *)"-");
+                    emitRO((char *)"ADD", AC, AC1, AC, (char *)"Op unary", (char *)"-");
                     break;
                 case NOT:
-                    emitRM((char *)"LDC", AC1, 1, AC3, (char *)"Load 1");
-                    emitRM((char *)"XOR", AC, AC, AC1, (char *)"XOR to get logical not");
+                    emitRO((char *)"LDC", AC1, 1, AC3, (char *)"Load 1");
+                    emitRO((char *)"XOR", AC, AC, AC1, (char *)"XOR to get logical not");
                     break;
+                case '?':
+                    emitRO((char *)"RND", AC, AC, AC3, (char *)"Op", (char *)"?");
                 }
             }
             else
@@ -257,25 +261,40 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                 switch (t->attr.op)
                 {
                 case '+':
-                    emitRM((char *)"ADD", AC, AC1, AC, (char *)"Op", (char *)"+");
+                    emitRO((char *)"ADD", AC, AC1, AC, (char *)"Op", (char *)"+");
                     break;
                 case '/':
-                    emitRM((char *)"DIV", AC, AC1, AC, (char *)"Op", (char *)"/");
+                    emitRO((char *)"DIV", AC, AC1, AC, (char *)"Op", (char *)"/");
+                    break;
+                case '<':
+                    emitRO((char *)"TGT", AC, AC1, AC, (char *)"Op", (char *)"<");
+                    break;
+                case '>':
+                    emitRO((char *)"TGT", AC, AC1, AC, (char *)"Op", (char *)">");
+                    break;
+                case EQ:
+                    emitRO((char *)"TEQ", AC, AC1, AC, (char *)"Op", (char *)"==");
+                    break;
+                case LEQ:
+                    emitRO((char *)"TGT", AC, AC1, AC, (char *)"Op", (char *)"<=");
+                    break;
+                case GEQ:
+                    emitRO((char *)"TGT", AC, AC1, AC, (char *)"Op", (char *)">=");
                     break;
                 case AND:
-                    emitRM((char *)"AND", AC, AC1, AC, (char *)"Op", (char *)"AND");
+                    emitRO((char *)"AND", AC, AC1, AC, (char *)"Op", (char *)"AND");
                     break;
                 case MODULO:
-                    emitRM((char *)"MOD", AC, AC1, AC, (char *)"Op", (char *)"%");
+                    emitRO((char *)"MOD", AC, AC1, AC, (char *)"Op", (char *)"%");
                     break;
                 case MULTIPLY:
-                    emitRM((char *)"MUL", AC, AC1, AC, (char *)"Op", (char *)"*");
+                    emitRO((char *)"MUL", AC, AC1, AC, (char *)"Op", (char *)"*");
                     break;
                 case OR:
-                    emitRM((char *)"OR", AC, AC1, AC, (char *)"Op", (char *)"OR");
+                    emitRO((char *)"OR", AC, AC1, AC, (char *)"Op", (char *)"OR");
                     break;
                 case SUBTRACT:
-                    emitRM((char *)"SUB", AC, AC1, AC, (char *)"Op", (char *)"-");
+                    emitRO((char *)"SUB", AC, AC1, AC, (char *)"Op", (char *)"-");
                     break;
                 }
             }
