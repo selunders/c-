@@ -15,6 +15,7 @@ void PostCodeGeneration(SymbolTable *, TreeNode *, int);
 
 int mainLocation = -1;
 int tOffset = 0;
+extern int finalOffset;
 
 char *ioCode = (char *)"* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION input\n  1:     ST  3,-1(1)    Store return address \n  2:     IN  2,2,2      Grab int input \n  3:     LD  3,-1(1)    Load return address \n  4:     LD  1,0(1)     Adjust fp \n  5:    JMP  7,0(3)     Return \n* END FUNCTION input\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION output\n  6:     ST  3,-1(1)    Store return address \n  7:     LD  3,-2(1)    Load parameter \n  8:    OUT  3,3,3      Output integer \n  9:     LD  3,-1(1)    Load return address \n 10:     LD  1,0(1)     Adjust fp \n 11:    JMP  7,0(3)     Return \n* END FUNCTION output\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION inputb\n 12:     ST  3,-1(1)    Store return address \n 13:    INB  2,2,2      Grab bool input \n 14:     LD  3,-1(1)    Load return address \n 15:     LD  1,0(1)     Adjust fp \n 16:    JMP  7,0(3)     Return \n* END FUNCTION inputb\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION outputb\n 17:     ST  3,-1(1)    Store return address \n 18:     LD  3,-2(1)    Load parameter \n 19:   OUTB  3,3,3      Output bool \n 20:     LD  3,-1(1)    Load return address \n 21:     LD  1,0(1)     Adjust fp \n 22:    JMP  7,0(3)     Return \n* END FUNCTION outputb\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION inputc\n 23:     ST  3,-1(1)    Store return address \n 24:    INC  2,2,2      Grab char input \n 25:     LD  3,-1(1)    Load return address \n 26:     LD  1,0(1)     Adjust fp \n 27:    JMP  7,0(3)     Return \n* END FUNCTION inputc\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION outputc\n 28:     ST  3,-1(1)    Store return address \n 29:     LD  3,-2(1)    Load parameter \n 30:   OUTC  3,3,3      Output char \n 31:     LD  3,-1(1)    Load return address \n 32:     LD  1,0(1)     Adjust fp \n 33:    JMP  7,0(3)     Return \n* END FUNCTION outputc\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION outnl\n 34:     ST  3,-1(1)    Store return address \n 35:  OUTNL  3,3,3      Output a newline \n 36:     LD  3,-1(1)    Load return address \n 37:     LD  1,0(1)     Adjust fp \n 38:    JMP  7,0(3)     Return \n* END FUNCTION outnl\n* \n";
 
@@ -158,7 +159,8 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                 // emitRM((char *)"LDC", AC, rightChild->attr.value, AC3, (char *)"Load integer constant");
                 traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
                 rightChild->seenByCodeGen = true;
-                emitRM((char *)"ST", AC, 0, GP, (char *)"Store variable", leftChild->attr.string);
+                // printf("var %s is %s\n", t->attr.string, refTypeToStr(t->referenceType));
+                emitRM((char *)"ST", AC, leftChild->location, leftChild->referenceType == RefType::Global ? GP : FP, (char *)"Store variable", leftChild->attr.string);
                 leftChild->seenByCodeGen = true;
                 break;
             }
@@ -210,7 +212,7 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             if (!t->seenByCodeGen)
             {
                 // tOffset++;
-                emitRM((char *)"LDC", AC, 0, GP, (char *)"Load variable", t->attr.string);
+                emitRM((char *)"LD", AC, t->location, t->referenceType == RefType::Global ? GP : FP, (char *)"Load variable", t->attr.string);
             }
             break;
         }
@@ -433,7 +435,7 @@ void PostTraversal(SymbolTable *st)
     emitNewLoc(i);
 
     emitComment((char *)"INIT");
-    emitRM((char *)"LDA", FP, 0, GP, (char *)"set first frame at end of globals");
+    emitRM((char *)"LDA", FP, finalOffset - 1, GP, (char *)"set first frame at end of globals");
     emitRM((char *)"ST", FP, 0, FP, (char *)"store old fp (point to self)");
     emitComment((char *)"INIT GLOBALS AND STATICS");
     emitComment((char *)"END INIT GLOBALS AND STATICS");
