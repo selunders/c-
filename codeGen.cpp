@@ -174,10 +174,10 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                 {
                     emitComment((char *)"TOFF inc:", ++tOffset);
                     emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Pop index");
-                    emitRM((char *)"LDA", AC2, ++tOffset, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, (char *)"Load address of base of array", leftChild->child[0]->attr.string);
+                    emitRM((char *)"LDA", AC2, /*++tOffset*/ leftChild->child[0]->location, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, (char *)"Load address of base of array", leftChild->child[0]->attr.string);
                     emitRM((char*) "SUB", AC2, AC2, AC1, (char*)"Compute offset of value");
                     emitRM((char*) "ST", AC, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, AC2, (char*)"Store variable", leftChild->child[0]->attr.string);
-                    tOffset--;
+                    // tOffset--;
                 }
                 else
                 {
