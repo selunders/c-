@@ -83,7 +83,7 @@ void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *, TreeN
     // printf("Storing offset as %d\n", tOffset);
     if (t != NULL)
     {
-        if(t->seenByCodeGen)
+        if (t->seenByCodeGen)
             return;
         preProc(st, t);
         {
@@ -158,11 +158,32 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             {
             case '=':
             {
+                if (leftChild->isArray)
+                {
+                    // emitComment((char*)"ARRAY");
+                    traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
+                    leftChild->seenByCodeGen = true;
+                    // tOffset--;
+                    // emitComment((char *)"array = something");
+                }
                 // emitRM((char *)"LDC", AC, rightChild->attr.value, AC3, (char *)"Load integer constant");
                 traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
                 rightChild->seenByCodeGen = true;
                 // printf("var %s is %s\n", t->attr.string, refTypeToStr(t->referenceType));
-                emitRM((char *)"ST", AC, leftChild->location, leftChild->referenceType == RefType::Global ? GP : FP, (char *)"Store variable", leftChild->attr.string);
+                if (leftChild->isArray)
+                {
+                    emitComment((char *)"TOFF inc:", ++tOffset);
+                    emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Pop index");
+                    emitRM((char *)"LDA", AC2, ++tOffset, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, (char *)"Load address of base of array", leftChild->child[0]->attr.string);
+                    emitRM((char*) "SUB", AC2, AC2, AC1, (char*)"Compute offset of value");
+                    emitRM((char*) "ST", AC, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, AC2, (char*)"Store variable", leftChild->child[0]->attr.string);
+                    tOffset--;
+                }
+                else
+                {
+                    emitRM((char *)"ST", AC, leftChild->location, leftChild->referenceType == RefType::Global ? GP : FP, (char *)"Store variable", leftChild->attr.string);
+                }
+                // traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
                 leftChild->seenByCodeGen = true;
                 break;
             }
@@ -213,7 +234,7 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
         {
             if (!t->seenByCodeGen)
             {
-                // tOffset++;
+                // tOffset--;
                 emitRM((char *)"LD", AC, t->location, t->referenceType == RefType::Global ? GP : FP, (char *)"Load variable", t->attr.string);
             }
             break;
@@ -225,6 +246,7 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             TreeNode *leftChild = t->child[0];
             TreeNode *rightChild = t->child[1];
             OpTypeInfo currentOp = opInfoMap[t->attr.op];
+            printf("Checking op\n");
             if (currentOp.isUnary)
             {
                 traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
@@ -247,6 +269,18 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                 case '?':
                     emitRO((char *)"RND", AC, AC, AC3, (char *)"Op", (char *)"?");
                 }
+            }
+            else if (t->attr.op == '[')
+            {
+                if (rightChild != NULL)
+                {
+                    traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
+                    rightChild->seenByCodeGen = true;
+                }
+                leftChild->seenByCodeGen = true;
+                emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push index");
+                emitComment((char *)"TOFF dec", --tOffset);
+                // traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
             }
             else
             {
@@ -419,6 +453,23 @@ void PostCodeGeneration(SymbolTable *st, TreeNode *t, int tmp_toffset)
             45:    JMP  7,-29(7)   CALL outputb
             46:    LDA  3,0(2)     Save the result in ac
             */
+            break;
+        }
+        case ExpKind::OpK:
+        {
+            OpTypeInfo currOp = opInfoMap[t->attr.op];
+
+            if (currOp.isUnary)
+            {
+            }
+            else if (t->attr.op == '[')
+            {
+                //     emitComment((char *)"TOFF inc", ++tOffset);
+                //     emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Pop index");
+            }
+            else
+            {
+            }
             break;
         }
         }
