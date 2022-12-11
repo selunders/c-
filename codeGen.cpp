@@ -153,6 +153,11 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             {
                 globalsSize -= t->size;
             }
+            if (t->isArray)
+            {
+                emitRM((char *)"LDC", AC, t->size - 1, AC3, (char *)"load size of array", t->attr.string);
+                emitRM((char *)"ST", AC, t->location + 1, t->referenceType == RefType::Global ? GP : FP, (char *)"save size of array", t->attr.string);
+            }
             break;
         }
     }
@@ -197,7 +202,10 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                     emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Pop index");
                     emitRM((char *)"LDA", AC2, /*++tOffset*/ leftChild->child[0]->location, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, (char *)"Load address of base of array", leftChild->child[0]->attr.string);
                     emitRO((char *)"SUB", AC2, AC2, AC1, (char *)"Compute offset of value");
-                    emitRM((char *)"ST", AC, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, AC2, (char *)"Store variable", leftChild->child[0]->attr.string);
+                    // emitRM((char *)"ST", AC, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, AC2, (char *)"Store variable", leftChild->child[0]->attr.string);
+                    emitRM((char *)"ST", AC, leftChild->location, AC2, (char *)"Store variable", leftChild->child[0]->attr.string);
+                    printDebug(leftChild);
+                    printDebug(leftChild->child[0]);
                     // tOffset--;
                 }
                 else
@@ -302,7 +310,7 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                 switch (t->attr.op)
                 {
                 case NEGATIVE:
-                    emitRO((char *)"ADD", AC, AC1, AC, (char *)"Op unary", (char *)"-");
+                    emitRO((char *)"NEG", AC, AC, AC, (char *)"Op unary", (char *)"-");
                     break;
                 case NOT:
                     emitRO((char *)"LDC", AC1, 1, AC3, (char *)"Load 1");
