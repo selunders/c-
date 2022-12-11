@@ -84,6 +84,19 @@ FILE *createOutputFile(char *name)
     return outputFile;
 }
 
+int storageLocation(TreeNode *t)
+{
+    RefType rt = t->referenceType;
+    if (rt == RefType::Global || rt == RefType::Static || rt == RefType::LocalStatic)
+    {
+        return GP;
+    }
+    else // local
+    {
+        return FP;
+    }
+}
+
 void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *, TreeNode *), void (*postProc)(SymbolTable *, TreeNode *, int))
 {
     int thisSibling = siblingCount;
@@ -149,16 +162,19 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             }
             break;
         case DeclKind::VarK:
-            if (t->referenceType == RefType::Global)
+        {
+            RefType rt = t->referenceType;
+            if (rt == RefType::Global || rt == RefType::LocalStatic || rt == RefType::Static)
             {
                 globalsSize -= t->size;
             }
             if (t->isArray)
             {
                 emitRM((char *)"LDC", AC, t->size - 1, AC3, (char *)"load size of array", t->attr.string);
-                emitRM((char *)"ST", AC, t->location + 1, t->referenceType == RefType::Global ? GP : FP, (char *)"save size of array", t->attr.string);
+                emitRM((char *)"ST", AC, t->location + 1, storageLocation(t), (char *)"save size of array", t->attr.string);
             }
             break;
+        }
         }
     }
     break;
@@ -200,17 +216,14 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                 {
                     emitComment((char *)"TOFF inc:", ++tOffset);
                     emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Pop index");
-                    emitRM((char *)"LDA", AC2, /*++tOffset*/ leftChild->child[0]->location, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, (char *)"Load address of base of array", leftChild->child[0]->attr.string);
+                    emitRM((char *)"LDA", AC2, /*++tOffset*/ leftChild->child[0]->location, storageLocation(leftChild->child[0]), (char *)"Load address of base of array", leftChild->child[0]->attr.string);
                     emitRO((char *)"SUB", AC2, AC2, AC1, (char *)"Compute offset of value");
                     // emitRM((char *)"ST", AC, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, AC2, (char *)"Store variable", leftChild->child[0]->attr.string);
                     emitRM((char *)"ST", AC, leftChild->location, AC2, (char *)"Store variable", leftChild->child[0]->attr.string);
-                    printDebug(leftChild);
-                    printDebug(leftChild->child[0]);
-                    // tOffset--;
                 }
                 else
                 {
-                    emitRM((char *)"ST", AC, leftChild->location, leftChild->referenceType == RefType::Global ? GP : FP, (char *)"Store variable", leftChild->attr.string);
+                    emitRM((char *)"ST", AC, leftChild->location, storageLocation(leftChild), (char *)"Store variable", leftChild->attr.string);
                 }
                 // traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
                 leftChild->seenByCodeGen = true;
@@ -219,26 +232,27 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             default:
                 traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
                 rightChild->seenByCodeGen = true;
-                emitRM((char *)"LD", AC1, leftChild->location, leftChild->referenceType == RefType::Global ? GP : FP, (char *)"load lhs variable", leftChild->attr.string);
+                emitRM((char *)"LD", AC1, leftChild->location, storageLocation(leftChild), (char *)"load lhs variable", leftChild->attr.string);
                 // printDebug(leftChild);
                 switch (t->attr.op)
                 {
                 case ADDASS:
-                    emitRO((char *)"ADD", AC, AC1, AC, (char *)"Op", (char *)"+=");
+                    emitRO((char *)"ADD", AC, AC1, AC, (char *)"op", (char *)"+=");
                     break;
                 case SUBASS:
-                    emitRO((char *)"SUB", AC, AC1, AC, (char *)"Op", (char *)"-=");
+                    emitRO((char *)"SUB", AC, AC1, AC, (char *)"op", (char *)"-=");
                     break;
                 case MULASS:
-                    emitRO((char *)"MUL", AC, AC1, AC, (char *)"Op", (char *)"*=");
+                    emitRO((char *)"MUL", AC, AC1, AC, (char *)"op", (char *)"*=");
                     break;
                 case DIVASS:
-                    emitRO((char *)"DIV", AC, AC1, AC, (char *)"Op", (char *)"/=");
+                    emitRO((char *)"DIV", AC, AC1, AC, (char *)"op", (char *)"/=");
                     break;
                 }
-                emitRM((char *)"ST", AC, leftChild->location, leftChild->referenceType == RefType::Global ? GP : FP, (char *)"Store variable", leftChild->attr.string);
+                emitRM((char *)"ST", AC, leftChild->location, storageLocation(leftChild), (char *)"Store variable", leftChild->attr.string);
+                // emitRM((char *)"ST", AC, leftChild->location, storageLocation(leftChild), (char *)"Store variable", leftChild->attr.string);
                 leftChild->seenByCodeGen = true;
-                // emitRO((char *)"TEQ", AC, AC1, AC, (char *)"Op", (char *)"==");
+                // emitRO((char *)"TEQ", AC, AC1, AC, (char *)"op", (char *)"==");
                 break;
             }
             break;
@@ -286,7 +300,8 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             if (!t->seenByCodeGen)
             {
                 // tOffset--;
-                emitRM((char *)"LD", AC, t->location, t->referenceType == RefType::Global ? GP : FP, (char *)"Load variable", t->attr.string);
+                emitRM((char *)"LD", AC, t->location, storageLocation(t), (char *)"Load variable", t->attr.string);
+                // emitRM((char *)"LD", AC, t->location, storageLocation(t), (char *)"Load variable", t->attr.string);
             }
             break;
         }
@@ -310,14 +325,14 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                 switch (t->attr.op)
                 {
                 case NEGATIVE:
-                    emitRO((char *)"NEG", AC, AC, AC, (char *)"Op unary", (char *)"-");
+                    emitRO((char *)"NEG", AC, AC, AC, (char *)"op unary", (char *)"-");
                     break;
                 case NOT:
                     emitRO((char *)"LDC", AC1, 1, AC3, (char *)"Load 1");
                     emitRO((char *)"XOR", AC, AC, AC1, (char *)"XOR to get logical not");
                     break;
                 case '?':
-                    emitRO((char *)"RND", AC, AC, AC3, (char *)"Op", (char *)"?");
+                    emitRO((char *)"RND", AC, AC, AC3, (char *)"op", (char *)"?");
                 }
             }
             else if (t->attr.op == '[')
@@ -338,7 +353,7 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                 else
                 {
                     // emitComment((char *)"ArrayY");
-                    emitRM((char *)"LDA", AC, leftChild->location, leftChild->referenceType == RefType::Global ? GP : FP, (char *)"Load address of base of array", leftChild->attr.string);
+                    emitRM((char *)"LDA", AC, leftChild->location, storageLocation(leftChild), (char *)"Load address of base of array", leftChild->attr.string);
                     emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push left side");
                     emitComment((char *)"TOFF dec:", --tOffset);
                     traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
@@ -372,40 +387,40 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                 switch (t->attr.op)
                 {
                 case '+':
-                    emitRO((char *)"ADD", AC, AC1, AC, (char *)"Op", (char *)"+");
+                    emitRO((char *)"ADD", AC, AC1, AC, (char *)"op", (char *)"+");
                     break;
                 case '/':
-                    emitRO((char *)"DIV", AC, AC1, AC, (char *)"Op", (char *)"/");
+                    emitRO((char *)"DIV", AC, AC1, AC, (char *)"op", (char *)"/");
                     break;
                 case '<':
-                    emitRO((char *)"TGT", AC, AC1, AC, (char *)"Op", (char *)"<");
+                    emitRO((char *)"TGT", AC, AC1, AC, (char *)"op", (char *)"<");
                     break;
                 case '>':
-                    emitRO((char *)"TGT", AC, AC1, AC, (char *)"Op", (char *)">");
+                    emitRO((char *)"TGT", AC, AC1, AC, (char *)"op", (char *)">");
                     break;
                 case EQ:
-                    emitRO((char *)"TEQ", AC, AC1, AC, (char *)"Op", (char *)"==");
+                    emitRO((char *)"TEQ", AC, AC1, AC, (char *)"op", (char *)"==");
                     break;
                 case LEQ:
-                    emitRO((char *)"TGT", AC, AC1, AC, (char *)"Op", (char *)"<=");
+                    emitRO((char *)"TGT", AC, AC1, AC, (char *)"op", (char *)"<=");
                     break;
                 case GEQ:
-                    emitRO((char *)"TGT", AC, AC1, AC, (char *)"Op", (char *)">=");
+                    emitRO((char *)"TGT", AC, AC1, AC, (char *)"op", (char *)">=");
                     break;
                 case AND:
-                    emitRO((char *)"AND", AC, AC1, AC, (char *)"Op", (char *)"AND");
+                    emitRO((char *)"AND", AC, AC1, AC, (char *)"op", (char *)"AND");
                     break;
                 case MODULO:
-                    emitRO((char *)"MOD", AC, AC1, AC, (char *)"Op", (char *)"%");
+                    emitRO((char *)"MOD", AC, AC1, AC, (char *)"op", (char *)"%");
                     break;
                 case MULTIPLY:
-                    emitRO((char *)"MUL", AC, AC1, AC, (char *)"Op", (char *)"*");
+                    emitRO((char *)"MUL", AC, AC1, AC, (char *)"op", (char *)"*");
                     break;
                 case OR:
-                    emitRO((char *)"OR", AC, AC1, AC, (char *)"Op", (char *)"OR");
+                    emitRO((char *)"OR", AC, AC1, AC, (char *)"op", (char *)"OR");
                     break;
                 case SUBTRACT:
-                    emitRO((char *)"SUB", AC, AC1, AC, (char *)"Op", (char *)"-");
+                    emitRO((char *)"SUB", AC, AC1, AC, (char *)"op", (char *)"-");
                     break;
                 }
             }
@@ -424,7 +439,7 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             //     emitComment((char *)"TOFF inc:", ++tOffset);
             //     rightChild->seenByCodeGen = true;
             //     emitRM((char *)"LD", AC1, 0, FP, (char *)"Pop left into AC1");
-            //     emitRM((char *)"MUL", AC, AC1, AC, (char *)"Op", (char *)"*");
+            //     emitRM((char *)"MUL", AC, AC1, AC, (char *)"op", (char *)"*");
             //     break;
             // default:
             //     break;
