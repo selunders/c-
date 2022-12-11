@@ -17,6 +17,8 @@ int mainLocation = -1;
 int tOffset = 0;
 extern int finalOffset;
 
+bool inAssignment = false;
+
 char *ioCode = (char *)"* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION input\n  1:     ST  3,-1(1)    Store return address \n  2:     IN  2,2,2      Grab int input \n  3:     LD  3,-1(1)    Load return address \n  4:     LD  1,0(1)     Adjust fp \n  5:    JMP  7,0(3)     Return \n* END FUNCTION input\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION output\n  6:     ST  3,-1(1)    Store return address \n  7:     LD  3,-2(1)    Load parameter \n  8:    OUT  3,3,3      Output integer \n  9:     LD  3,-1(1)    Load return address \n 10:     LD  1,0(1)     Adjust fp \n 11:    JMP  7,0(3)     Return \n* END FUNCTION output\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION inputb\n 12:     ST  3,-1(1)    Store return address \n 13:    INB  2,2,2      Grab bool input \n 14:     LD  3,-1(1)    Load return address \n 15:     LD  1,0(1)     Adjust fp \n 16:    JMP  7,0(3)     Return \n* END FUNCTION inputb\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION outputb\n 17:     ST  3,-1(1)    Store return address \n 18:     LD  3,-2(1)    Load parameter \n 19:   OUTB  3,3,3      Output bool \n 20:     LD  3,-1(1)    Load return address \n 21:     LD  1,0(1)     Adjust fp \n 22:    JMP  7,0(3)     Return \n* END FUNCTION outputb\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION inputc\n 23:     ST  3,-1(1)    Store return address \n 24:    INC  2,2,2      Grab char input \n 25:     LD  3,-1(1)    Load return address \n 26:     LD  1,0(1)     Adjust fp \n 27:    JMP  7,0(3)     Return \n* END FUNCTION inputc\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION outputc\n 28:     ST  3,-1(1)    Store return address \n 29:     LD  3,-2(1)    Load parameter \n 30:   OUTC  3,3,3      Output char \n 31:     LD  3,-1(1)    Load return address \n 32:     LD  1,0(1)     Adjust fp \n 33:    JMP  7,0(3)     Return \n* END FUNCTION outputc\n* \n* ** ** ** ** ** ** ** ** ** ** ** **\n* FUNCTION outnl\n 34:     ST  3,-1(1)    Store return address \n 35:  OUTNL  3,3,3      Output a newline \n 36:     LD  3,-1(1)    Load return address \n 37:     LD  1,0(1)     Adjust fp \n 38:    JMP  7,0(3)     Return \n* END FUNCTION outnl\n* \n";
 
 FILE *code;
@@ -80,12 +82,14 @@ void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *, TreeN
 {
     int thisSibling = siblingCount;
     int tmp_toffset = tOffset;
+    bool tmp_inAssignment = inAssignment;
     // printf("Storing offset as %d\n", tOffset);
     if (t != NULL)
     {
         if (t->seenByCodeGen)
             return;
         preProc(st, t);
+        inAssignment = false;
         {
             int i;
             for (i = 0; i < MAXCHILDREN; i++)
@@ -93,10 +97,12 @@ void traverse(SymbolTable *st, TreeNode *t, void (*preProc)(SymbolTable *, TreeN
                 traverse(st, t->child[i], preProc, postProc);
             }
         }
+        inAssignment = tmp_inAssignment;
         postProc(st, t, tmp_toffset);
         siblingCount++;
         traverse(st, t->sibling, preProc, postProc);
         siblingCount = thisSibling;
+        inAssignment = tmp_inAssignment;
     }
 }
 
@@ -151,6 +157,7 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
         {
         case ExpKind::AssignK:
         {
+            inAssignment = true;
             emitComment((char *)"EXPRESSION");
             TreeNode *leftChild = t->child[0];
             TreeNode *rightChild = t->child[1];
@@ -175,8 +182,8 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                     emitComment((char *)"TOFF inc:", ++tOffset);
                     emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Pop index");
                     emitRM((char *)"LDA", AC2, /*++tOffset*/ leftChild->child[0]->location, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, (char *)"Load address of base of array", leftChild->child[0]->attr.string);
-                    emitRM((char*) "SUB", AC2, AC2, AC1, (char*)"Compute offset of value");
-                    emitRM((char*) "ST", AC, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, AC2, (char*)"Store variable", leftChild->child[0]->attr.string);
+                    emitRM((char *)"SUB", AC2, AC2, AC1, (char *)"Compute offset of value");
+                    emitRM((char *)"ST", AC, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, AC2, (char *)"Store variable", leftChild->child[0]->attr.string);
                     // tOffset--;
                 }
                 else
@@ -246,7 +253,6 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             TreeNode *leftChild = t->child[0];
             TreeNode *rightChild = t->child[1];
             OpTypeInfo currentOp = opInfoMap[t->attr.op];
-            printf("Checking op\n");
             if (currentOp.isUnary)
             {
                 traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
@@ -272,15 +278,42 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
             }
             else if (t->attr.op == '[')
             {
-                if (rightChild != NULL)
+                if (inAssignment)
                 {
+                    // emitComment("\n\n");
+                    if (rightChild != NULL)
+                    {
+                        traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
+                        rightChild->seenByCodeGen = true;
+                    }
+                    leftChild->seenByCodeGen = true;
+                    emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push index");
+                    emitComment((char *)"TOFF dec", --tOffset);
+                    // traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
+                }
+                else
+                {
+                    // emitComment((char *)"ArrayY");
+                    emitRM((char *)"LDA", AC, leftChild->location, leftChild->referenceType == RefType::Global ? GP : FP, (char *)"Load address of base of array", leftChild->attr.string);
+                    emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push left side");
+                    emitComment((char *)"TOFF dec:", --tOffset);
                     traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
                     rightChild->seenByCodeGen = true;
+                    emitComment((char *)"TOFF inc:", ++tOffset);
+                    emitRM((char *)"LD", AC1, leftChild->location, FP, (char *)"Push left into ac1");
+                    emitRM((char *)"SUB", AC, AC1, AC, (char *)"compute location from index");
+                    emitRM((char *)"LD", AC, t->location, AC, (char *)"Load array element");
+                    printf("@%d:\ntOff:%d t.loc:%d t.size:%d\nl.loc:%d l.size%d\n", emitWhereAmI(),tOffset, t->location, t->size, leftChild->location, leftChild->size);
+                    // emitComment((char *)"TOFF dec:", --tOffset);
+
+                    leftChild->seenByCodeGen = true;
+                    /*
+                    * TOFF inc: -4
+                    58:     LD  4,-4(1)    Pop left into ac1 
+                    59:    SUB  3,4,3      compute location from index 
+                    60:     LD  3,0(3)     Load array element
+                    */
                 }
-                leftChild->seenByCodeGen = true;
-                emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push index");
-                emitComment((char *)"TOFF dec", --tOffset);
-                // traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
             }
             else
             {
@@ -464,6 +497,13 @@ void PostCodeGeneration(SymbolTable *st, TreeNode *t, int tmp_toffset)
             }
             else if (t->attr.op == '[')
             {
+                if (inAssignment)
+                {
+                }
+                else
+                {
+                    // emitComment((char *)"Yup that's it");
+                }
                 //     emitComment((char *)"TOFF inc", ++tOffset);
                 //     emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Pop index");
             }
