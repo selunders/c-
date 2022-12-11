@@ -15,6 +15,7 @@ void PostCodeGeneration(SymbolTable *, TreeNode *, int);
 
 int mainLocation = -1;
 int tOffset = 0;
+int globalsSize = 0;
 extern int finalOffset;
 
 bool inAssignment = false;
@@ -34,6 +35,11 @@ static int outputcLocation = 27;
 static int outnlLocation = 33;
 
 static int siblingCount = 0;
+
+void printDebug(TreeNode *t)
+{
+    printf("@%d:\ntOff:%d t.loc:%d t.size:%d\n", emitWhereAmI(), tOffset, t->location, t->size);
+}
 
 TreeNode *getFunctionDeclNode(SymbolTable *st, char *name)
 {
@@ -137,8 +143,16 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
         case DeclKind::ParamK:
             emitComment((char *)"TOFF dec:", --tOffset);
             emitComment((char *)"Param", siblingCount + 1);
+            if (t->referenceType == RefType::Global)
+            {
+                globalsSize -= t->size;
+            }
             break;
         case DeclKind::VarK:
+            if (t->referenceType == RefType::Global)
+            {
+                globalsSize -= t->size;
+            }
             break;
         }
     }
@@ -182,7 +196,7 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                     emitComment((char *)"TOFF inc:", ++tOffset);
                     emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Pop index");
                     emitRM((char *)"LDA", AC2, /*++tOffset*/ leftChild->child[0]->location, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, (char *)"Load address of base of array", leftChild->child[0]->attr.string);
-                    emitRM((char *)"SUB", AC2, AC2, AC1, (char *)"Compute offset of value");
+                    emitRO((char *)"SUB", AC2, AC2, AC1, (char *)"Compute offset of value");
                     emitRM((char *)"ST", AC, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, AC2, (char *)"Store variable", leftChild->child[0]->attr.string);
                     // tOffset--;
                 }
@@ -195,6 +209,28 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                 break;
             }
             default:
+                traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
+                rightChild->seenByCodeGen = true;
+                emitRM((char *)"LD", AC1, leftChild->location, leftChild->referenceType == RefType::Global ? GP : FP, (char *)"load lhs variable", leftChild->attr.string);
+                // printDebug(leftChild);
+                switch (t->attr.op)
+                {
+                case ADDASS:
+                    emitRO((char *)"ADD", AC, AC1, AC, (char *)"Op", (char *)"+=");
+                    break;
+                case SUBASS:
+                    emitRO((char *)"SUB", AC, AC1, AC, (char *)"Op", (char *)"-=");
+                    break;
+                case MULASS:
+                    emitRO((char *)"MUL", AC, AC1, AC, (char *)"Op", (char *)"*=");
+                    break;
+                case DIVASS:
+                    emitRO((char *)"DIV", AC, AC1, AC, (char *)"Op", (char *)"/=");
+                    break;
+                }
+                emitRM((char *)"ST", AC, leftChild->location, leftChild->referenceType == RefType::Global ? GP : FP, (char *)"Store variable", leftChild->attr.string);
+                leftChild->seenByCodeGen = true;
+                // emitRO((char *)"TEQ", AC, AC1, AC, (char *)"Op", (char *)"==");
                 break;
             }
             break;
@@ -300,17 +336,17 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                     traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
                     rightChild->seenByCodeGen = true;
                     emitComment((char *)"TOFF inc:", ++tOffset);
-                    emitRM((char *)"LD", AC1, leftChild->location, FP, (char *)"Push left into ac1");
-                    emitRM((char *)"SUB", AC, AC1, AC, (char *)"compute location from index");
+                    emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Push left into ac1");
+                    // emitRM((char *)"LD", AC1, leftChild->location, FP, (char *)"Push left into ac1");
+                    emitRO((char *)"SUB", AC, AC1, AC, (char *)"compute location from index");
                     emitRM((char *)"LD", AC, t->location, AC, (char *)"Load array element");
-                    printf("@%d:\ntOff:%d t.loc:%d t.size:%d\nl.loc:%d l.size%d\n", emitWhereAmI(),tOffset, t->location, t->size, leftChild->location, leftChild->size);
                     // emitComment((char *)"TOFF dec:", --tOffset);
 
                     leftChild->seenByCodeGen = true;
                     /*
                     * TOFF inc: -4
-                    58:     LD  4,-4(1)    Pop left into ac1 
-                    59:    SUB  3,4,3      compute location from index 
+                    58:     LD  4,-4(1)    Pop left into ac1
+                    59:    SUB  3,4,3      compute location from index
                     60:     LD  3,0(3)     Load array element
                     */
                 }
@@ -536,7 +572,40 @@ void PostCodeGeneration(SymbolTable *st, TreeNode *t, int tmp_toffset)
     }
 }
 
-void PostTraversal(SymbolTable *st)
+void handleGlobalsAndStatics(TreeNode *t)
+{
+    if (t != NULL)
+    {
+        /////////////
+        // Do Stuff
+        if (t->nodeKind == NodeKind::DeclK && t->subkind.decl != DeclKind::FuncK)
+        {
+            RefType rt = t->referenceType;
+            // if(rt == RefType::Global || rt == RefType::Static || rt == RefType::LocalStatic)
+            if (rt == RefType::Global)
+            {
+                if (t->isArray)
+                {
+                    emitRM((char *)"LDC", AC, t->size - 1, AC3, (char *)"load size of array", t->attr.string);
+                    emitRM((char *)"ST", AC, t->location + 1, GP, (char *)"save size of array", t->attr.string);
+                }
+                // printf("Add %d to globals\n", t->size);
+                // printDebug(t);
+            }
+        }
+        //
+        /////
+
+        int i = 0;
+        for (i; i < MAXCHILDREN; i++)
+        {
+            handleGlobalsAndStatics(t->child[i]);
+        }
+        handleGlobalsAndStatics(t->sibling);
+    }
+}
+
+void PostTraversal(SymbolTable *st, TreeNode *root)
 {
     TreeNode *mainPtr = getFunctionDeclNode(st, (char *)"main");
     int i = emitWhereAmI();
@@ -545,9 +614,10 @@ void PostTraversal(SymbolTable *st)
     emitNewLoc(i);
 
     emitComment((char *)"INIT");
-    emitRM((char *)"LDA", FP, finalOffset - 1, GP, (char *)"set first frame at end of globals");
+    emitRM((char *)"LDA", FP, globalsSize, GP, (char *)"set first frame at end of globals");
     emitRM((char *)"ST", FP, 0, FP, (char *)"store old fp (point to self)");
     emitComment((char *)"INIT GLOBALS AND STATICS");
+    handleGlobalsAndStatics(root);
     emitComment((char *)"END INIT GLOBALS AND STATICS");
     emitRM((char *)"LDA", AC, FP, PC, (char *)"Return address in ac");
     emitRM((char *)"JMP", PC, mainPtr->callLocation - emitWhereAmI(), PC, (char *)"Jump to main");
@@ -580,7 +650,7 @@ void doCodeGen(SymbolTable *st, TreeNode *root)
     {
         // printf("\nDoing CodeGen traversal\n");
         traverse(st, root, PreCodeGeneration, PostCodeGeneration);
-        PostTraversal(st);
+        PostTraversal(st, root);
     }
     else
     {
