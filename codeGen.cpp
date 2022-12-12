@@ -1,3 +1,10 @@
+/*
+ * Didn't give myself enough time on this one.
+ * Learned a lot though, this assignment made what
+ *   we did in previous ones make a lot more sense.
+ *
+ */
+
 #include <stdio.h>
 
 #include "globals.hpp"
@@ -193,9 +200,11 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
         case ExpKind::AssignK:
         {
             inAssignment = true;
-            emitComment((char *)"EXPRESSION");
+            // emitComment((char *)"EXPRESSION");
             TreeNode *leftChild = t->child[0];
             TreeNode *rightChild = t->child[1];
+            OpTypeInfo currOp = opInfoMap[t->attr.op];
+            
             switch (t->attr.op)
             {
             case '=':
@@ -219,20 +228,40 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                     emitRM((char *)"LDA", AC2, /*++tOffset*/ leftChild->child[0]->location, storageLocation(leftChild->child[0]), (char *)"Load address of base of array", leftChild->child[0]->attr.string);
                     emitRO((char *)"SUB", AC2, AC2, AC1, (char *)"Compute offset of value");
                     // emitRM((char *)"ST", AC, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, AC2, (char *)"Store variable", leftChild->child[0]->attr.string);
-                    emitRM((char *)"ST", AC, leftChild->location, AC2, (char *)"Store variable", leftChild->child[0]->attr.string);
+                    emitRM((char *)"ST", currOp.isUnary ? AC1 : AC, leftChild->location, AC2, (char *)"Store variable", leftChild->child[0]->attr.string);
                 }
                 else
                 {
-                    emitRM((char *)"ST", AC, leftChild->location, storageLocation(leftChild), (char *)"Store variable", leftChild->attr.string);
+                    // emitRM((char *)"ST", currOp.isUnary ? AC : AC1, leftChild->location, storageLocation(leftChild), (char *)"Store variable", leftChild->attr.string);
+                    emitRM((char *)"ST", currOp.isUnary ? AC1 : AC, leftChild->location, storageLocation(leftChild), (char *)"Store variable", leftChild->attr.string);
                 }
                 // traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
                 leftChild->seenByCodeGen = true;
                 break;
             }
             default:
-                traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
-                rightChild->seenByCodeGen = true;
-                emitRM((char *)"LD", AC1, leftChild->location, storageLocation(leftChild), (char *)"load lhs variable", leftChild->attr.string);
+            {
+                if (rightChild != NULL)
+                {
+
+                    traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
+                    rightChild->seenByCodeGen = true;
+                }
+                if (leftChild->isArray)
+                {
+                    // emitComment((char *)"TOFF inc:", ++tOffset);
+                    // emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Pop index");
+                    traverse(st, leftChild->child[1], PreCodeGeneration, PostCodeGeneration);
+                    emitRM((char *)"LDA", AC2, /*++tOffset*/ leftChild->child[0]->location, storageLocation(leftChild->child[0]), (char *)"Load address of base of array", leftChild->child[0]->attr.string);
+                    emitRO((char *)"SUB", AC2, AC2, AC, (char *)"Compute offset of value");
+                    // emitRM((char *)"ST", AC, leftChild->child[0]->referenceType == RefType::Global ? GP : FP, AC2, (char *)"Store variable", leftChild->child[0]->attr.string);
+                    emitRM((char *)"LD", AC, leftChild->location, AC2, (char *)"load lhs variable", leftChild->child[0]->attr.string);
+                }
+                else
+                {
+                    emitRM((char *)"LD", currOp.isUnary ? AC : AC1, leftChild->location, storageLocation(leftChild), (char *)"load lhs variable", leftChild->isArray ? leftChild->child[0]->attr.string : leftChild->attr.string);
+                }
+                // emitRM((char *)"LD", AC1, leftChild->location, storageLocation(leftChild), (char *)"load lhs variable", leftChild->attr.string);
                 // printDebug(leftChild);
                 switch (t->attr.op)
                 {
@@ -248,12 +277,20 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                 case DIVASS:
                     emitRO((char *)"DIV", AC, AC1, AC, (char *)"op", (char *)"/=");
                     break;
+                case INC:
+                    emitRM((char *)"LDA", AC, 1, AC, (char *)"increment value of", leftChild->isArray ? leftChild->child[0]->attr.string : leftChild->attr.string);
+                    break;
+                case DEC:
+                    emitRM((char *)"LDA", AC, -1, AC, (char *)"decrement value of", leftChild->isArray ? leftChild->child[0]->attr.string : leftChild->attr.string);
+                    break;
                 }
-                emitRM((char *)"ST", AC, leftChild->location, storageLocation(leftChild), (char *)"Store variable", leftChild->attr.string);
+                emitRM((char *)"ST", AC, leftChild->location, leftChild->isArray ? AC2 : storageLocation(leftChild), (char *)"Store variable", leftChild->isArray ? leftChild->child[0]->attr.string : leftChild->attr.string);
+                // emitRM((char *)"ST", AC, leftChild->location, AC2, (char *)"Store variable", leftChild->isArray ? leftChild->child[0]->attr.string : leftChild->attr.string);
                 // emitRM((char *)"ST", AC, leftChild->location, storageLocation(leftChild), (char *)"Store variable", leftChild->attr.string);
                 leftChild->seenByCodeGen = true;
                 // emitRO((char *)"TEQ", AC, AC1, AC, (char *)"op", (char *)"==");
                 break;
+            }
             }
             break;
         }
@@ -347,7 +384,7 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                     }
                     leftChild->seenByCodeGen = true;
                     emitRM((char *)"ST", AC, tOffset, FP, (char *)"Push index");
-                    emitComment((char *)"TOFF dec", --tOffset);
+                    emitComment((char *)"TOFF dec:", --tOffset);
                     // traverse(st, leftChild, PreCodeGeneration, PostCodeGeneration);
                 }
                 else
@@ -359,7 +396,7 @@ void PreCodeGeneration(SymbolTable *st, TreeNode *t)
                     traverse(st, rightChild, PreCodeGeneration, PostCodeGeneration);
                     rightChild->seenByCodeGen = true;
                     emitComment((char *)"TOFF inc:", ++tOffset);
-                    emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Push left into ac1");
+                    emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Pop left into ac1");
                     // emitRM((char *)"LD", AC1, leftChild->location, FP, (char *)"Push left into ac1");
                     emitRO((char *)"SUB", AC, AC1, AC, (char *)"compute location from index");
                     emitRM((char *)"LD", AC, t->location, AC, (char *)"Load array element");
@@ -512,7 +549,7 @@ void PostCodeGeneration(SymbolTable *st, TreeNode *t, int tmp_toffset)
                 emitRM((char *)"JMP", PC, 0, AC, (char *)"Return");
             }
             // tOffset = t->size;
-            // emitComment((char *)"TOFF set", tOffset);
+            // emitComment((char *)"TOFF set:", tOffset);
             emitComment((char *)"END FUNCTION", t->attr.string);
             break;
         case DeclKind::ParamK:
@@ -563,7 +600,7 @@ void PostCodeGeneration(SymbolTable *st, TreeNode *t, int tmp_toffset)
                 {
                     // emitComment((char *)"Yup that's it");
                 }
-                //     emitComment((char *)"TOFF inc", ++tOffset);
+                //     emitComment((char *)"TOFF inc:", ++tOffset);
                 //     emitRM((char *)"LD", AC1, tOffset, FP, (char *)"Pop index");
             }
             else
