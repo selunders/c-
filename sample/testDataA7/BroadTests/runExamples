@@ -1,0 +1,185 @@
+#!/bin/bash
+# file.c-  file to compile
+# file.in  file of commands to tm to run code
+# file.expected file of expected output
+
+# file.out file of output from compiler and then from running code
+# file.tm  file of tm code
+
+diffExpectedMem_flag=false
+printTm_flag=false
+printMyTm_flag=false
+printExpectedOutput_flag=false
+printSourceCode_flag=false
+fileIn=''
+
+compiler=../../../c-
+tmp=ztmp$$.txt
+
+while getopts 'cef:hmtT' flag; do
+    case "${flag}" in
+    c) printSourceCode_flag=true ;;
+    e) printExpectedOutput_flag=true ;;
+    f) fileIn="${OPTARG}" ;;
+    h) printHelp_flag=true ;;
+    m) diffExpectedMem_flag=true ;;
+    t) printTm_flag=true ;;
+    T) printMyTm_flag=true ;;
+    *) echo "Invalid flag '-${flag}'"
+    esac
+done
+
+if [ "$printHelp_flag" = true ]; then
+    echo "Usage: runExamples [options]"
+    echo "-----------------------------"
+    echo "Options:"
+    echo "---------"
+    echo "-c) Print Source Code"
+    echo "-e) Print Expected Output"
+    echo "-f <fileName>) Specify file for tests."
+    echo "-h) Print this help message"
+    echo "-m) Compare exptected mem to your mem"
+    echo "-t) Print example .tm.bpk file"
+    echo "-T) Print MY .tm file"
+    exit 1
+fi
+
+if [ -f "$fileIn" ]; then
+    skipActualChecking=false
+    file=$(basename "$fileIn" '.c-')
+    if [ "$printExpectedOutput_flag" = true ]; then
+        cat "$file.expected"
+        skipActualChecking=true
+    fi
+    if [ "$diffExpectedMem_flag" = true ]; then
+        $compiler "$file.c-" -M > tmp1.txt
+        sdiff -l -s tmp1.txt "$file.mem"
+        rm tmp1.txt
+        skipActualChecking=true
+    fi
+    if [ "$printSourceCode_flag" = true ]; then
+        cat "$file.c-"
+        skipActualChecking=true
+    fi
+    if [ "$printTm_flag" = true ]; then
+        cat "$file.tm.bkp"
+        skipActualChecking=true
+    fi
+    if [ "$printMyTm_flag" = true ]; then
+        cat "$file.tm"
+        skipActualChecking=true
+    fi
+    if [ "$skipActualChecking" = true ]; then
+        exit 1
+    fi
+fi
+
+if [ -f $fileIn ]
+    then
+    echo "Running only on $fileIn"
+    file=$fileIn
+    echo "===================================="
+    echo "FILE: $file"
+	file=$(basename $file '.c-')
+        rm -f $file.tm $file.out
+        $compiler  $file.c- > $file.out
+        $compiler -M $file.c- > $file.mem
+        echo "------------------------------------" >> $file.out
+        if [ -f $file.tm ]
+        then
+            if [ -f $file.in ]
+            then 
+                tm $file.tm < $file.in |
+                    expand |
+                    sed -e 's/^  *//' -e 's/  *$//' -e 's/ *Halted//' |
+                    grep -v '^$' |
+                    grep -v 'Number' |
+                    egrep -v 'Status:|Memory|Addresses|Instruc|Enter|Limit|Source|command|PC|cmd|version' >> $file.out
+            else 
+                tm $file.tm < runExamples.in |
+                    expand |
+                    sed -e 's/^  *//' -e 's/  *$//' -e 's/ *Halted//' |
+                    grep -v '^$' |
+                    grep -v 'Number' |
+                    egrep -v 'Status:|Memory|Addresses|Instruc|Enter|Limit|Source|command|PC|cmd|version' >> $file.out
+            fi
+        fi
+	ls -l $file.*
+        if [ -f $file.expected ] 
+        then
+            cat $file.expected |
+                expand |
+                sed -e 's/^  *//' -e 's/  *$//' -e 's/ *Halted//' |
+                grep -v '^$' |
+                sed 's/ *Halted//' |
+                egrep -v 'Status:|Memory|Addresses|Instruc|Enter|Limit|Source|command|PC|cmd|version'  > $tmp
+            cat $file.out | egrep -vi 'number of|---' | delay $file.out
+            if cmp $file.out $tmp
+            then
+                echo "$file (Output OK)"
+            else
+                echo "$file (Output DIFF)"
+   	        sdiff -w200 $file.out $tmp
+            fi
+        else
+            echo "$file (NO EXPECTED FILE)"
+        fi
+
+elif [ ! -x $compiler ]
+then
+    echo "ERROR: the C- compiler at \"$compiler\" either does not exist or is not executable"
+    echo "Be sure the compiler variable in the script gives a correct path to the compiler."
+    exit 1
+
+else
+    for file in *.c-
+    do
+        echo "===================================="
+        echo "FILE: $file"
+        file=$(basename $file '.c-')
+            rm -f $file.tm $file.out
+            $compiler  $file.c- > $file.out
+            $compiler -M $file.c- > $file.mem
+            echo "------------------------------------" >> $file.out
+            if [ -f $file.tm ]
+            then
+                if [ -f $file.in ]
+                then 
+                    tm $file.tm < $file.in |
+                        expand |
+                        sed -e 's/^  *//' -e 's/  *$//' -e 's/ *Halted//' |
+                        grep -v '^$' |
+                        grep -v 'Number' |
+                        egrep -v 'Status:|Memory|Addresses|Instruc|Enter|Limit|Source|command|PC|cmd|version' >> $file.out
+                else 
+                    tm $file.tm < runExamples.in |
+                        expand |
+                        sed -e 's/^  *//' -e 's/  *$//' -e 's/ *Halted//' |
+                        grep -v '^$' |
+                        grep -v 'Number' |
+                        egrep -v 'Status:|Memory|Addresses|Instruc|Enter|Limit|Source|command|PC|cmd|version' >> $file.out
+                fi
+            fi
+        ls -l $file.*
+            if [ -f $file.expected ] 
+            then
+                cat $file.expected |
+                    expand |
+                    sed -e 's/^  *//' -e 's/  *$//' -e 's/ *Halted//' |
+                    grep -v '^$' |
+                    sed 's/ *Halted//' |
+                    egrep -v 'Status:|Memory|Addresses|Instruc|Enter|Limit|Source|command|PC|cmd|version'  > $tmp
+                cat $file.out | egrep -vi 'number of|---' | delay $file.out
+                if cmp $file.out $tmp
+                then
+                    echo "$file (Output OK)"
+                else
+                    echo "$file (Output DIFF)"
+                sdiff -w200 $file.out $tmp
+                fi
+            else
+                echo "$file (NO EXPECTED FILE)"
+            fi
+    done
+fi
+rm ztmp*

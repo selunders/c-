@@ -9,6 +9,7 @@ struct TokenData {
     int boolValue;
     char charValue;
     char *stringValue;
+    bool isArray;
 };
 
 #endif

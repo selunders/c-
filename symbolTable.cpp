@@ -1,5 +1,7 @@
 #include "symbolTable.hpp"
-
+#include "globals.hpp"
+#include "util.hpp"
+// #include "colorPrint.hpp"
 // // // // // // // // // // // // // // // // // // // //
 //
 // Introduction
@@ -50,6 +52,158 @@ void pointerPrintLongInteger(void *data)
 void pointerPrintStr(void *data)
 {
     printf("%s ", (char *)(data));
+}
+
+char *boolToStr(bool b)
+{
+    return b ? (char *)"true" : (char *)"false";
+}
+
+void pointerPrintNode(void *data)
+{
+    TreeNode *t = (TreeNode *)data;
+    if (t != NULL)
+    {
+        switch (t->nodeKind)
+        {
+        case NodeKind::DeclK:
+            // printf("DeclK with subtype ");
+            switch (t->subkind.decl)
+            {
+            case DeclKind::VarK:
+                printf("Var: %s ", t->attr.string);
+                if (t->isArray)
+                    printf("is array ");
+                if (t->isStatic)
+                    // printf("of static type %s", expToString(t->expType));
+                    printf("of type %s", expToString(t->expType));
+                else
+                    printf("of type %s", expToString(t->expType));
+                break;
+            case DeclKind::FuncK:
+                // printf("Var: %s ", t->attr.string);
+                // printf("About to print\n");
+                printf("Func: %s ", t->attr.string);
+                printf("returns type %s", expToString(t->expType));
+                // printf("Func: %s", t->attr.string);
+                break;
+            case DeclKind::ParamK:
+                printf("Parm: %s ", t->attr.string);
+                if (t->isArray)
+                    printf("is array ");
+                printf("of type %s", expToString(t->expType));
+                break;
+            }
+            break;
+        case NodeKind::ExpK:
+            // printf("ExpK");
+            switch (t->subkind.exp)
+            {
+            case ExpKind::OpK:
+                printf("Op: %s", opToString(t->attr.op));
+                break;
+            case ExpKind::ConstantK:
+                switch (t->expType)
+                {
+                case ExpType::Boolean:
+                    if (t->attr.value == 0)
+                        printf("Const false");
+                    else
+                        printf("Const true");
+                    break;
+                case ExpType::Char:
+                    if (t->isArray)
+                        printf("Const %s", t->attr.string);
+                    else
+                        printf("Const \'%c\'", t->attr.cvalue);
+                    break;
+                case ExpType::Integer:
+                    printf("Const %d", t->attr.value);
+                    break;
+                default:
+                    printf("How'd you find this???\n\n\n");
+                    break;
+                }
+                break;
+            case ExpKind::IdK:
+                printf("Id: %s", t->attr.string);
+                break;
+            case ExpKind::AssignK:
+                printf("Assign: %s", assignToString(t->attr.op));
+                break;
+            case ExpKind::InitK:
+                break;
+            case ExpKind::CallK:
+                printf("Call: %s", t->attr.string);
+                break;
+            default:
+                break;
+            }
+            break;
+        case NodeKind::StmtK:
+            // printf("StmtK");
+            switch (t->subkind.stmt)
+            {
+            case StmtKind::NullK:
+                printf("Null");
+                break;
+            case StmtKind::IfK:
+                printf("If");
+                break;
+            case StmtKind::WhileK:
+                printf("While");
+                break;
+            case StmtKind::ForK:
+                printf("For");
+                break;
+            case StmtKind::CompoundK:
+                printf("Compound");
+                break;
+            case StmtKind::ReturnK:
+                printf("Return");
+                break;
+            case StmtKind::BreakK:
+                printf("Break");
+                break;
+            case StmtKind::RangeK:
+                printf("Range");
+                break;
+            default:
+                printf("... how'd you get here? (util.cpp ~380ish)\n\n");
+                break;
+            }
+            break;
+        default:
+            printf("Found unknown node???\n\n");
+            break;
+        }
+        // nodeCount++;
+        // printf("%d\n", nodeCount);
+        printf(" [line: %d] || etype:%s isInit: %s needsInitCheck: %s isArray: %s\n", t->lineno, expToString(t->expType), boolToStr(t->isInit), boolToStr(t->needsInitCheck), boolToStr(t->isArray));
+        // // printf(" [line: %d]\nexpType::%s\n", t->lineno, expToString(t->expType));
+        // for (i = 0; i < MAXCHILDREN; i++)
+        // {
+        //     if (t->child[i] != NULL)
+        //     {
+        //         printBasict(t->child[i], NodeRelation::Child, i, layer + 1);
+        //         // printf("child %d is not NULL %p\n", i, t->child[i]);
+        //     }
+        //     // else
+        //     // printf("child %d is NULL\n", i);
+        // }
+        // UNINDENT;
+        // if (t->sibling != NULL)
+        // {
+        //     if (relation == NodeRelation::Sibling)
+        //         printBasict(t->sibling, NodeRelation::Sibling, id + 1, layer);
+        //     else
+        //         printBasict(t->sibling, NodeRelation::Sibling, 1, layer);
+        // }
+        // INDENT;
+        // t = NULL;
+        // t = t->sibling;
+    }
+    // UNINDENT;
 }
 
 // // // // // // // // // // // // // // // // // // // //
@@ -128,9 +282,13 @@ bool SymbolTable::Scope::insert(std::string sym, void *ptr)
     if (symbols.find(sym) == symbols.end())
     {
         if (debugFlg)
+        {
+            // setPrintColor(PRINTCOLOR::GREEN);
             printf("DEBUG(Scope): insert in \"%s\" the symbol \"%s\".\n",
                    name.c_str(),
                    sym.c_str());
+            // resetPrintColor();
+        }
         if (ptr == NULL)
         {
             printf("ERROR(SymbolTable): Attempting to save a NULL pointer for the symbol '%s'.\n",
@@ -142,7 +300,11 @@ bool SymbolTable::Scope::insert(std::string sym, void *ptr)
     else
     {
         if (debugFlg)
+        {
+            // setPrintColor(PRINTCOLOR::GREEN);
             printf("DEBUG(Scope): insert in \"%s\" the symbol \"%s\" but symbol already there!\n", name.c_str(), sym.c_str());
+            // resetPrintColor();
+        }
         return false;
     }
 }
@@ -152,13 +314,21 @@ void *SymbolTable::Scope::lookup(std::string sym)
     if (symbols.find(sym) != symbols.end())
     {
         if (debugFlg)
+        {
+            // setPrintColor(PRINTCOLOR::GREEN);
             printf("DEBUG(Scope): lookup in \"%s\" for the symbol \"%s\" and found it.\n", name.c_str(), sym.c_str());
+            // resetPrintColor();
+        }
         return symbols[sym];
     }
     else
     {
         if (debugFlg)
+        {
+            // setPrintColor(PRINTCOLOR::GREEN);
             printf("DEBUG(Scope): lookup in \"%s\" for the symbol \"%s\" and did NOT find it.\n", name.c_str(), sym.c_str());
+            // resetPrintColor();
+        }
         return NULL;
     }
 }
@@ -183,6 +353,13 @@ void SymbolTable::debug(bool state)
     debugFlg = state;
 }
 
+bool SymbolTable::getDebugState()
+{
+    if(debugFlg)
+        return true;
+    return false;
+}
+
 // Returns the number of scopes in the symbol table
 int SymbolTable::depth()
 {
@@ -204,7 +381,11 @@ void SymbolTable::print(void (*printData)(void *))
 void SymbolTable::enter(std::string name)
 {
     if (debugFlg)
+    {
+        // setPrintColor(PRINTCOLOR::GREEN);
         printf("DEBUG(SymbolTable): enter scope \"%s\".\n", name.c_str());
+        // resetPrintColor();
+    }
     stack.push_back(new Scope(name));
 }
 
@@ -212,7 +393,11 @@ void SymbolTable::enter(std::string name)
 void SymbolTable::leave()
 {
     if (debugFlg)
+    {
+        // setPrintColor(PRINTCOLOR::GREEN);
         printf("DEBUG(SymbolTable): leave scope \"%s\".\n", (stack.back()->scopeName()).c_str());
+        // resetPrintColor();
+    }
     if (stack.size() > 1)
     {
         delete stack.back();
@@ -242,11 +427,13 @@ void *SymbolTable::lookup(std::string sym)
 
     if (debugFlg)
     {
+        // setPrintColor(PRINTCOLOR::GREEN);
         printf("DEBUG(SymbolTable): lookup the symbol \"%s\" and ", sym.c_str());
         if (data)
             printf("found it in the scope named \"%s\".\n", name.c_str());
         else
             printf("did NOT find it!\n");
+        // resetPrintColor();
     }
 
     return data;
@@ -260,8 +447,11 @@ void *SymbolTable::lookupGlobal(std::string sym)
 
     data = stack[0]->lookup(sym);
     if (debugFlg)
-        printf("DEBUG(SymbolTable): lookup the symbol \"%s\" in the Globals and %s.\n", sym.c_str(),
-               (data ? "found it" : "did NOT find it"));
+    {
+        // setPrintColor(PRINTCOLOR::GREEN);
+        printf("DEBUG(SymbolTable): lookup the symbol \"%s\" in the Globals and %s.\n", sym.c_str(), (data ? "found it" : "did NOT find it"));
+        // resetPrintColor();
+    }
 
     return data;
 }
@@ -272,11 +462,13 @@ bool SymbolTable::insert(std::string sym, void *ptr)
 {
     if (debugFlg)
     {
+        // setPrintColor(PRINTCOLOR::GREEN);
         printf("DEBUG(symbolTable): insert in scope \"%s\" the symbol \"%s\"",
                (stack.back()->scopeName()).c_str(), sym.c_str());
         if (ptr == NULL)
             printf(" WARNING: The inserted pointer is NULL!!");
         printf("\n");
+        // resetPrintColor();
     }
 
     return (stack.back())->insert(sym, ptr);
@@ -288,10 +480,12 @@ bool SymbolTable::insertGlobal(std::string sym, void *ptr)
 {
     if (debugFlg)
     {
+        // setPrintColor(PRINTCOLOR::GREEN);
         printf("DEBUG(Scope): insert the global symbol \"%s\"", sym.c_str());
         if (ptr == NULL)
             printf(" WARNING: The inserted pointer is NULL!!");
         printf("\n");
+        // resetPrintColor();
     }
 
     return stack[0]->insert(sym, ptr);
@@ -358,6 +552,7 @@ bool SymbolTable::test()
     st.insert("charlie", (char *)"cow");
     st.enter((std::string) "Second");
     st.insert("delta", (char *)"dog");
+    st.insert("delta", (char *)"cow");
     st.insertGlobal("echo", (char *)"elk");
 
     printf("Print symbol table.\n");

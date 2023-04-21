@@ -1,0 +1,154 @@
+#!/usr/bin/env bash
+allTests_flag=false
+diff_flag=false
+debug_flag=false
+help_flag=false
+make_flag=false
+print_flag=false
+printTypes_flag=false
+justView_flag=false
+viewOutput_flag=false
+gdb_flag=false
+segFault_flag=false
+locations_flag=false
+fileIn=''
+
+# sampleDirectory='sample/assign4/'
+# sampleDirectory='sample/testDataA5/'
+# sampleDirectory='sample/testDataA7/BroadTests/'
+sampleDirectory='sample/testDataA7/UnitTests/'
+
+while getopts 'AdDGhmMopPf:v' flag; do
+    case "${flag}" in
+    A) allTests_flag=true ;;
+    d) diff_flag=true ;;
+    D) debug_flag=true ;;
+    G) gdb_flag=true ;;
+    h) help_flag=true ;;
+    m) make_flag=true ;;
+    M) locations_flag=true ;;
+    o) viewOutput_flag=true ;;
+    p) print_flag=true ;;
+    P) printTypes_flag=true ;;
+    f) fileIn="${OPTARG}" ;;
+    v) justView_flag=true ;;
+    esac
+done
+
+if [ "$help_flag" = true ]; then
+    echo "A) allTests_flag"
+    echo "d) diff_flag"
+    echo "D) debug_flag"
+    echo "G) Analyze with GDB"
+    echo "h) Help"
+    echo "m) Make"
+    echo "M) Print Locations/Sizes"
+    echo "o) View target output"
+    echo "p) Print AST"
+    echo "P) Print Typed AST"
+    echo "f) Usage: -f filename (without extension)"
+    echo "v) View c- file content"
+elif [ "$allTests_flag" = true ]; then
+    if [ "$make_flag" = true ]; then
+        echo 'make c-'
+        # make clean
+        make
+    fi
+    echo "Running ./c- on all the files in $sampleDirectory"
+    # for file in samplePrograms2/*.c-
+    for file in $sampleDirectory*.c-; do
+        x=${file%.c-}
+        y=${x##*/}
+        # echo "./c- $file > myOutput/$y.out"
+        ./c- $file -M >myOutput/$y.out || (
+            echo "Seg fault in $file"
+            segFault_flag=true
+        )
+    done
+
+    if [ "$segFault_flag" = false ]; then
+        echo -e "Success. Files stored in myOutput/\n"
+        echo 'Diffing outputs'
+        for file in $sampleDirectory*.out; do
+            #	echo $file
+            x=${file%.out}
+            y=${x##*/}
+            SDIFF=$(diff --text -l -s <(sort myOutput/$y.out) <(sort $file))
+            if [ "$SDIFF" != "" ]; then
+                echo -e "\ndiff --text -l -s myOutput/$y.out $file"
+                echo "$SDIFF"
+            fi
+            # rm myOutput/$y.out
+        done
+    else
+        echo -e "One or more files had a seg fault."
+    fi
+else
+    if [ "$make_flag" = true ]; then
+        echo 'make c-'
+        make clean
+        make
+    fi
+    if [ "$gdb_flag" = true ]; then
+        gdb --args ./c- $sampleDirectory$fileIn.c- -P
+    elif [ "$locations_flag" = true ]; then
+        ./c- $sampleDirectory$fileIn.c- -M
+    elif [ "$justView_flag" = true ]; then
+        cat -n $sampleDirectory$fileIn.c-
+    elif [ "$viewOutput_flag" = true ]; then
+        echo "cat -n $sampleDirectory$fileIn.out"
+        cat -n $sampleDirectory$fileIn.out
+    elif [ "$debug_flag" = true ]; then
+        if [ "$printTypes_flag" = true ]; then
+            ./c- $sampleDirectory$fileIn.c- -D -P
+        elif [ "$print_flag" = true ]; then
+            ./c- $sampleDirectory$fileIn.c- -D -p
+        else
+            ./c- $sampleDirectory$fileIn.c- -D
+        fi
+    elif [ "$diff_flag" = true ]; then
+        ./c- $sampleDirectory$fileIn.c- -P >myOutput/$fileIn.out
+        diff --text <(sort myOutput/$fileIn.out) <(sort $sampleDirectory$fileIn.out)
+    else
+        if [ "$printTypes_flag" = true ]; then
+            ./c- $sampleDirectory$fileIn.c- -P
+        elif [ "$print_flag" = true ]; then
+            ./c- $sampleDirectory$fileIn.c- -p
+        else
+            ./c- $sampleDirectory$fileIn.c-
+        fi
+    fi
+fi
+
+# if [ -z $1 ]; then
+#     echo 'make c-'
+#     make clean; make;
+#     echo 'Running ./c- on all the files in sampleOutput3'
+#     # for file in samplePrograms2/*.c-
+#     for file in $sampleDirectory*.c-
+#     do
+#         x=${file%.c-}
+#         y=${x##*/}
+#         # echo "./c- $file > myOutput/$y.out"
+#         ./c- $file -p > myOutput/$y.out
+#     done
+
+#     echo -e "Complete. Files stored in myOutput/\n"
+
+#     echo 'Diffing outputs'
+#     for file in $sampleDirectory*.out
+#     do
+#         x=${file%.out}
+#         y=${x##*/}
+#         echo -e "\ndiff -l -s myOutput/$y.out $file"
+#         diff -l -s  myOutput/$y.out $file
+#         # rm myOutput/$y.out
+#     done
+# else
+#     case $2 in
+#     "-l")
+#     make clean; make;
+#     ./c- $sampleDirectory$1.c- -p > myOutput/$1.out
+#     echo "diff myOutput/$1.out $sampleDirectory$1.out"
+#     diff myOutput/$1.out $sampleDirectory$1.out
+# fi

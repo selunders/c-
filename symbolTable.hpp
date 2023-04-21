@@ -54,6 +54,7 @@ private:
 public:
     SymbolTable();
     void debug(bool state);                          // sets the debug flags
+    bool getDebugState();
     bool test();                                     // runs tests to validate the SymbolTable class
     int depth();                                     // what is the depth of the scope stack?
     void print(void (*printData)(void *));           // print all scopes using data printing function
@@ -70,5 +71,10 @@ public:
     void applyToAll(void (*action)(std::string , void *));        // apply func to all symbol/data pairs in local scope
     void applyToAllGlobal(void (*action)(std::string , void *));  // apply func to all symbol/data pairs in global scope
 };
+
+void pointerPrintNode(void * data);
+void pointerPrintStr(void * data);
+
+// ExpType getExpType(SymbolTable* st, TreeNode* t);
 
 #endif

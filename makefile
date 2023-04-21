@@ -1,9 +1,11 @@
+
 BIN = c-
 CC = g++
 
-SRCS = $(BIN).y  $(BIN).l util.cpp main.cpp symbolTable.cpp analyze.cpp
-HDRS = scanType.h globals.hpp util.hpp analyze.hpp symbolTable.hpp
-OBJS = lex.yy.o $(BIN).tab.o util.o main.o analyze.o symbolTable.o
+SRCS = $(BIN).y  $(BIN).l util.cpp main.cpp symbolTable.cpp analyze.cpp errorMsg.cpp yyerror.cpp globals.cpp codeGen.cpp emitcode.cpp
+HDRS = scanType.h globals.hpp util.hpp analyze.hpp symbolTable.hpp errorMsg.hpp yyerror.h codeGen.hpp emitcode.h
+LIBS = io.c-
+OBJS = lex.yy.o $(BIN).tab.o util.o main.o analyze.o symbolTable.o errorMsg.o yyerror.o globals.o codeGen.o emitcode.o
 CFLAGS = -std=c++11 -g
 
 
@@ -25,11 +27,26 @@ main.o :
 symbolTable.o :
 	$(CC) $(CFLAGS) -c symbolTable.cpp -o symbolTable.o
 
+globals.o :
+	$(CC) $(CFLAGS) -c globals.cpp -o globals.o
+
 analyze.o :
 	$(CC) $(CFLAGS) -c analyze.cpp -o analyze.o
 
+errorMsg.o :
+	$(CC) $(CFLAGS) -c errorMsg.cpp -o errorMsg.o
+
+yyerror.o :
+	$(CC) $(CFLAGS) -c yyerror.cpp -o yyerror.o
+
+codeGen.o :
+	$(CC) $(CFLAGS) -c codeGen.cpp -o codeGen.o
+
+emitcode.o :
+	$(CC) $(CFLAGS) -c emitcode.cpp -o emitcode.o
+
 clean :
-	rm -f *~ $(OBJS) $(BIN) lex.yy.c $(BIN).tab.h $(BIN).tab.c $(BIN).output
+	rm -f *~ $(OBJS) $(BIN) lex.yy.c $(BIN).tab.h $(BIN).tab.c $(BIN).output *.gch *.o
 
 tar : $(HDRS) $(SRCS) makefile
-	tar -cvf $(BIN).tar $(HDRS) $(SRCS) $(DOCS) makefile
+	tar -cvf $(BIN).tar $(HDRS) $(SRCS) $(DOCS) $(LIBS) makefile
